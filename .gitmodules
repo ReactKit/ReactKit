@@ -1,0 +1,3 @@
+[submodule "Vendor/SwiftTask"]
+	path = Vendor/SwiftTask
+	url = https://github.com/inamiy/SwiftTask.git
