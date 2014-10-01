@@ -96,7 +96,7 @@ internal class _KVOProxy: NSObject
         self._target.removeObserver(self, forKeyPath: self._keyPath)
     }
     
-    internal override func observeValueForKeyPath(keyPath: String!, ofObject object: AnyObject!, change: [NSObject : AnyObject]!, context: UnsafeMutablePointer<()>)
+    internal override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject!, change: [NSObject : AnyObject]!, context: UnsafeMutablePointer<()>)
     {
         if context != &ReactKitKVOContext {
             return super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
