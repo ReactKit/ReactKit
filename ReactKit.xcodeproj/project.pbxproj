@@ -37,6 +37,7 @@
 		1FFA14CF19C43DAE008246E4 /* ReactKit+Deinit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFA14CE19C43DAE008246E4 /* ReactKit+Deinit.swift */; };
 		4817434D19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4817434C19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift */; };
 		4817434E19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4817434C19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift */; };
+		48CF942F19DEBB9700C67D5E /* ReactKit+UIGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CF942E19DEBB9700C67D5E /* ReactKit+UIGestureRecognizer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -93,6 +94,7 @@
 		1FED8AA919C1ECD30065658B /* _TestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _TestCase.swift; sourceTree = "<group>"; };
 		1FFA14CE19C43DAE008246E4 /* ReactKit+Deinit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReactKit+Deinit.swift"; sourceTree = "<group>"; };
 		4817434C19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReactKit+TargetAction.swift"; sourceTree = "<group>"; };
+		48CF942E19DEBB9700C67D5E /* ReactKit+UIGestureRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReactKit+UIGestureRecognizer.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -204,6 +206,7 @@
 				1FED896419C1EBEB0065658B /* ReactKit+UIControl.swift */,
 				1F822F0419D3255500A3CA23 /* ReactKit+UIButton.swift */,
 				1F822F0219D320E200A3CA23 /* ReactKit+UITextField.swift */,
+				48CF942E19DEBB9700C67D5E /* ReactKit+UIGestureRecognizer.swift */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -480,6 +483,7 @@
 				1FED895E19C1EBD60065658B /* ReactKit+KVO.swift in Sources */,
 				1FED896219C1EBD60065658B /* Signal.swift in Sources */,
 				4817434E19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift in Sources */,
+				48CF942F19DEBB9700C67D5E /* ReactKit+UIGestureRecognizer.swift in Sources */,
 				1F822F0519D3255500A3CA23 /* ReactKit+UIButton.swift in Sources */,
 				1FED896019C1EBD60065658B /* ReactKit+NSNotificationCenter.swift in Sources */,
 				1F563DE919D700BD00034EA6 /* ReactKit+Deinit.swift in Sources */,

@@ -18,11 +18,18 @@ class FirstViewController: UIViewController {
     var textFieldSignal: Signal<NSString?>?
     var pasteButtonSignal: Signal<NSString?>?
     var removeButtonSignal: Signal<UIControl?>?
+    var gestureSignal: Signal<NSString?>?
     
     override func viewDidLoad()
     {
         super.viewDidLoad()
         
+        self._setupTextAndButtonSignals()
+        self._setupGestures()
+    }
+    
+    func _setupTextAndButtonSignals()
+    {
         //--------------------------------------------------
         // Create Signals
         //--------------------------------------------------
@@ -75,6 +82,24 @@ class FirstViewController: UIViewController {
 //            self.removeButtonSignal = nil
 //        }
         
+    }
+    
+    func _setupGestures()
+    {
+        let gesture = UITapGestureRecognizer()
+        self.view.addGestureRecognizer(gesture)
+        
+        // create gesture signal
+        self.gestureSignal = gesture.signal(state: .Ended) { sender -> NSString? in
+            
+            let gesture = sender as UITapGestureRecognizer
+            let point = gesture.locationInView(gesture.view)
+            return "Tapped at \(point)"
+            
+        }
+        
+        // REACT
+        ^{ println($0) } <~ self.gestureSignal!
     }
 }
 
