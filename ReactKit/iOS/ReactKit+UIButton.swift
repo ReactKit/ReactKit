@@ -12,7 +12,7 @@ public extension UIButton
 {
     public func buttonSignal<T>(mappedValue: T?) -> Signal<T?>
     {
-        return self.signal(controlEvents: .TouchUpInside) { (sender: UIControl?) -> T? in
+        return self.signal(controlEvents: .TouchUpInside) { (sender: AnyObject?) -> T? in
             return mappedValue
         }.takeUntil(self.deinitSignal)
     }

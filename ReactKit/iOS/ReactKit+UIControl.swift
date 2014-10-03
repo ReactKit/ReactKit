@@ -10,11 +10,11 @@ import UIKit
 
 public extension UIControl
 {
-    public func signal<T>(#controlEvents: UIControlEvents, map: UIControl? -> T) -> Signal<T>
+    public func signal<T>(#controlEvents: UIControlEvents, map: AnyObject? -> T) -> Signal<T>
     {
         return Signal(name: "UIControl-\(NSStringFromClass(self.dynamicType))-\(controlEvents)") { progress, fulfill, reject, configure in
             
-            let target = _UIControlProxy(controlEvents: controlEvents) { (self_: UIControl?) in
+            let target = _TargetActionProxy { (self_: AnyObject?) in
                 
                 //
                 // WARN:
@@ -55,39 +55,5 @@ public extension UIControl
             self.addTarget(target, action: "_fire:", forControlEvents: controlEvents)
             
         }.takeUntil(self.deinitSignal)
-    }
-}
-
-// NOTE: inheriting NSObject is required for methodSignatureForSelector
-internal class _UIControlProxy: NSObject
-{
-    internal typealias Handler = UIControl -> Void
-    
-    internal var controlEvents: UIControlEvents
-    internal var handler: Handler
-    
-    internal init(controlEvents: UIControlEvents, handler: Handler)
-    {
-        self.controlEvents = controlEvents
-        self.handler = handler
-        
-        super.init()
-        
-        #if DEBUG
-            println("[init] \(self)")
-        #endif
-    }
-    
-    deinit
-    {
-        #if DEBUG
-            println("[deinit] \(self)")
-        #endif
-    }
-    
-    // NOTE: can't use 'private' due to unrecognized selector
-    internal func _fire(sender: UIControl)
-    {
-        self.handler(sender)
     }
 }

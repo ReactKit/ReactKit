@@ -12,7 +12,7 @@ public extension UITextField
 {
     public func textChangedSignal() -> Signal<NSString?>
     {
-        return self.signal(controlEvents: .EditingChanged) { (sender: UIControl?) -> NSString? in
+        return self.signal(controlEvents: .EditingChanged) { (sender: AnyObject?) -> NSString? in
             if let sender = sender as? UITextField {
                 return sender.text
             }

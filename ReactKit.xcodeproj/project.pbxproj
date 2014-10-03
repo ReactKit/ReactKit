@@ -35,6 +35,8 @@
 		1FED8AAA19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
 		1FED8AAB19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
 		1FFA14CF19C43DAE008246E4 /* ReactKit+Deinit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFA14CE19C43DAE008246E4 /* ReactKit+Deinit.swift */; };
+		4817434D19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4817434C19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift */; };
+		4817434E19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4817434C19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,6 +92,7 @@
 		1FED897519C1EC4A0065658B /* SwiftTask.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SwiftTask.xcodeproj; sourceTree = "<group>"; };
 		1FED8AA919C1ECD30065658B /* _TestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _TestCase.swift; sourceTree = "<group>"; };
 		1FFA14CE19C43DAE008246E4 /* ReactKit+Deinit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReactKit+Deinit.swift"; sourceTree = "<group>"; };
+		4817434C19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReactKit+TargetAction.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,6 +159,7 @@
 				1FED895C19C1EBD60065658B /* Signal.swift */,
 				1FFA14CE19C43DAE008246E4 /* ReactKit+Deinit.swift */,
 				1FED895A19C1EBD60065658B /* ReactKit+KVO.swift */,
+				4817434C19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift */,
 				1FED895B19C1EBD60065658B /* ReactKit+NSNotificationCenter.swift */,
 				1FED896519C1EBEB0065658B /* OSX */,
 				1FED896319C1EBEB0065658B /* iOS */,
@@ -450,6 +454,7 @@
 				1FED896119C1EBD60065658B /* Signal.swift in Sources */,
 				1FED895F19C1EBD60065658B /* ReactKit+NSNotificationCenter.swift in Sources */,
 				1FFA14CF19C43DAE008246E4 /* ReactKit+Deinit.swift in Sources */,
+				4817434D19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,6 +479,7 @@
 				1FED896719C1EBEB0065658B /* ReactKit+UIControl.swift in Sources */,
 				1FED895E19C1EBD60065658B /* ReactKit+KVO.swift in Sources */,
 				1FED896219C1EBD60065658B /* Signal.swift in Sources */,
+				4817434E19DEAEDE00AD6C0B /* ReactKit+TargetAction.swift in Sources */,
 				1F822F0519D3255500A3CA23 /* ReactKit+UIButton.swift in Sources */,
 				1FED896019C1EBD60065658B /* ReactKit+NSNotificationCenter.swift in Sources */,
 				1F563DE919D700BD00034EA6 /* ReactKit+Deinit.swift in Sources */,
