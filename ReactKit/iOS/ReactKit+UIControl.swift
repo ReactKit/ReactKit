@@ -12,7 +12,7 @@ public extension UIControl
 {
     public func signal<T>(#controlEvents: UIControlEvents, map: AnyObject? -> T) -> Signal<T>
     {
-        return Signal(name: "UIControl-\(NSStringFromClass(self.dynamicType))-\(controlEvents)") { progress, fulfill, reject, configure in
+        return Signal(name: "\(NSStringFromClass(self.dynamicType))-\(controlEvents)") { progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 
