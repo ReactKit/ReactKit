@@ -6,6 +6,8 @@ Swift Reactive Programming. (2014/09/29 Work In Progress)
 
 ## Example
 
+(For UI Demo, please see [ReactKit/ReactKitCatalog](https://github.com/ReactKit/ReactKitCatalog))
+
 ### Key-Value Observing
 
 ```swift
