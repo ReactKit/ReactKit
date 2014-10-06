@@ -11,12 +11,12 @@ import UIKit
 // NOTE: see also ReactKit+UIControl
 public extension UIGestureRecognizer
 {
-    public func signal<T>(#state: UIGestureRecognizerState, map: AnyObject? -> T) -> Signal<T>
+    public func signal<T>(map: UIGestureRecognizer? -> T) -> Signal<T>
     {
-        return Signal(name: "\(NSStringFromClass(self.dynamicType))-\(state)") { progress, fulfill, reject, configure in
+        return Signal(name: "\(NSStringFromClass(self.dynamicType))") { progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
-                progress(map(self_))
+                progress(map(self_ as? UIGestureRecognizer))
             }
             
             configure.pause = { [weak self] in
