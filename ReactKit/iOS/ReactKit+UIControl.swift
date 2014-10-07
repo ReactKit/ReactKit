@@ -10,7 +10,7 @@ import UIKit
 
 public extension UIControl
 {
-    public func signal<T>(#controlEvents: UIControlEvents, map: AnyObject? -> T) -> Signal<T>
+    public func signal<T>(#controlEvents: UIControlEvents, map: UIControl? -> T) -> Signal<T>
     {
         return Signal(name: "\(NSStringFromClass(self.dynamicType))-\(controlEvents)") { progress, fulfill, reject, configure in
             
@@ -28,7 +28,7 @@ public extension UIControl
                 //
                 //progress(self_)
                 
-                progress(map(self_))
+                progress(map(self_ as? UIControl))
             }
             
             //
