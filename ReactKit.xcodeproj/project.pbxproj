@@ -18,6 +18,8 @@
 		1F626D9319D8799900D3ABCE /* NSNotificationCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F14EC4319C1FC040090C3D8 /* NSNotificationCenterTests.swift */; };
 		1F626D9419D8799900D3ABCE /* CustomOperatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F822EE619D319E000A3CA23 /* CustomOperatorTests.swift */; };
 		1F626D9519D8799900D3ABCE /* DeinitSignalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F563DF119D701F100034EA6 /* DeinitSignalTests.swift */; };
+		1F79711019E4150A0067A4C4 /* NSTimer+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F79710F19E4150A0067A4C4 /* NSTimer+Signal.swift */; };
+		1F79711119E4150A0067A4C4 /* NSTimer+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F79710F19E4150A0067A4C4 /* NSTimer+Signal.swift */; };
 		1F822EF319D319FF00A3CA23 /* _MyObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F822EF219D319FF00A3CA23 /* _MyObject.swift */; };
 		1F822EF419D319FF00A3CA23 /* _MyObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F822EF219D319FF00A3CA23 /* _MyObject.swift */; };
 		1F822F0319D320E200A3CA23 /* UITextField+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F822F0219D320E200A3CA23 /* UITextField+Signal.swift */; };
@@ -74,6 +76,7 @@
 /* Begin PBXFileReference section */
 		1F14EC4319C1FC040090C3D8 /* NSNotificationCenterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSNotificationCenterTests.swift; sourceTree = "<group>"; };
 		1F563DF119D701F100034EA6 /* DeinitSignalTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeinitSignalTests.swift; sourceTree = "<group>"; };
+		1F79710F19E4150A0067A4C4 /* NSTimer+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSTimer+Signal.swift"; sourceTree = "<group>"; };
 		1F822EE619D319E000A3CA23 /* CustomOperatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomOperatorTests.swift; sourceTree = "<group>"; };
 		1F822EF219D319FF00A3CA23 /* _MyObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _MyObject.swift; sourceTree = "<group>"; };
 		1F822F0219D320E200A3CA23 /* UITextField+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITextField+Signal.swift"; sourceTree = "<group>"; };
@@ -133,6 +136,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1F79710E19E414F70067A4C4 /* Foundation */ = {
+			isa = PBXGroup;
+			children = (
+				1F79710F19E4150A0067A4C4 /* NSTimer+Signal.swift */,
+			);
+			path = Foundation;
+			sourceTree = "<group>";
+		};
 		1FED88EE19C1EB120065658B = {
 			isa = PBXGroup;
 			children = (
@@ -163,6 +174,7 @@
 				1FED895B19C1EBD60065658B /* Notification.swift */,
 				4817434C19DEAEDE00AD6C0B /* TargetAction.swift */,
 				1FFA14CE19C43DAE008246E4 /* NSObject+Deinit.swift */,
+				1F79710E19E414F70067A4C4 /* Foundation */,
 				1FED896519C1EBEB0065658B /* OSX */,
 				1FED896319C1EBEB0065658B /* iOS */,
 				1FED88FB19C1EB120065658B /* Supporting Files */,
@@ -457,6 +469,7 @@
 				1FED896119C1EBD60065658B /* Signal.swift in Sources */,
 				1FED895F19C1EBD60065658B /* Notification.swift in Sources */,
 				1FFA14CF19C43DAE008246E4 /* NSObject+Deinit.swift in Sources */,
+				1F79711019E4150A0067A4C4 /* NSTimer+Signal.swift in Sources */,
 				4817434D19DEAEDE00AD6C0B /* TargetAction.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -486,6 +499,7 @@
 				48CF942F19DEBB9700C67D5E /* UIGestureRecognizer+Signal.swift in Sources */,
 				1F822F0519D3255500A3CA23 /* UIButton+Signal.swift in Sources */,
 				1FED896019C1EBD60065658B /* Notification.swift in Sources */,
+				1F79711119E4150A0067A4C4 /* NSTimer+Signal.swift in Sources */,
 				1F563DE919D700BD00034EA6 /* NSObject+Deinit.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
