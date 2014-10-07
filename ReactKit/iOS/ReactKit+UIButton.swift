@@ -10,10 +10,17 @@ import UIKit
 
 public extension UIButton
 {
-    public func buttonSignal<T>(mappedValue: T?) -> Signal<T?>
+    public func buttonSignal<T>(map: UIButton? -> T) -> Signal<T>
     {
-        return self.signal(controlEvents: .TouchUpInside) { (sender: AnyObject?) -> T? in
+        return self.signal(controlEvents: .TouchUpInside) { (sender: UIControl?) -> T in
+            return map(sender as? UIButton)
+        }
+    }
+    
+    public func buttonSignal<T>(mappedValue: T) -> Signal<T>
+    {
+        return self.signal(controlEvents: .TouchUpInside) { (sender: UIControl?) -> T in
             return mappedValue
-        }.takeUntil(self.deinitSignal)
+        }
     }
 }
