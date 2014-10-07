@@ -1,5 +1,5 @@
 //
-//  ReactKit+Deinit.swift
+//  NSObject+Deinit.swift
 //  ReactKit
 //
 //  Created by Yasuhiro Inami on 2014/09/14.

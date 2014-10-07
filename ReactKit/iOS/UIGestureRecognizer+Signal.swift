@@ -1,5 +1,5 @@
 //
-//  ReactKit+UIGestureRecognizer.swift
+//  UIGestureRecognizer+Signal.swift
 //  ReactKit
 //
 //  Created by Yasuhiro Inami on 2014/10/03.
@@ -8,7 +8,7 @@
 
 import UIKit
 
-// NOTE: see also ReactKit+UIControl
+// NOTE: see also UIControl+Signal
 public extension UIGestureRecognizer
 {
     public func signal<T>(map: UIGestureRecognizer? -> T) -> Signal<T>

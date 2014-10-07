@@ -1,5 +1,5 @@
 //
-//  ReactKit+UIControl.swift
+//  UIControl+Signal.swift
 //  ReactKit
 //
 //  Created by Yasuhiro Inami on 2014/09/14.

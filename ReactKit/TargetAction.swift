@@ -1,5 +1,5 @@
 //
-//  ReactKit+TargetAction.swift
+//  TargetAction.swift
 //  ReactKit
 //
 //  Created by Yasuhiro Inami on 2014/10/03.
