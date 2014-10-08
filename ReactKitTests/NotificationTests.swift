@@ -1,5 +1,5 @@
 //
-//  NSNotificationCenterTests.swift
+//  NotificationTests.swift
 //  ReactKitTests
 //
 //  Created by Yasuhiro Inami on 2014/09/11.
@@ -9,7 +9,7 @@
 import ReactKit
 import XCTest
 
-class NSNotificationCenterTests: _TestCase
+class NotificationTests: _TestCase
 {
     func testNotificationCenter()
     {
@@ -32,11 +32,11 @@ class NSNotificationCenterTests: _TestCase
         
         self.perform {
             
-            Notification.postSignal("MyNotification", "DUMMY")
+            Notification.post("MyNotification", "DUMMY")
             
             XCTAssertNil(obj2.notification, "obj2.notification should not be updated because only obj1's MyNotification can be signalled.")
             
-            Notification.postSignal("MyNotification", obj1)
+            Notification.post("MyNotification", obj1)
             
             XCTAssertNotNil(obj2.notification, "obj2.notification should be updated.")
             
@@ -48,7 +48,7 @@ class NSNotificationCenterTests: _TestCase
     }
 }
 
-class AsyncNSNotificationCenterTests: NSNotificationCenterTests
+class AsyncNotificationTests: NotificationTests
 {
     override var isAsync: Bool { return true }
 }

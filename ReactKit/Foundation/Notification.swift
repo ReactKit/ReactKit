@@ -35,7 +35,7 @@ public struct Notification
         return NSNotificationCenter.defaultCenter().signal(notificationName: notificationName, object: object)
     }
     
-    public static func postSignal(notificationName: String, _ object: AnyObject?)
+    public static func post(notificationName: String, _ object: AnyObject?)
     {
         NSNotificationCenter.defaultCenter().postNotificationName(notificationName, object: object)
     }
