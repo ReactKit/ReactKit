@@ -96,6 +96,8 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    // MARK: Single Signal Operations
+    
     func testKVO_filter()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
@@ -264,6 +266,60 @@ class KVOTests: _TestCase
         
         self.wait()
     }
+    
+    func testKVO_throttle()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+     
+        let timeInterval: NSTimeInterval = 0.2
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let signal = KVO.signal(obj1, "value").throttle(timeInterval)
+        weak var weakSignal = signal
+        
+        // REACT: obj1.value ~> obj2.value
+        (obj2, "value") <~ signal
+        
+        // REACT: obj1.value ~> println
+        ^{ println("[REACT] new value = \($0)") } <~ signal
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        XCTAssertEqual(obj2.value, "initial")
+        
+        self.perform {
+            
+            XCTAssertNotNil(weakSignal)
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(obj1.value, "hoge")
+            XCTAssertEqual(obj2.value, "hoge")
+            
+            obj1.value = "hoge2"
+            
+            XCTAssertEqual(obj1.value, "hoge2")
+            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because signal is throttled to \(timeInterval) sec.")
+            
+            // delay for `timeInterval`*1.05 sec
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1_050_000_000*timeInterval)), dispatch_get_main_queue()) {
+                obj1.value = "fuga"
+                
+                XCTAssertEqual(obj1.value, "fuga")
+                XCTAssertEqual(obj2.value, "fuga")
+                
+                expect.fulfill()
+            }
+            
+        }
+        
+        self.wait()
+    }
+    
+    // MARK: Multiple Signal Operations
     
     func testKVO_any()
     {

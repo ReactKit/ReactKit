@@ -41,6 +41,14 @@ public class Signal<T>: Task<T, T, NSError?>
 // Signal Operations
 public extension Signal
 {
+    private func _configure(configure: TaskConfiguration, _ capturingSignal: Signal)
+    {
+        // NOTE: newSignal should capture selfSignal
+        configure.pause = { capturingSignal.pause(); return }
+        configure.resume = { capturingSignal.resume(); return }
+        configure.cancel = { capturingSignal.cancel(); return }
+    }
+    
     public func filter(filterClosure: T -> Bool) -> Signal<T>
     {
         return Signal<T>(name: "\(self.name)-filter") { progress, fulfill, reject, configure in
@@ -60,10 +68,7 @@ public extension Signal
                 }
             }
         
-            // NOTE: newSignal should capture selfSignal
-            configure.pause = { self.pause(); return }
-            configure.resume = { self.resume(); return }
-            configure.cancel = { self.cancel(); return }
+            self._configure(configure, self)
         }
     }
     
@@ -84,9 +89,7 @@ public extension Signal
                 }
             }
             
-            configure.pause = { self.pause(); return }
-            configure.resume = { self.resume(); return }
-            configure.cancel = { self.cancel(); return }
+            self._configure(configure, self)
         }
     }
     
@@ -115,10 +118,7 @@ public extension Signal
                 }
             }
             
-            configure.pause = { self.pause(); return }
-            configure.resume = { self.resume(); return }
-            configure.cancel = { self.cancel(); return }
-            
+            self._configure(configure, self)
         }
     }
     
@@ -153,11 +153,27 @@ public extension Signal
                 }
             }
             
-            configure.pause = { self.pause(); return }
-            configure.resume = { self.resume(); return }
-            configure.cancel = { self.cancel(); return }
-            
+            self._configure(configure, self)
         }
+    }
+
+    public func throttle(timeInterval: NSTimeInterval) -> Signal
+    {
+        return Signal<T>(name: "\(self.name)-throttle") { progress, fulfill, reject, configure in
+            var lastProgressDate = NSDate(timeIntervalSince1970: 0)
+            
+            self.progress { progressValue in
+                let now = NSDate()
+                
+                if lastProgressDate.timeIntervalSinceDate(now) < -timeInterval {
+                    lastProgressDate = now
+                    progress(progressValue)
+                }
+            }
+            
+            self._configure(configure, self)
+        }
+        return self
     }
     
 }

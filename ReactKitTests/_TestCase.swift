@@ -42,7 +42,7 @@ class _TestCase: XCTestCase
     func perform(closure: Void -> Void)
     {
         if self.isAsync {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1000_000_000), dispatch_get_main_queue(), closure)
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1_000_000), dispatch_get_main_queue(), closure)
         }
         else {
             closure()
