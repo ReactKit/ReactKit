@@ -8,6 +8,8 @@
 
 import SwiftTask
 
+public let ReactKitErrorDomain = "ReactKitErrorDomain"
+
 public class Signal<T>: Task<T, T, NSError?>
 {
     public let name: String
@@ -29,6 +31,13 @@ public class Signal<T>: Task<T, T, NSError?>
         #if DEBUG
             println("[deinit] \(self) \(self.name)")
         #endif
+        
+        let signalName = self.name
+        let cancelError = NSError(domain: ReactKitErrorDomain, code: 0, userInfo: [
+            NSLocalizedDescriptionKey : "(\(signalName)) is cancelled via deinit."
+        ])
+        
+        self.cancel(error: cancelError)
     }
     
     // required (Swift compiler fails...)
@@ -101,21 +110,38 @@ public extension Signal
             
             self.progress { progressValue in
                 count++
-                if count > maxCount {
-                    reject(nil)
-                }
-                else {
+                
+                if count < maxCount {
                     progress(progressValue)
                 }
-            }.then { (value: T) -> Void in
-                fulfill(value)
-            }.catch { (error: NSError??, isCancelled: Bool) -> Void in
-                if let error = error {
-                    reject(error)
+                else if count == maxCount {
+                    progress(progressValue)
+                    fulfill(progressValue)  // successfully reached maxCount
                 }
                 else {
                     reject(nil)
                 }
+                
+            }.then { (value, errorInfo) -> Void in
+                
+                let domainError = NSError(domain: ReactKitErrorDomain, code: 0, userInfo: [
+                    NSLocalizedDescriptionKey : "Signal is rejected or cancelled before reaching `maxCount`."
+                ])
+                
+                // NOTE: always `reject` because when `then()` is called, it means `count` is not reaching maxCount.
+                
+                if let errorInfo = errorInfo {
+                    if let error = errorInfo.error {
+                        reject(error)
+                    }
+                    else {
+                        reject(domainError)
+                    }
+                }
+                else {
+                    reject(domainError)
+                }
+                
             }
             
             self._configure(configure, self)
@@ -138,18 +164,23 @@ public extension Signal
                     reject(nil)
                 }
             }
+
+            let signalName = signal.name
+            let cancelError = NSError(domain: ReactKitErrorDomain, code: 0, userInfo: [
+                NSLocalizedDescriptionKey : "Signal is cancelled by takeUntil(\(signalName))."
+            ])
             
             signal.progress { [weak self] (progressValue: U) in
                 if let self_ = self {
-                    self!.cancel()
+                    self!.cancel(error: cancelError)
                 }
             }.then { [weak self] (value: U) -> Void in
                 if let self_ = self {
-                    self!.cancel()
+                    self!.cancel(error: cancelError)
                 }
             }.catch { [weak self] (error: NSError??, isCancelled: Bool) -> Void in
                 if let self_ = self {
-                    self!.cancel()
+                    self!.cancel(error: cancelError)
                 }
             }
             

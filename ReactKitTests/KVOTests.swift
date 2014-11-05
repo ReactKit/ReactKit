@@ -222,6 +222,66 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_take_fulfilled()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        var count = 0
+        
+        let obj1 = MyObject()
+        
+        let sourceSignal = KVO.signal(obj1, "value")
+        let takeSignal = sourceSignal.take(1)  // only take 1 event
+        
+        // then
+        takeSignal.then { value, errorInfo -> Void in
+            count++
+            XCTAssertEqual(value! as String, "hoge")
+            XCTAssertTrue(errorInfo == nil)
+        }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(count, 0)
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            XCTAssertEqual(count, 1)
+            
+            obj1.value = "fuga"
+            XCTAssertEqual(count, 1, "`then()` will not be invoked because already fulfilled via `take(1)`.")
+            
+            expect.fulfill()
+        }
+        
+        self.wait()
+    }
+    
+    func testKVO_take_rejected()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let sourceSignal = KVO.signal(obj1, "value")
+        let takeSignal = sourceSignal.take(1)  // only take 1 event
+        
+        // then
+        takeSignal.then { value, errorInfo -> Void in
+            XCTAssertEqual(errorInfo!.error!!.domain, ReactKitErrorDomain, "`sourceSignal` is cancelled before any progress, so `takeSignal` should fail.")
+            XCTAssertFalse(errorInfo!.isCancelled, "Though `sourceSignal` is cancelled, `takeSignal` is rejected rather than cancelled.")
+            expect.fulfill()
+        }
+        
+        self.perform {
+            sourceSignal.cancel()
+            return
+        }
+        
+        self.wait()
+    }
+    
     func testKVO_takeUntil()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
