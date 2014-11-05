@@ -204,7 +204,6 @@ public extension Signal
             
             self._configure(configure, self)
         }
-        return self
     }
     
 }
