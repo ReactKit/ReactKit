@@ -40,6 +40,8 @@
 		4875886319E4D95A00828AD0 /* UIControl+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885F19E4D95A00828AD0 /* UIControl+Signal.swift */; };
 		4875886419E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875886019E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift */; };
 		4875886519E4D95A00828AD0 /* UITextField+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875886119E4D95A00828AD0 /* UITextField+Signal.swift */; };
+		48DDE7721A0C41A300125F36 /* NSObject+Own.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DDE7711A0C41A300125F36 /* NSObject+Own.swift */; };
+		48DDE7731A0C41A300125F36 /* NSObject+Own.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DDE7711A0C41A300125F36 /* NSObject+Own.swift */; };
 		48FD5B3C19E51E7100913946 /* UIBarButtonItem+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FD5B3B19E51E7100913946 /* UIBarButtonItem+Signal.swift */; };
 /* End PBXBuildFile section */
 
@@ -99,6 +101,7 @@
 		4875885F19E4D95A00828AD0 /* UIControl+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIControl+Signal.swift"; sourceTree = "<group>"; };
 		4875886019E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIGestureRecognizer+Signal.swift"; sourceTree = "<group>"; };
 		4875886119E4D95A00828AD0 /* UITextField+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITextField+Signal.swift"; sourceTree = "<group>"; };
+		48DDE7711A0C41A300125F36 /* NSObject+Own.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+Own.swift"; sourceTree = "<group>"; };
 		48FD5B3B19E51E7100913946 /* UIBarButtonItem+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIBarButtonItem+Signal.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -145,6 +148,7 @@
 				4875885219E4D94800828AD0 /* Notification.swift */,
 				4875885419E4D94800828AD0 /* TargetAction.swift */,
 				4875885319E4D94800828AD0 /* NSObject+Deinit.swift */,
+				48DDE7711A0C41A300125F36 /* NSObject+Own.swift */,
 				1F79710F19E4150A0067A4C4 /* NSTimer+Signal.swift */,
 			);
 			path = Foundation;
@@ -465,6 +469,7 @@
 				4875885919E4D94800828AD0 /* NSObject+Deinit.swift in Sources */,
 				1F79711019E4150A0067A4C4 /* NSTimer+Signal.swift in Sources */,
 				4875885B19E4D94800828AD0 /* TargetAction.swift in Sources */,
+				48DDE7721A0C41A300125F36 /* NSObject+Own.swift in Sources */,
 				4875885519E4D94800828AD0 /* KVO.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -491,6 +496,7 @@
 				1FED896219C1EBD60065658B /* Signal.swift in Sources */,
 				4875885C19E4D94800828AD0 /* TargetAction.swift in Sources */,
 				4875885619E4D94800828AD0 /* KVO.swift in Sources */,
+				48DDE7731A0C41A300125F36 /* NSObject+Own.swift in Sources */,
 				48FD5B3C19E51E7100913946 /* UIBarButtonItem+Signal.swift in Sources */,
 				4875886219E4D95A00828AD0 /* UIButton+Signal.swift in Sources */,
 				4875886419E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift in Sources */,

@@ -45,6 +45,18 @@ public class Signal<T>: Task<T, T, NSError?>
     {
         return super.cancel(error: error)
     }
+    
+    /// Easy strong referencing by owner e.g. UIViewController holding its UI component's signal
+    /// without explicitly defining signal as property.
+    public func ownedBy(owner: NSObject) -> Signal
+    {
+        var owninigSignals = owner._owninigSignals
+        owninigSignals.append(self)
+        owner._owninigSignals = owninigSignals
+        
+        return self
+    }
+    
 }
 
 // Signal Operations
