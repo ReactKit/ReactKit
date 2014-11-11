@@ -21,21 +21,21 @@ public extension UIGestureRecognizer
             
             configure.pause = { [weak self] in
                 if let self_ = self {
-                    self_.removeTarget(target, action: "_fire:")
+                    self_.removeTarget(target, action: _targetActionSelector)
                 }
             }
             configure.resume = { [weak self] in
                 if let self_ = self {
-                    self_.addTarget(target, action: "_fire:")
+                    self_.addTarget(target, action: _targetActionSelector)
                 }
             }
             configure.cancel = { [weak self] in
                 if let self_ = self {
-                    self_.removeTarget(target, action: "_fire:")
+                    self_.removeTarget(target, action: _targetActionSelector)
                 }
             }
             
-            self.addTarget(target, action: "_fire:")
+            self.addTarget(target, action: _targetActionSelector)
             
         }.takeUntil(self.deinitSignal)
     }

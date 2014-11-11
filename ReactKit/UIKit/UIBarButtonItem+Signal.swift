@@ -20,7 +20,7 @@ public extension UIBarButtonItem
             
             let addTargetAction: Void -> Void = {
                 self.target = target
-                self.action = Selector("_fire:")
+                self.action = _targetActionSelector
             }
             
             let removeTargetAction: Void -> Void = {

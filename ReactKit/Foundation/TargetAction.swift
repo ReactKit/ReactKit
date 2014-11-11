@@ -8,6 +8,8 @@
 
 import Foundation
 
+internal let _targetActionSelector: Selector = Selector("_fire:")
+
 internal class _TargetActionProxy
 {
     // NOTE: can't use generics

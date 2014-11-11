@@ -21,7 +21,7 @@ public extension NSTimer
             var timer: NSTimer?
             
             let createTimer: Void -> NSTimer = {
-                return NSTimer.scheduledTimerWithTimeInterval(timeInterval, target: target, selector: "_fire:", userInfo: userInfo, repeats: repeats)
+                return NSTimer.scheduledTimerWithTimeInterval(timeInterval, target: target, selector: _targetActionSelector, userInfo: userInfo, repeats: repeats)
             }
             
             timer = createTimer()

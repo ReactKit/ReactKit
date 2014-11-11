@@ -38,21 +38,21 @@ public extension UIControl
             //
             configure.pause = { [weak self] in
                 if let self_ = self {
-                    self_.removeTarget(target, action: "_fire:", forControlEvents: controlEvents)
+                    self_.removeTarget(target, action: _targetActionSelector, forControlEvents: controlEvents)
                 }
             }
             configure.resume = { [weak self] in
                 if let self_ = self {
-                    self_.addTarget(target, action: "_fire:", forControlEvents: controlEvents)
+                    self_.addTarget(target, action: _targetActionSelector, forControlEvents: controlEvents)
                 }
             }
             configure.cancel = { [weak self] in
                 if let self_ = self {
-                    self_.removeTarget(target, action: "_fire:", forControlEvents: controlEvents)
+                    self_.removeTarget(target, action: _targetActionSelector, forControlEvents: controlEvents)
                 }
             }
             
-            self.addTarget(target, action: "_fire:", forControlEvents: controlEvents)
+            self.addTarget(target, action: _targetActionSelector, forControlEvents: controlEvents)
             
         }.takeUntil(self.deinitSignal)
     }
