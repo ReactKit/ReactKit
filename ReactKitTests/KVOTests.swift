@@ -342,9 +342,6 @@ class KVOTests: _TestCase
         // REACT: obj1.value ~> obj2.value
         (obj2, "value") <~ signal
         
-        // REACT: obj1.value ~> println
-        ^{ println("[REACT] new value = \($0)") } <~ signal
-        
         println("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
@@ -371,6 +368,49 @@ class KVOTests: _TestCase
                 XCTAssertEqual(obj1.value, "fuga")
                 XCTAssertEqual(obj2.value, "fuga")
                 
+                expect.fulfill()
+            }
+            
+        }
+        
+        self.wait()
+    }
+    
+    func testKVO_debounce()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let timeInterval: NSTimeInterval = 0.2
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let signal = KVO.signal(obj1, "value").debounce(timeInterval)
+        weak var weakSignal = signal
+        
+        // REACT: obj1.value ~> obj2.value
+        (obj2, "value") <~ signal
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        XCTAssertEqual(obj2.value, "initial")
+        
+        self.perform {
+            
+            XCTAssertNotNil(weakSignal)
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(obj1.value, "hoge")
+            XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because of debounce().")
+            
+            Async.background(after: timeInterval/2) {
+                XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because it is still debounced.")
+            }
+            
+            Async.background(after: timeInterval+0.1) {
+                XCTAssertEqual(obj2.value, "hoge", "obj2.value should be updated after debouncing time.")
                 expect.fulfill()
             }
             

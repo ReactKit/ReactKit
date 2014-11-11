@@ -28,6 +28,8 @@
 		1FED8AA819C1EC7D0065658B /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FED8AA219C1EC4A0065658B /* SwiftTask.framework */; };
 		1FED8AAA19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
 		1FED8AAB19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
+		480422D11A11A11D00946D97 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4804226F1A11A11D00946D97 /* Async.swift */; };
+		480422D21A11A11D00946D97 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4804226F1A11A11D00946D97 /* Async.swift */; };
 		4875885519E4D94800828AD0 /* KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885119E4D94800828AD0 /* KVO.swift */; };
 		4875885619E4D94800828AD0 /* KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885119E4D94800828AD0 /* KVO.swift */; };
 		4875885719E4D94800828AD0 /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885219E4D94800828AD0 /* Notification.swift */; };
@@ -93,6 +95,7 @@
 		1FED895C19C1EBD60065658B /* Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Signal.swift; sourceTree = "<group>"; };
 		1FED897519C1EC4A0065658B /* SwiftTask.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SwiftTask.xcodeproj; sourceTree = "<group>"; };
 		1FED8AA919C1ECD30065658B /* _TestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _TestCase.swift; sourceTree = "<group>"; };
+		4804226F1A11A11D00946D97 /* Async.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
 		4875885119E4D94800828AD0 /* KVO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KVO.swift; sourceTree = "<group>"; };
 		4875885219E4D94800828AD0 /* Notification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 		4875885319E4D94800828AD0 /* NSObject+Deinit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+Deinit.swift"; sourceTree = "<group>"; };
@@ -228,6 +231,7 @@
 		1FED896919C1EC4A0065658B /* SwiftTask */ = {
 			isa = PBXGroup;
 			children = (
+				4804224E1A11A11D00946D97 /* Vendor */,
 				1FED897519C1EC4A0065658B /* SwiftTask.xcodeproj */,
 			);
 			path = SwiftTask;
@@ -242,6 +246,22 @@
 				1F822EEE19D319E000A3CA23 /* SwiftTask-iOSTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		4804224E1A11A11D00946D97 /* Vendor */ = {
+			isa = PBXGroup;
+			children = (
+				4804226D1A11A11D00946D97 /* Async */,
+			);
+			path = Vendor;
+			sourceTree = "<group>";
+		};
+		4804226D1A11A11D00946D97 /* Async */ = {
+			isa = PBXGroup;
+			children = (
+				4804226F1A11A11D00946D97 /* Async.swift */,
+			);
+			path = Async;
 			sourceTree = "<group>";
 		};
 		4875885D19E4D95A00828AD0 /* UIKit */ = {
@@ -479,6 +499,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F626D9019D8799600D3ABCE /* CustomOperatorTests.swift in Sources */,
+				480422D11A11A11D00946D97 /* Async.swift in Sources */,
 				1F822EF319D319FF00A3CA23 /* _MyObject.swift in Sources */,
 				1FED8AAA19C1ECD30065658B /* _TestCase.swift in Sources */,
 				1F626D8F19D8799600D3ABCE /* NotificationTests.swift in Sources */,
@@ -511,6 +532,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F626D9419D8799900D3ABCE /* CustomOperatorTests.swift in Sources */,
+				480422D21A11A11D00946D97 /* Async.swift in Sources */,
 				1F822EF419D319FF00A3CA23 /* _MyObject.swift in Sources */,
 				1FED8AAB19C1ECD30065658B /* _TestCase.swift in Sources */,
 				1F626D9319D8799900D3ABCE /* NotificationTests.swift in Sources */,

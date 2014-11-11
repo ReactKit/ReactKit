@@ -200,15 +200,19 @@ public extension Signal
         }
     }
 
+    /// limit continuous progress (reaction) for `timeInterval` seconds when first progress is triggered
+    /// (see also: underscore.js throttle)
     public func throttle(timeInterval: NSTimeInterval) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-throttle") { progress, fulfill, reject, configure in
+        return Signal<T>(name: "\(self.name)-throttle(\(timeInterval))") { progress, fulfill, reject, configure in
+            
             var lastProgressDate = NSDate(timeIntervalSince1970: 0)
             
             self.progress { progressValue in
                 let now = NSDate()
+                let timeDiff = now.timeIntervalSinceDate(lastProgressDate)
                 
-                if lastProgressDate.timeIntervalSinceDate(now) < -timeInterval {
+                if timeDiff > timeInterval {
                     lastProgressDate = now
                     progress(progressValue)
                 }
@@ -218,6 +222,26 @@ public extension Signal
         }
     }
     
+    /// delay progress (reaction) for `timeInterval` seconds and truly invoke reaction afterward if not interrupted by continuous progress
+    /// (see also: underscore.js debounce)
+    public func debounce(timeInterval: NSTimeInterval) -> Signal
+    {
+        return Signal<T>(name: "\(self.name)-debounce(\(timeInterval))") { progress, fulfill, reject, configure in
+            
+            var timerSignal: Signal<Void>? = nil    // retained by self via self.progress
+            
+            self.progress { progressValue in
+                // NOTE: overwrite to deinit & cancel old timerSignal
+                timerSignal = NSTimer.signal(timeInterval: timeInterval, repeats: false) { _ in }
+                
+                timerSignal!.progress { (value: Void) -> Void in
+                    progress(progressValue)
+                }
+            }
+            
+            self._configure(configure, self)
+        }
+    }
 }
 
 // Multiple Signal Operations
