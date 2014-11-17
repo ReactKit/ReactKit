@@ -74,7 +74,7 @@ public extension Signal
     {
         return Signal<T>(name: "\(self.name)-filter") { progress, fulfill, reject, configure in
             
-            self.progress { progressValue in
+            self.progress { (progressValue: T) in
                 if filterClosure(progressValue) {
                     progress(progressValue)
                 }
@@ -93,6 +93,7 @@ public extension Signal
         }
     }
     
+    /// map + newValue only
     public func map<U>(transform: T -> U) -> Signal<U>
     {
         return Signal<U>(name: "\(self.name)-map") { progress, fulfill, reject, configure in
@@ -114,13 +115,36 @@ public extension Signal
         }
     }
     
+    /// map + (oldValue, newValue)
+    // see also: Rx.scan http://www.introtorx.com/content/v1.0.10621.0/07_Aggregation.html#Scan
+    public func map<U>(tupleTransform: (oldValue: T?, newValue: T) -> U) -> Signal<U>
+    {
+        return Signal<U>(name: "\(self.name)-map") { progress, fulfill, reject, configure in
+            
+            self.progress { (progressValues: (oldValue: T?, newValue: T)) in
+                progress(tupleTransform(progressValues))
+            }.then { (value: T) -> Void in
+                fulfill(tupleTransform(oldValue: value, newValue: value))
+            }.catch { (error: NSError??, isCancelled: Bool) -> Void in
+                if let error = error {
+                    reject(error)
+                }
+                else {
+                    reject(nil)
+                }
+            }
+            
+            self._configure(configure, self)
+        }
+    }
+    
     public func take(maxCount: Int) -> Signal
     {
         return Signal<T>(name: "\(self.name)-take(\(maxCount))") { progress, fulfill, reject, configure in
             
             var count = 0
             
-            self.progress { progressValue in
+            self.progress { (progressValue: T) in
                 count++
                 
                 if count < maxCount {
@@ -208,7 +232,7 @@ public extension Signal
             
             var lastProgressDate = NSDate(timeIntervalSince1970: 0)
             
-            self.progress { progressValue in
+            self.progress { (progressValue: T) in
                 let now = NSDate()
                 let timeDiff = now.timeIntervalSinceDate(lastProgressDate)
                 
@@ -230,7 +254,7 @@ public extension Signal
             
             var timerSignal: Signal<Void>? = nil    // retained by self via self.progress
             
-            self.progress { progressValue in
+            self.progress { (progressValue: T) in
                 // NOTE: overwrite to deinit & cancel old timerSignal
                 timerSignal = NSTimer.signal(timeInterval: timeInterval, repeats: false) { _ in }
                 
@@ -257,7 +281,7 @@ public extension Signal
             let signalGroup = _SignalGroup(signals: signals)
             
             for signal in signals {
-                signal.progress { [weak signalGroup] progressValue in
+                signal.progress { [weak signalGroup] (progressValue: T) in
                     if let signalGroup = signalGroup {
                         let signals = signalGroup.signals
                         

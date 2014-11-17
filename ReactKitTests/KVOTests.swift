@@ -180,6 +180,45 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_map_tuple()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let signal = KVO.signal(obj1, "value").map { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
+            let oldString = (oldValue as? NSString) ?? "empty"
+            return "\(oldString) -> \(newValue as String)"
+        }
+        
+        // REACT
+        (obj2, "value") <~ signal
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        XCTAssertEqual(obj2.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(obj1.value, "hoge")
+            XCTAssertEqual(obj2.value, "empty -> hoge")
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(obj1.value, "fuga")
+            XCTAssertEqual(obj2.value, "hoge -> fuga")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     func testKVO_take()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
