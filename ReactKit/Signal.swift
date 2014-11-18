@@ -74,13 +74,13 @@ public extension Signal
     {
         return Signal<T>(name: "\(self.name)-filter") { progress, fulfill, reject, configure in
             
-            self.progress { (progressValue: T) in
+            self.progress { (_, progressValue: T) in
                 if filterClosure(progressValue) {
                     progress(progressValue)
                 }
-            }.then { (value: T) -> Void in
+            }.success { (value: T) -> Void in
                 fulfill(value)
-            }.catch { (error: NSError??, isCancelled: Bool) -> Void in
+            }.failure { (error: NSError??, isCancelled: Bool) -> Void in
                 if let error = error {
                     reject(error)
                 }
@@ -98,11 +98,11 @@ public extension Signal
     {
         return Signal<U>(name: "\(self.name)-map") { progress, fulfill, reject, configure in
             
-            self.progress { (progressValue: T) in
+            self.progress { (_, progressValue: T) in
                 progress(transform(progressValue))
-            }.then { (value: T) -> Void in
+            }.success { (value: T) -> Void in
                 fulfill(transform(value))
-            }.catch { (error: NSError??, isCancelled: Bool) -> Void in
+            }.failure { (error: NSError??, isCancelled: Bool) -> Void in
                 if let error = error {
                     reject(error)
                 }
@@ -119,13 +119,13 @@ public extension Signal
     // see also: Rx.scan http://www.introtorx.com/content/v1.0.10621.0/07_Aggregation.html#Scan
     public func map<U>(tupleTransform: (oldValue: T?, newValue: T) -> U) -> Signal<U>
     {
-        return Signal<U>(name: "\(self.name)-map") { progress, fulfill, reject, configure in
+        return Signal<U>(name: "\(self.name)-map(tupleTransform)") { progress, fulfill, reject, configure in
             
             self.progress { (progressValues: (oldValue: T?, newValue: T)) in
                 progress(tupleTransform(progressValues))
-            }.then { (value: T) -> Void in
+            }.success { (value: T) -> Void in
                 fulfill(tupleTransform(oldValue: value, newValue: value))
-            }.catch { (error: NSError??, isCancelled: Bool) -> Void in
+            }.failure { (error: NSError??, isCancelled: Bool) -> Void in
                 if let error = error {
                     reject(error)
                 }
@@ -144,7 +144,7 @@ public extension Signal
             
             var count = 0
             
-            self.progress { (progressValue: T) in
+            self.progress { (_, progressValue: T) in
                 count++
                 
                 if count < maxCount {
@@ -188,11 +188,11 @@ public extension Signal
     {
         return Signal<T>(name: "\(self.name)-takeUntil") { progress, fulfill, reject, configure in
             
-            self.progress { progressValue in
+            self.progress { (_, progressValue: T) in
                 progress(progressValue)
-            }.then { (value: T) -> Void in
+            }.success { (value: T) -> Void in
                 fulfill(value)
-            }.catch { (error: NSError??, isCancelled: Bool) -> Void in
+            }.failure { (error: NSError??, isCancelled: Bool) -> Void in
                 if let error = error {
                     reject(error)
                 }
@@ -206,15 +206,15 @@ public extension Signal
                 NSLocalizedDescriptionKey : "Signal is cancelled by takeUntil(\(signalName))."
             ])
             
-            signal.progress { [weak self] (progressValue: U) in
+            signal.progress { [weak self] (_, progressValue: U) in
                 if let self_ = self {
                     self!.cancel(error: cancelError)
                 }
-            }.then { [weak self] (value: U) -> Void in
+            }.success { [weak self] (value: U) -> Void in
                 if let self_ = self {
                     self!.cancel(error: cancelError)
                 }
-            }.catch { [weak self] (error: NSError??, isCancelled: Bool) -> Void in
+            }.failure { [weak self] (error: NSError??, isCancelled: Bool) -> Void in
                 if let self_ = self {
                     self!.cancel(error: cancelError)
                 }
@@ -232,7 +232,7 @@ public extension Signal
             
             var lastProgressDate = NSDate(timeIntervalSince1970: 0)
             
-            self.progress { (progressValue: T) in
+            self.progress { (_, progressValue: T) in
                 let now = NSDate()
                 let timeDiff = now.timeIntervalSinceDate(lastProgressDate)
                 
@@ -254,11 +254,11 @@ public extension Signal
             
             var timerSignal: Signal<Void>? = nil    // retained by self via self.progress
             
-            self.progress { (progressValue: T) in
+            self.progress { (_, progressValue: T) in
                 // NOTE: overwrite to deinit & cancel old timerSignal
                 timerSignal = NSTimer.signal(timeInterval: timeInterval, repeats: false) { _ in }
                 
-                timerSignal!.progress { (value: Void) -> Void in
+                timerSignal!.progress { _ -> Void in
                     progress(progressValue)
                 }
             }
@@ -281,7 +281,7 @@ public extension Signal
             let signalGroup = _SignalGroup(signals: signals)
             
             for signal in signals {
-                signal.progress { [weak signalGroup] (progressValue: T) in
+                signal.progress { [weak signalGroup] (_, progressValue: T) in
                     if let signalGroup = signalGroup {
                         let signals = signalGroup.signals
                         
@@ -331,7 +331,7 @@ infix operator ~> { associativity left precedence 255 }
 /// i.e. signal.progress { ... }
 public func ~> <T>(signal: Signal<T>, reactClosure: T -> Void) -> Signal<T>
 {
-    signal.progress(reactClosure)
+    signal.progress { _, progress in reactClosure(progress) }
     return signal
 }
 
@@ -341,7 +341,7 @@ infix operator <~ { associativity right }
 /// e.g. ^{ ... } <~ signal
 public func <~ <T>(reactClosure: T -> Void, signal: Signal<T>)
 {
-    signal.progress(reactClosure)
+    signal.progress { _, progress in reactClosure(progress) }
 }
 
 prefix operator ^ {}
