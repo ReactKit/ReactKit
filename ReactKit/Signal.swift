@@ -117,7 +117,7 @@ public extension Signal
     
     /// map + (oldValue, newValue)
     // see also: Rx.scan http://www.introtorx.com/content/v1.0.10621.0/07_Aggregation.html#Scan
-    public func map<U>(tupleTransform: (oldValue: T?, newValue: T) -> U) -> Signal<U>
+    public func mapTuple<U>(tupleTransform: (oldValue: T?, newValue: T) -> U) -> Signal<U>
     {
         return Signal<U>(name: "\(self.name)-map(tupleTransform)") { progress, fulfill, reject, configure in
             

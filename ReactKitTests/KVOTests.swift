@@ -180,14 +180,14 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testKVO_map_tuple()
+    func testKVO_mapTuple()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").map { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
+        let signal = KVO.signal(obj1, "value").mapTuple { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
             let oldString = (oldValue as? NSString) ?? "empty"
             return "\(oldString) -> \(newValue as String)"
         }
