@@ -87,7 +87,7 @@
 		1FED88F819C1EB120065658B /* ReactKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ReactKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FED88FC19C1EB120065658B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1FED88FD19C1EB120065658B /* ReactKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReactKit.h; sourceTree = "<group>"; };
-		1FED890319C1EB120065658B /* ReactKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReactKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FED890319C1EB120065658B /* ReactKit-OSXTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ReactKit-OSXTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FED890919C1EB120065658B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1FED890A19C1EB120065658B /* KVOTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KVOTests.swift; sourceTree = "<group>"; };
 		1FED894119C1EB7D0065658B /* ReactKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ReactKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -171,7 +171,7 @@
 			isa = PBXGroup;
 			children = (
 				1FED88F819C1EB120065658B /* ReactKit.framework */,
-				1FED890319C1EB120065658B /* ReactKitTests.xctest */,
+				1FED890319C1EB120065658B /* ReactKit-OSXTests.xctest */,
 				1FED894119C1EB7D0065658B /* ReactKit.framework */,
 				1FED894B19C1EB7D0065658B /* ReactKit-iOSTests.xctest */,
 			);
@@ -241,7 +241,7 @@
 			isa = PBXGroup;
 			children = (
 				1FED8AA219C1EC4A0065658B /* SwiftTask.framework */,
-				1FED8AA419C1EC4A0065658B /* SwiftTaskTests.xctest */,
+				1FED8AA419C1EC4A0065658B /* SwiftTask-OSXTests.xctest */,
 				1FED8AA619C1EC4A0065658B /* SwiftTask.framework */,
 				1F822EEE19D319E000A3CA23 /* SwiftTask-iOSTests.xctest */,
 			);
@@ -297,9 +297,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		1FED88F719C1EB120065658B /* ReactKit */ = {
+		1FED88F719C1EB120065658B /* ReactKit-OSX */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1FED890E19C1EB120065658B /* Build configuration list for PBXNativeTarget "ReactKit" */;
+			buildConfigurationList = 1FED890E19C1EB120065658B /* Build configuration list for PBXNativeTarget "ReactKit-OSX" */;
 			buildPhases = (
 				1FED88F319C1EB120065658B /* Sources */,
 				1FED88F419C1EB120065658B /* Frameworks */,
@@ -310,14 +310,14 @@
 			);
 			dependencies = (
 			);
-			name = ReactKit;
+			name = "ReactKit-OSX";
 			productName = ReactKit;
 			productReference = 1FED88F819C1EB120065658B /* ReactKit.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		1FED890219C1EB120065658B /* ReactKitTests */ = {
+		1FED890219C1EB120065658B /* ReactKit-OSXTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1FED891119C1EB120065658B /* Build configuration list for PBXNativeTarget "ReactKitTests" */;
+			buildConfigurationList = 1FED891119C1EB120065658B /* Build configuration list for PBXNativeTarget "ReactKit-OSXTests" */;
 			buildPhases = (
 				1FED88FF19C1EB120065658B /* Sources */,
 				1FED890019C1EB120065658B /* Frameworks */,
@@ -327,9 +327,9 @@
 			);
 			dependencies = (
 			);
-			name = ReactKitTests;
+			name = "ReactKit-OSXTests";
 			productName = ReactKitTests;
-			productReference = 1FED890319C1EB120065658B /* ReactKitTests.xctest */;
+			productReference = 1FED890319C1EB120065658B /* ReactKit-OSXTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		1FED894019C1EB7D0065658B /* ReactKit-iOS */ = {
@@ -409,8 +409,8 @@
 			);
 			projectRoot = "";
 			targets = (
-				1FED88F719C1EB120065658B /* ReactKit */,
-				1FED890219C1EB120065658B /* ReactKitTests */,
+				1FED88F719C1EB120065658B /* ReactKit-OSX */,
+				1FED890219C1EB120065658B /* ReactKit-OSXTests */,
 				1FED894019C1EB7D0065658B /* ReactKit-iOS */,
 				1FED894A19C1EB7D0065658B /* ReactKit-iOSTests */,
 			);
@@ -432,10 +432,10 @@
 			remoteRef = 1FED8AA119C1EC4A0065658B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1FED8AA419C1EC4A0065658B /* SwiftTaskTests.xctest */ = {
+		1FED8AA419C1EC4A0065658B /* SwiftTask-OSXTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
-			path = SwiftTaskTests.xctest;
+			path = "SwiftTask-OSXTests.xctest";
 			remoteRef = 1FED8AA319C1EC4A0065658B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -642,9 +642,9 @@
 				INFOPLIST_FILE = ReactKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				OTHER_SWIFT_FLAGS = "-DDEBUG";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -663,8 +663,8 @@
 				INFOPLIST_FILE = ReactKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
 			};
 			name = Release;
@@ -719,7 +719,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_SWIFT_FLAGS = "-DDEBUG";
-				PRODUCT_NAME = ReactKit;
+				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -740,7 +740,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = ReactKit;
+				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -795,7 +795,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1FED890E19C1EB120065658B /* Build configuration list for PBXNativeTarget "ReactKit" */ = {
+		1FED890E19C1EB120065658B /* Build configuration list for PBXNativeTarget "ReactKit-OSX" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1FED890F19C1EB120065658B /* Debug */,
@@ -804,7 +804,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1FED891119C1EB120065658B /* Build configuration list for PBXNativeTarget "ReactKitTests" */ = {
+		1FED891119C1EB120065658B /* Build configuration list for PBXNativeTarget "ReactKit-OSXTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1FED891219C1EB120065658B /* Debug */,
