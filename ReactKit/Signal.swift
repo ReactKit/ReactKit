@@ -160,23 +160,19 @@ public extension Signal
                 
             }.then { (value, errorInfo) -> Void in
                 
-                let domainError = NSError(domain: ReactKitErrorDomain, code: 0, userInfo: [
-                    NSLocalizedDescriptionKey : "Signal is rejected or cancelled before reaching `maxCount`."
-                ])
-                
                 // NOTE: always `reject` because when `then()` is called, it means `count` is not reaching maxCount.
                 
                 if let errorInfo = errorInfo {
                     if let error = errorInfo.error {
                         reject(error)
-                    }
-                    else {
-                        reject(domainError)
+                        return
                     }
                 }
-                else {
-                    reject(domainError)
-                }
+                
+                let domainError = NSError(domain: ReactKitErrorDomain, code: 0, userInfo: [
+                    NSLocalizedDescriptionKey : "Signal is rejected or cancelled before reaching `maxCount`."
+                ])
+                reject(domainError)
                 
             }
             
