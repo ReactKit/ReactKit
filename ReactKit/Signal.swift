@@ -10,11 +10,11 @@ import SwiftTask
 
 public let ReactKitErrorDomain = "ReactKitErrorDomain"
 
-public class Signal<T>: Task<T, T, NSError?>
+public class Signal<T>: Task<T, T, NSError>
 {
     public let name: String
     
-    public init(name: String = "Default", initClosure: Task<T, T, NSError?>.InitClosure)
+    public init(name: String = "Default", initClosure: Task<T, T, NSError>.InitClosure)
     {
         self.name = name
         
@@ -41,7 +41,7 @@ public class Signal<T>: Task<T, T, NSError?>
     }
     
     // required (Swift compiler fails...)
-    override public func cancel(error: NSError?? = nil) -> Bool
+    override public func cancel(error: NSError? = nil) -> Bool
     {
         return super.cancel(error: error)
     }
@@ -59,17 +59,32 @@ public class Signal<T>: Task<T, T, NSError?>
     
 }
 
+// helper
+private func _reject(reject: NSError -> Void, error: NSError?)
+{
+    if let error = error {
+        reject(error)
+        return
+    }
+
+    let cancelError = NSError(domain: ReactKitErrorDomain, code: 0, userInfo: [
+        NSLocalizedDescriptionKey : "Signal is cancelled."
+    ])
+    reject(cancelError)
+}
+
+// helper
+private func _configure<T>(configure: TaskConfiguration, capturingSignal: Signal<T>)
+{
+    // NOTE: newSignal should capture selfSignal
+    configure.pause = { capturingSignal.pause(); return }
+    configure.resume = { capturingSignal.resume(); return }
+    configure.cancel = { capturingSignal.cancel(); return }
+}
+
 // Signal Operations
 public extension Signal
 {
-    private func _configure(configure: TaskConfiguration, _ capturingSignal: Signal)
-    {
-        // NOTE: newSignal should capture selfSignal
-        configure.pause = { capturingSignal.pause(); return }
-        configure.resume = { capturingSignal.resume(); return }
-        configure.cancel = { capturingSignal.cancel(); return }
-    }
-    
     public func filter(filterClosure: T -> Bool) -> Signal<T>
     {
         return Signal<T>(name: "\(self.name)-filter") { progress, fulfill, reject, configure in
@@ -80,16 +95,11 @@ public extension Signal
                 }
             }.success { (value: T) -> Void in
                 fulfill(value)
-            }.failure { (error: NSError??, isCancelled: Bool) -> Void in
-                if let error = error {
-                    reject(error)
-                }
-                else {
-                    reject(nil)
-                }
+            }.failure { (error: NSError?, isCancelled: Bool) -> Void in
+                _reject(reject, error)
             }
         
-            self._configure(configure, self)
+            _configure(configure, self)
         }
     }
     
@@ -102,16 +112,11 @@ public extension Signal
                 progress(transform(progressValue))
             }.success { (value: T) -> Void in
                 fulfill(transform(value))
-            }.failure { (error: NSError??, isCancelled: Bool) -> Void in
-                if let error = error {
-                    reject(error)
-                }
-                else {
-                    reject(nil)
-                }
+            }.failure { (error: NSError?, isCancelled: Bool) -> Void in
+                _reject(reject, error)
             }
             
-            self._configure(configure, self)
+            _configure(configure, self)
         }
     }
     
@@ -125,16 +130,11 @@ public extension Signal
                 progress(tupleTransform(progressValues))
             }.success { (value: T) -> Void in
                 fulfill(tupleTransform(oldValue: value, newValue: value))
-            }.failure { (error: NSError??, isCancelled: Bool) -> Void in
-                if let error = error {
-                    reject(error)
-                }
-                else {
-                    reject(nil)
-                }
+            }.failure { (error: NSError?, isCancelled: Bool) -> Void in
+                _reject(reject, error)
             }
             
-            self._configure(configure, self)
+            _configure(configure, self)
         }
     }
     
@@ -155,7 +155,7 @@ public extension Signal
                     fulfill(progressValue)  // successfully reached maxCount
                 }
                 else {
-                    reject(nil)
+                    _reject(reject, nil)
                 }
                 
             }.then { (value, errorInfo) -> Void in
@@ -176,7 +176,7 @@ public extension Signal
                 
             }
             
-            self._configure(configure, self)
+            _configure(configure, self)
         }
     }
     
@@ -188,13 +188,8 @@ public extension Signal
                 progress(progressValue)
             }.success { (value: T) -> Void in
                 fulfill(value)
-            }.failure { (error: NSError??, isCancelled: Bool) -> Void in
-                if let error = error {
-                    reject(error)
-                }
-                else {
-                    reject(nil)
-                }
+            }.failure { (error: NSError?, isCancelled: Bool) -> Void in
+                _reject(reject, error)
             }
 
             let signalName = signal.name
@@ -210,13 +205,13 @@ public extension Signal
                 if let self_ = self {
                     self!.cancel(error: cancelError)
                 }
-            }.failure { [weak self] (error: NSError??, isCancelled: Bool) -> Void in
+            }.failure { [weak self] (error: NSError?, isCancelled: Bool) -> Void in
                 if let self_ = self {
                     self!.cancel(error: cancelError)
                 }
             }
             
-            self._configure(configure, self)
+            _configure(configure, self)
         }
     }
 
@@ -238,7 +233,7 @@ public extension Signal
                 }
             }
             
-            self._configure(configure, self)
+            _configure(configure, self)
         }
     }
     
@@ -259,7 +254,7 @@ public extension Signal
                 }
             }
             
-            self._configure(configure, self)
+            _configure(configure, self)
         }
     }
 }
