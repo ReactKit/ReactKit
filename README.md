@@ -1,7 +1,7 @@
 ReactKit
 ========
 
-Swift Reactive Programming. (2014/09/29 Work In Progress)
+Swift Reactive Programming.
 
 
 ## Example
@@ -64,12 +64,6 @@ self.textFieldSignal = self.textField.textChangedSignal()
 ^{ println($0) } <~ self.textFieldSignal  // prints textField.text on change
 ```
 
-TODO: add more helpers for Foundation/AppKit/UIKit
-
-### Delegation
-
-TODO
-
 ### Complex example
 
 The example below is taken from
@@ -120,11 +114,15 @@ Also, because `signal` can also behave like Promise, it can be chained by `then(
 ## Signal Operations
 
 - Instance Methods
-	- `filter(f: T -> Bool)`, `map(f: T -> U)`, `take(maxCount)`, `takeUntil(signal)`
+	- `filter(f: T -> Bool)`
+	- `map(f: T -> U)`
+	- `mapTuple(f: (T?, T) -> U)`
+	- `take(maxCount)`
+	- `takeUntil(signal)`
+	- `throttle(timeInterval)`
+	- `debounce(timeInterval)`
 - Class Methods
 	- `any(signals)`
-
-TODO: add more operations if requested :santa:
 
 
 ## Licence
