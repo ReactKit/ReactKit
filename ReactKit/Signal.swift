@@ -8,8 +8,6 @@
 
 import SwiftTask
 
-public let ReactKitErrorDomain = "ReactKitErrorDomain"
-
 public class Signal<T>: Task<T, T, NSError>
 {
     public let name: String
@@ -33,9 +31,7 @@ public class Signal<T>: Task<T, T, NSError>
         #endif
         
         let signalName = self.name
-        let cancelError = NSError(domain: ReactKitErrorDomain, code: 0, userInfo: [
-            NSLocalizedDescriptionKey : "(\(signalName)) is cancelled via deinit."
-        ])
+        let cancelError = _RKError(.CancelledByDeinit, "Signal=\(signalName) is cancelled via deinit.")
         
         self.cancel(error: cancelError)
     }
@@ -59,21 +55,19 @@ public class Signal<T>: Task<T, T, NSError>
     
 }
 
-// helper
-private func _reject(reject: NSError -> Void, error: NSError?)
+/// helper
+private func _reject(reject: NSError -> Void, error: NSError?, signalName: String)
 {
     if let error = error {
         reject(error)
         return
     }
 
-    let cancelError = NSError(domain: ReactKitErrorDomain, code: 0, userInfo: [
-        NSLocalizedDescriptionKey : "Signal is cancelled."
-    ])
+    let cancelError = _RKError(.Cancelled, "Signal=\(signalName) is cancelled.")
     reject(cancelError)
 }
 
-// helper
+/// helper
 private func _configure<T>(configure: TaskConfiguration, capturingSignal: Signal<T>)
 {
     // NOTE: newSignal should capture selfSignal
@@ -89,6 +83,8 @@ public extension Signal
     {
         return Signal<T>(name: "\(self.name)-filter") { progress, fulfill, reject, configure in
             
+            let signalName = self.name
+            
             self.progress { (_, progressValue: T) in
                 if filterClosure(progressValue) {
                     progress(progressValue)
@@ -96,7 +92,7 @@ public extension Signal
             }.success { (value: T) -> Void in
                 fulfill(value)
             }.failure { (error: NSError?, isCancelled: Bool) -> Void in
-                _reject(reject, error)
+                _reject(reject, error, signalName)
             }
         
             _configure(configure, self)
@@ -108,12 +104,14 @@ public extension Signal
     {
         return Signal<U>(name: "\(self.name)-map") { progress, fulfill, reject, configure in
             
+            let signalName = self.name
+            
             self.progress { (_, progressValue: T) in
                 progress(transform(progressValue))
             }.success { (value: T) -> Void in
                 fulfill(transform(value))
             }.failure { (error: NSError?, isCancelled: Bool) -> Void in
-                _reject(reject, error)
+                _reject(reject, error, signalName)
             }
             
             _configure(configure, self)
@@ -126,12 +124,14 @@ public extension Signal
     {
         return Signal<U>(name: "\(self.name)-map(tupleTransform)") { progress, fulfill, reject, configure in
             
+            let signalName = self.name
+            
             self.progress { (progressValues: (oldValue: T?, newValue: T)) in
                 progress(tupleTransform(progressValues))
             }.success { (value: T) -> Void in
                 fulfill(tupleTransform(oldValue: value, newValue: value))
             }.failure { (error: NSError?, isCancelled: Bool) -> Void in
-                _reject(reject, error)
+                _reject(reject, error, signalName)
             }
             
             _configure(configure, self)
@@ -142,6 +142,7 @@ public extension Signal
     {
         return Signal<T>(name: "\(self.name)-take(\(maxCount))") { progress, fulfill, reject, configure in
             
+            let signalName = self.name
             var count = 0
             
             self.progress { (_, progressValue: T) in
@@ -155,7 +156,7 @@ public extension Signal
                     fulfill(progressValue)  // successfully reached maxCount
                 }
                 else {
-                    _reject(reject, nil)
+                    _reject(reject, nil, signalName)
                 }
                 
             }.then { (value, errorInfo) -> Void in
@@ -169,10 +170,8 @@ public extension Signal
                     }
                 }
                 
-                let domainError = NSError(domain: ReactKitErrorDomain, code: 0, userInfo: [
-                    NSLocalizedDescriptionKey : "Signal is rejected or cancelled before reaching `maxCount`."
-                ])
-                reject(domainError)
+                let cancelError = _RKError(.CancelledByTake, "Signal=\(signalName) is rejected or cancelled before reaching `maxCount`.")
+                reject(cancelError)
                 
             }
             
@@ -180,24 +179,24 @@ public extension Signal
         }
     }
     
-    public func takeUntil<U>(signal: Signal<U>) -> Signal
+    public func takeUntil<U>(takeUntilSignal: Signal<U>) -> Signal
     {
         return Signal<T>(name: "\(self.name)-takeUntil") { progress, fulfill, reject, configure in
+            
+            let signalName = self.name
             
             self.progress { (_, progressValue: T) in
                 progress(progressValue)
             }.success { (value: T) -> Void in
                 fulfill(value)
             }.failure { (error: NSError?, isCancelled: Bool) -> Void in
-                _reject(reject, error)
+                _reject(reject, error, signalName)
             }
 
-            let signalName = signal.name
-            let cancelError = NSError(domain: ReactKitErrorDomain, code: 0, userInfo: [
-                NSLocalizedDescriptionKey : "Signal is cancelled by takeUntil(\(signalName))."
-            ])
+            let takeUntilSignalName = takeUntilSignal.name
+            let cancelError = _RKError(.CancelledByTakeUntil, "Signal=\(signalName) is cancelled by takeUntil(\(takeUntilSignalName)).")
             
-            signal.progress { [weak self] (_, progressValue: U) in
+            takeUntilSignal.progress { [weak self] (_, progressValue: U) in
                 if let self_ = self {
                     self!.cancel(error: cancelError)
                 }

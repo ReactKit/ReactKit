@@ -27,7 +27,7 @@ public extension NSObject
         var signal: Signal<AnyObject?>? = self._deinitSignal
         
         if signal == nil {
-            signal = Signal<AnyObject?>(name: "deinit") { (progress, fulfill, reject, configure) in
+            signal = Signal<AnyObject?>(name: "deinitSignal") { (progress, fulfill, reject, configure) in
                 // do nothing
             }
             

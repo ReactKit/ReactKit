@@ -21,6 +21,8 @@
 		1F79711119E4150A0067A4C4 /* NSTimer+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F79710F19E4150A0067A4C4 /* NSTimer+Signal.swift */; };
 		1F822EF319D319FF00A3CA23 /* _MyObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F822EF219D319FF00A3CA23 /* _MyObject.swift */; };
 		1F822EF419D319FF00A3CA23 /* _MyObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F822EF219D319FF00A3CA23 /* _MyObject.swift */; };
+		1F8C3AAB1A2D8614000D9CF8 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F8C3AAA1A2D8614000D9CF8 /* Error.swift */; };
+		1F8C3AAC1A2D8614000D9CF8 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F8C3AAA1A2D8614000D9CF8 /* Error.swift */; };
 		1FED88FE19C1EB120065658B /* ReactKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 1FED88FD19C1EB120065658B /* ReactKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1FED896119C1EBD60065658B /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED895C19C1EBD60065658B /* Signal.swift */; };
 		1FED896219C1EBD60065658B /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED895C19C1EBD60065658B /* Signal.swift */; };
@@ -84,6 +86,7 @@
 		1F79710F19E4150A0067A4C4 /* NSTimer+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSTimer+Signal.swift"; sourceTree = "<group>"; };
 		1F822EE619D319E000A3CA23 /* CustomOperatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomOperatorTests.swift; sourceTree = "<group>"; };
 		1F822EF219D319FF00A3CA23 /* _MyObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _MyObject.swift; sourceTree = "<group>"; };
+		1F8C3AAA1A2D8614000D9CF8 /* Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
 		1FED88F819C1EB120065658B /* ReactKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ReactKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FED88FC19C1EB120065658B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1FED88FD19C1EB120065658B /* ReactKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReactKit.h; sourceTree = "<group>"; };
@@ -183,6 +186,7 @@
 			children = (
 				1FED88FD19C1EB120065658B /* ReactKit.h */,
 				1FED895C19C1EBD60065658B /* Signal.swift */,
+				1F8C3AAA1A2D8614000D9CF8 /* Error.swift */,
 				1F79710E19E414F70067A4C4 /* Foundation */,
 				4875885D19E4D95A00828AD0 /* UIKit */,
 				1FED88FB19C1EB120065658B /* Supporting Files */,
@@ -484,6 +488,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1F8C3AAB1A2D8614000D9CF8 /* Error.swift in Sources */,
 				4875885719E4D94800828AD0 /* Notification.swift in Sources */,
 				1FED896119C1EBD60065658B /* Signal.swift in Sources */,
 				4875885919E4D94800828AD0 /* NSObject+Deinit.swift in Sources */,
@@ -515,6 +520,7 @@
 				4875885A19E4D94800828AD0 /* NSObject+Deinit.swift in Sources */,
 				4875886319E4D95A00828AD0 /* UIControl+Signal.swift in Sources */,
 				1FED896219C1EBD60065658B /* Signal.swift in Sources */,
+				1F8C3AAC1A2D8614000D9CF8 /* Error.swift in Sources */,
 				4875885C19E4D94800828AD0 /* TargetAction.swift in Sources */,
 				4875885619E4D94800828AD0 /* KVO.swift in Sources */,
 				48DDE7731A0C41A300125F36 /* NSObject+Own.swift in Sources */,
