@@ -37,7 +37,7 @@ public class Signal<T>: Task<T, T, NSError>
     }
     
     // required (Swift compiler fails...)
-    override public func cancel(error: NSError? = nil) -> Bool
+    public override func cancel(error: NSError? = nil) -> Bool
     {
         return super.cancel(error: error)
     }
@@ -181,7 +181,7 @@ public extension Signal
     
     public func takeUntil<U>(takeUntilSignal: Signal<U>) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-takeUntil") { progress, fulfill, reject, configure in
+        return Signal<T>(name: "\(self.name)-takeUntil") { [weak takeUntilSignal] progress, fulfill, reject, configure in
             
             let signalName = self.name
             
@@ -193,10 +193,10 @@ public extension Signal
                 _reject(reject, error, signalName)
             }
 
-            let takeUntilSignalName = takeUntilSignal.name
+            let takeUntilSignalName = takeUntilSignal!.name
             let cancelError = _RKError(.CancelledByTakeUntil, "Signal=\(signalName) is cancelled by takeUntil(\(takeUntilSignalName)).")
             
-            takeUntilSignal.progress { [weak self] (_, progressValue: U) in
+            takeUntilSignal?.progress { [weak self] (_, progressValue: U) in
                 if let self_ = self {
                     self!.cancel(error: cancelError)
                 }
