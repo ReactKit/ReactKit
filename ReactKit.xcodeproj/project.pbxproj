@@ -26,12 +26,8 @@
 		1FED88FE19C1EB120065658B /* ReactKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 1FED88FD19C1EB120065658B /* ReactKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1FED896119C1EBD60065658B /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED895C19C1EBD60065658B /* Signal.swift */; };
 		1FED896219C1EBD60065658B /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED895C19C1EBD60065658B /* Signal.swift */; };
-		1FED8AA719C1EC770065658B /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FED8AA219C1EC4A0065658B /* SwiftTask.framework */; };
-		1FED8AA819C1EC7D0065658B /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FED8AA219C1EC4A0065658B /* SwiftTask.framework */; };
 		1FED8AAA19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
 		1FED8AAB19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
-		480422D11A11A11D00946D97 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4804226F1A11A11D00946D97 /* Async.swift */; };
-		480422D21A11A11D00946D97 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4804226F1A11A11D00946D97 /* Async.swift */; };
 		4875885519E4D94800828AD0 /* KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885119E4D94800828AD0 /* KVO.swift */; };
 		4875885619E4D94800828AD0 /* KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885119E4D94800828AD0 /* KVO.swift */; };
 		4875885719E4D94800828AD0 /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885219E4D94800828AD0 /* Notification.swift */; };
@@ -44,41 +40,16 @@
 		4875886319E4D95A00828AD0 /* UIControl+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885F19E4D95A00828AD0 /* UIControl+Signal.swift */; };
 		4875886419E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875886019E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift */; };
 		4875886519E4D95A00828AD0 /* UITextField+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875886119E4D95A00828AD0 /* UITextField+Signal.swift */; };
+		48C6AC691A368CF70076A158 /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48C6AC651A368CD00076A158 /* SwiftTask.framework */; };
+		48C6AC951A368DB80076A158 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C6AC6D1A368DA50076A158 /* Async.swift */; };
+		48C6AC961A368DB90076A158 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C6AC6D1A368DA50076A158 /* Async.swift */; };
+		48C6AC971A368DFA0076A158 /* SwiftState.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48C6AC671A368CD00076A158 /* SwiftState.framework */; };
+		48C6AC981A368DFA0076A158 /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48C6AC681A368CD00076A158 /* SwiftTask.framework */; };
+		48C6AC991A368E020076A158 /* SwiftState.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48C6AC641A368CD00076A158 /* SwiftState.framework */; };
 		48DDE7721A0C41A300125F36 /* NSObject+Own.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DDE7711A0C41A300125F36 /* NSObject+Own.swift */; };
 		48DDE7731A0C41A300125F36 /* NSObject+Own.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DDE7711A0C41A300125F36 /* NSObject+Own.swift */; };
 		48FD5B3C19E51E7100913946 /* UIBarButtonItem+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FD5B3B19E51E7100913946 /* UIBarButtonItem+Signal.swift */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		1F822EED19D319E000A3CA23 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1FED897519C1EC4A0065658B /* SwiftTask.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4822F0D019D00ABF00F5F572;
-			remoteInfo = "SwiftTask-iOSTests";
-		};
-		1FED8AA119C1EC4A0065658B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1FED897519C1EC4A0065658B /* SwiftTask.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 1F46DED4199EDF1000F97868;
-			remoteInfo = SwiftTask;
-		};
-		1FED8AA319C1EC4A0065658B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1FED897519C1EC4A0065658B /* SwiftTask.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 1F46DEDF199EDF1000F97868;
-			remoteInfo = SwiftTaskTests;
-		};
-		1FED8AA519C1EC4A0065658B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1FED897519C1EC4A0065658B /* SwiftTask.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 48CD5A0C19AEE3570042B9F1;
-			remoteInfo = "SwiftTask-iOS";
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		1F14EC4319C1FC040090C3D8 /* NotificationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationTests.swift; sourceTree = "<group>"; };
@@ -96,9 +67,7 @@
 		1FED894119C1EB7D0065658B /* ReactKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ReactKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FED894B19C1EB7D0065658B /* ReactKit-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ReactKit-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FED895C19C1EBD60065658B /* Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Signal.swift; sourceTree = "<group>"; };
-		1FED897519C1EC4A0065658B /* SwiftTask.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SwiftTask.xcodeproj; sourceTree = "<group>"; };
 		1FED8AA919C1ECD30065658B /* _TestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _TestCase.swift; sourceTree = "<group>"; };
-		4804226F1A11A11D00946D97 /* Async.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
 		4875885119E4D94800828AD0 /* KVO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KVO.swift; sourceTree = "<group>"; };
 		4875885219E4D94800828AD0 /* Notification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 		4875885319E4D94800828AD0 /* NSObject+Deinit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+Deinit.swift"; sourceTree = "<group>"; };
@@ -107,6 +76,11 @@
 		4875885F19E4D95A00828AD0 /* UIControl+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIControl+Signal.swift"; sourceTree = "<group>"; };
 		4875886019E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIGestureRecognizer+Signal.swift"; sourceTree = "<group>"; };
 		4875886119E4D95A00828AD0 /* UITextField+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITextField+Signal.swift"; sourceTree = "<group>"; };
+		48C6AC641A368CD00076A158 /* SwiftState.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftState.framework; sourceTree = "<group>"; };
+		48C6AC651A368CD00076A158 /* SwiftTask.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftTask.framework; sourceTree = "<group>"; };
+		48C6AC671A368CD00076A158 /* SwiftState.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftState.framework; sourceTree = "<group>"; };
+		48C6AC681A368CD00076A158 /* SwiftTask.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftTask.framework; sourceTree = "<group>"; };
+		48C6AC6D1A368DA50076A158 /* Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
 		48DDE7711A0C41A300125F36 /* NSObject+Own.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+Own.swift"; sourceTree = "<group>"; };
 		48FD5B3B19E51E7100913946 /* UIBarButtonItem+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIBarButtonItem+Signal.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -116,7 +90,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1FED8AA719C1EC770065658B /* SwiftTask.framework in Frameworks */,
+				48C6AC981A368DFA0076A158 /* SwiftTask.framework in Frameworks */,
+				48C6AC971A368DFA0076A158 /* SwiftState.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,7 +107,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1FED8AA819C1EC7D0065658B /* SwiftTask.framework in Frameworks */,
+				48C6AC691A368CF70076A158 /* SwiftTask.framework in Frameworks */,
+				48C6AC991A368E020076A158 /* SwiftState.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -163,7 +139,8 @@
 		1FED88EE19C1EB120065658B = {
 			isa = PBXGroup;
 			children = (
-				1FED896819C1EC4A0065658B /* Vendor */,
+				48C6AC621A368CD00076A158 /* Carthage.build */,
+				48C6AC6A1A368DA50076A158 /* Vendor */,
 				1FED88FA19C1EB120065658B /* ReactKit */,
 				1FED890719C1EB120065658B /* ReactKitTests */,
 				1FED88F919C1EB120065658B /* Products */,
@@ -224,50 +201,6 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		1FED896819C1EC4A0065658B /* Vendor */ = {
-			isa = PBXGroup;
-			children = (
-				1FED896919C1EC4A0065658B /* SwiftTask */,
-			);
-			path = Vendor;
-			sourceTree = "<group>";
-		};
-		1FED896919C1EC4A0065658B /* SwiftTask */ = {
-			isa = PBXGroup;
-			children = (
-				4804224E1A11A11D00946D97 /* Vendor */,
-				1FED897519C1EC4A0065658B /* SwiftTask.xcodeproj */,
-			);
-			path = SwiftTask;
-			sourceTree = "<group>";
-		};
-		1FED897619C1EC4A0065658B /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				1FED8AA219C1EC4A0065658B /* SwiftTask.framework */,
-				1FED8AA419C1EC4A0065658B /* SwiftTask-OSXTests.xctest */,
-				1FED8AA619C1EC4A0065658B /* SwiftTask.framework */,
-				1F822EEE19D319E000A3CA23 /* SwiftTask-iOSTests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		4804224E1A11A11D00946D97 /* Vendor */ = {
-			isa = PBXGroup;
-			children = (
-				4804226D1A11A11D00946D97 /* Async */,
-			);
-			path = Vendor;
-			sourceTree = "<group>";
-		};
-		4804226D1A11A11D00946D97 /* Async */ = {
-			isa = PBXGroup;
-			children = (
-				4804226F1A11A11D00946D97 /* Async.swift */,
-			);
-			path = Async;
-			sourceTree = "<group>";
-		};
 		4875885D19E4D95A00828AD0 /* UIKit */ = {
 			isa = PBXGroup;
 			children = (
@@ -278,6 +211,49 @@
 				48FD5B3B19E51E7100913946 /* UIBarButtonItem+Signal.swift */,
 			);
 			path = UIKit;
+			sourceTree = "<group>";
+		};
+		48C6AC621A368CD00076A158 /* Carthage.build */ = {
+			isa = PBXGroup;
+			children = (
+				48C6AC631A368CD00076A158 /* iOS */,
+				48C6AC661A368CD00076A158 /* Mac */,
+			);
+			path = Carthage.build;
+			sourceTree = "<group>";
+		};
+		48C6AC631A368CD00076A158 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				48C6AC641A368CD00076A158 /* SwiftState.framework */,
+				48C6AC651A368CD00076A158 /* SwiftTask.framework */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
+		48C6AC661A368CD00076A158 /* Mac */ = {
+			isa = PBXGroup;
+			children = (
+				48C6AC671A368CD00076A158 /* SwiftState.framework */,
+				48C6AC681A368CD00076A158 /* SwiftTask.framework */,
+			);
+			path = Mac;
+			sourceTree = "<group>";
+		};
+		48C6AC6A1A368DA50076A158 /* Vendor */ = {
+			isa = PBXGroup;
+			children = (
+				48C6AC6B1A368DA50076A158 /* Async */,
+			);
+			path = Vendor;
+			sourceTree = "<group>";
+		};
+		48C6AC6B1A368DA50076A158 /* Async */ = {
+			isa = PBXGroup;
+			children = (
+				48C6AC6D1A368DA50076A158 /* Async.swift */,
+			);
+			path = Async;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -405,12 +381,6 @@
 			mainGroup = 1FED88EE19C1EB120065658B;
 			productRefGroup = 1FED88F919C1EB120065658B /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 1FED897619C1EC4A0065658B /* Products */;
-					ProjectRef = 1FED897519C1EC4A0065658B /* SwiftTask.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				1FED88F719C1EB120065658B /* ReactKit-OSX */,
@@ -420,37 +390,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		1F822EEE19D319E000A3CA23 /* SwiftTask-iOSTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = "SwiftTask-iOSTests.xctest";
-			remoteRef = 1F822EED19D319E000A3CA23 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1FED8AA219C1EC4A0065658B /* SwiftTask.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = SwiftTask.framework;
-			remoteRef = 1FED8AA119C1EC4A0065658B /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1FED8AA419C1EC4A0065658B /* SwiftTask-OSXTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = "SwiftTask-OSXTests.xctest";
-			remoteRef = 1FED8AA319C1EC4A0065658B /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1FED8AA619C1EC4A0065658B /* SwiftTask.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = SwiftTask.framework;
-			remoteRef = 1FED8AA519C1EC4A0065658B /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		1FED88F619C1EB120065658B /* Resources */ = {
@@ -504,9 +443,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F626D9019D8799600D3ABCE /* CustomOperatorTests.swift in Sources */,
-				480422D11A11A11D00946D97 /* Async.swift in Sources */,
 				1F822EF319D319FF00A3CA23 /* _MyObject.swift in Sources */,
 				1FED8AAA19C1ECD30065658B /* _TestCase.swift in Sources */,
+				48C6AC951A368DB80076A158 /* Async.swift in Sources */,
 				1F626D8F19D8799600D3ABCE /* NotificationTests.swift in Sources */,
 				1F626D9119D8799600D3ABCE /* DeinitSignalTests.swift in Sources */,
 				1F626D8E19D8799600D3ABCE /* KVOTests.swift in Sources */,
@@ -538,9 +477,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F626D9419D8799900D3ABCE /* CustomOperatorTests.swift in Sources */,
-				480422D21A11A11D00946D97 /* Async.swift in Sources */,
 				1F822EF419D319FF00A3CA23 /* _MyObject.swift in Sources */,
 				1FED8AAB19C1ECD30065658B /* _TestCase.swift in Sources */,
+				48C6AC961A368DB90076A158 /* Async.swift in Sources */,
 				1F626D9319D8799900D3ABCE /* NotificationTests.swift in Sources */,
 				1F626D9519D8799900D3ABCE /* DeinitSignalTests.swift in Sources */,
 				1F626D9219D8799900D3ABCE /* KVOTests.swift in Sources */,
@@ -644,6 +583,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage.build/Mac",
+				);
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = ReactKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -665,6 +608,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage.build/Mac",
+				);
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = ReactKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -716,6 +663,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage.build/iOS",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -742,6 +693,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage.build/iOS",
+				);
 				INFOPLIST_FILE = ReactKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
