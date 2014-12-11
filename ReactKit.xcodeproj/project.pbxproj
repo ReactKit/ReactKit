@@ -40,12 +40,8 @@
 		4875886319E4D95A00828AD0 /* UIControl+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885F19E4D95A00828AD0 /* UIControl+Signal.swift */; };
 		4875886419E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875886019E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift */; };
 		4875886519E4D95A00828AD0 /* UITextField+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875886119E4D95A00828AD0 /* UITextField+Signal.swift */; };
-		48C6AC691A368CF70076A158 /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48C6AC651A368CD00076A158 /* SwiftTask.framework */; };
 		48C6AC951A368DB80076A158 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C6AC6D1A368DA50076A158 /* Async.swift */; };
 		48C6AC961A368DB90076A158 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C6AC6D1A368DA50076A158 /* Async.swift */; };
-		48C6AC971A368DFA0076A158 /* SwiftState.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48C6AC671A368CD00076A158 /* SwiftState.framework */; };
-		48C6AC981A368DFA0076A158 /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48C6AC681A368CD00076A158 /* SwiftTask.framework */; };
-		48C6AC991A368E020076A158 /* SwiftState.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48C6AC641A368CD00076A158 /* SwiftState.framework */; };
 		48DDE7721A0C41A300125F36 /* NSObject+Own.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DDE7711A0C41A300125F36 /* NSObject+Own.swift */; };
 		48DDE7731A0C41A300125F36 /* NSObject+Own.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DDE7711A0C41A300125F36 /* NSObject+Own.swift */; };
 		48FD5B3C19E51E7100913946 /* UIBarButtonItem+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FD5B3B19E51E7100913946 /* UIBarButtonItem+Signal.swift */; };
@@ -76,10 +72,6 @@
 		4875885F19E4D95A00828AD0 /* UIControl+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIControl+Signal.swift"; sourceTree = "<group>"; };
 		4875886019E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIGestureRecognizer+Signal.swift"; sourceTree = "<group>"; };
 		4875886119E4D95A00828AD0 /* UITextField+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITextField+Signal.swift"; sourceTree = "<group>"; };
-		48C6AC641A368CD00076A158 /* SwiftState.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftState.framework; sourceTree = "<group>"; };
-		48C6AC651A368CD00076A158 /* SwiftTask.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftTask.framework; sourceTree = "<group>"; };
-		48C6AC671A368CD00076A158 /* SwiftState.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftState.framework; sourceTree = "<group>"; };
-		48C6AC681A368CD00076A158 /* SwiftTask.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftTask.framework; sourceTree = "<group>"; };
 		48C6AC6D1A368DA50076A158 /* Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
 		48DDE7711A0C41A300125F36 /* NSObject+Own.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+Own.swift"; sourceTree = "<group>"; };
 		48FD5B3B19E51E7100913946 /* UIBarButtonItem+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIBarButtonItem+Signal.swift"; sourceTree = "<group>"; };
@@ -90,8 +82,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				48C6AC981A368DFA0076A158 /* SwiftTask.framework in Frameworks */,
-				48C6AC971A368DFA0076A158 /* SwiftState.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -107,8 +97,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				48C6AC691A368CF70076A158 /* SwiftTask.framework in Frameworks */,
-				48C6AC991A368E020076A158 /* SwiftState.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,7 +127,6 @@
 		1FED88EE19C1EB120065658B = {
 			isa = PBXGroup;
 			children = (
-				48C6AC621A368CD00076A158 /* Carthage.build */,
 				48C6AC6A1A368DA50076A158 /* Vendor */,
 				1FED88FA19C1EB120065658B /* ReactKit */,
 				1FED890719C1EB120065658B /* ReactKitTests */,
@@ -211,33 +198,6 @@
 				48FD5B3B19E51E7100913946 /* UIBarButtonItem+Signal.swift */,
 			);
 			path = UIKit;
-			sourceTree = "<group>";
-		};
-		48C6AC621A368CD00076A158 /* Carthage.build */ = {
-			isa = PBXGroup;
-			children = (
-				48C6AC631A368CD00076A158 /* iOS */,
-				48C6AC661A368CD00076A158 /* Mac */,
-			);
-			path = Carthage.build;
-			sourceTree = "<group>";
-		};
-		48C6AC631A368CD00076A158 /* iOS */ = {
-			isa = PBXGroup;
-			children = (
-				48C6AC641A368CD00076A158 /* SwiftState.framework */,
-				48C6AC651A368CD00076A158 /* SwiftTask.framework */,
-			);
-			path = iOS;
-			sourceTree = "<group>";
-		};
-		48C6AC661A368CD00076A158 /* Mac */ = {
-			isa = PBXGroup;
-			children = (
-				48C6AC671A368CD00076A158 /* SwiftState.framework */,
-				48C6AC681A368CD00076A158 /* SwiftTask.framework */,
-			);
-			path = Mac;
 			sourceTree = "<group>";
 		};
 		48C6AC6A1A368DA50076A158 /* Vendor */ = {
