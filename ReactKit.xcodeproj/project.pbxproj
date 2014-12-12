@@ -28,6 +28,14 @@
 		1FED896219C1EBD60065658B /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED895C19C1EBD60065658B /* Signal.swift */; };
 		1FED8AAA19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
 		1FED8AAB19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
+		4854B8251A3A965B00198E4C /* SwiftState.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4854B8201A3A964700198E4C /* SwiftState.framework */; };
+		4854B8261A3A965B00198E4C /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4854B8211A3A964700198E4C /* SwiftTask.framework */; };
+		4854B8271A3A966400198E4C /* SwiftState.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4854B8231A3A964700198E4C /* SwiftState.framework */; };
+		4854B8281A3A966400198E4C /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4854B8241A3A964700198E4C /* SwiftTask.framework */; };
+		4854B8291A3A970700198E4C /* SwiftState.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4854B8231A3A964700198E4C /* SwiftState.framework */; };
+		4854B82A1A3A970700198E4C /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4854B8241A3A964700198E4C /* SwiftTask.framework */; };
+		4854B82B1A3A970F00198E4C /* SwiftState.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4854B8201A3A964700198E4C /* SwiftState.framework */; };
+		4854B82C1A3A970F00198E4C /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4854B8211A3A964700198E4C /* SwiftTask.framework */; };
 		4875885519E4D94800828AD0 /* KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885119E4D94800828AD0 /* KVO.swift */; };
 		4875885619E4D94800828AD0 /* KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885119E4D94800828AD0 /* KVO.swift */; };
 		4875885719E4D94800828AD0 /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885219E4D94800828AD0 /* Notification.swift */; };
@@ -64,6 +72,10 @@
 		1FED894B19C1EB7D0065658B /* ReactKit-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ReactKit-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FED895C19C1EBD60065658B /* Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Signal.swift; sourceTree = "<group>"; };
 		1FED8AA919C1ECD30065658B /* _TestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _TestCase.swift; sourceTree = "<group>"; };
+		4854B8201A3A964700198E4C /* SwiftState.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftState.framework; sourceTree = "<group>"; };
+		4854B8211A3A964700198E4C /* SwiftTask.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftTask.framework; sourceTree = "<group>"; };
+		4854B8231A3A964700198E4C /* SwiftState.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftState.framework; sourceTree = "<group>"; };
+		4854B8241A3A964700198E4C /* SwiftTask.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SwiftTask.framework; sourceTree = "<group>"; };
 		4875885119E4D94800828AD0 /* KVO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KVO.swift; sourceTree = "<group>"; };
 		4875885219E4D94800828AD0 /* Notification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 		4875885319E4D94800828AD0 /* NSObject+Deinit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+Deinit.swift"; sourceTree = "<group>"; };
@@ -82,6 +94,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4854B8271A3A966400198E4C /* SwiftState.framework in Frameworks */,
+				4854B8281A3A966400198E4C /* SwiftTask.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +104,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F14EC3819C1EE350090C3D8 /* ReactKit.framework in Frameworks */,
+				4854B8291A3A970700198E4C /* SwiftState.framework in Frameworks */,
+				4854B82A1A3A970700198E4C /* SwiftTask.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +113,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4854B8251A3A965B00198E4C /* SwiftState.framework in Frameworks */,
+				4854B8261A3A965B00198E4C /* SwiftTask.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,6 +123,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F14EC3919C1EE400090C3D8 /* ReactKit.framework in Frameworks */,
+				4854B82B1A3A970F00198E4C /* SwiftState.framework in Frameworks */,
+				4854B82C1A3A970F00198E4C /* SwiftTask.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,6 +147,7 @@
 		1FED88EE19C1EB120065658B = {
 			isa = PBXGroup;
 			children = (
+				4854B81E1A3A964700198E4C /* Carthage.build */,
 				48C6AC6A1A368DA50076A158 /* Vendor */,
 				1FED88FA19C1EB120065658B /* ReactKit */,
 				1FED890719C1EB120065658B /* ReactKitTests */,
@@ -186,6 +207,33 @@
 				1FED890919C1EB120065658B /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		4854B81E1A3A964700198E4C /* Carthage.build */ = {
+			isa = PBXGroup;
+			children = (
+				4854B81F1A3A964700198E4C /* iOS */,
+				4854B8221A3A964700198E4C /* Mac */,
+			);
+			path = Carthage.build;
+			sourceTree = "<group>";
+		};
+		4854B81F1A3A964700198E4C /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				4854B8201A3A964700198E4C /* SwiftState.framework */,
+				4854B8211A3A964700198E4C /* SwiftTask.framework */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
+		4854B8221A3A964700198E4C /* Mac */ = {
+			isa = PBXGroup;
+			children = (
+				4854B8231A3A964700198E4C /* SwiftState.framework */,
+				4854B8241A3A964700198E4C /* SwiftTask.framework */,
+			);
+			path = Mac;
 			sourceTree = "<group>";
 		};
 		4875885D19E4D95A00828AD0 /* UIKit */ = {
@@ -485,10 +533,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
+				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -526,9 +574,9 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				SDKROOT = macosx;
+				SDKROOT = iphoneos;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -551,9 +599,9 @@
 				INFOPLIST_FILE = ReactKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				PRODUCT_NAME = "$(PROJECT_NAME)";
+				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -576,8 +624,8 @@
 				INFOPLIST_FILE = ReactKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "$(PROJECT_NAME)";
+				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;
@@ -589,14 +637,16 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
 					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage.build/Mac",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = ReactKitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks $(PROJECT_DIR)/Carthage.build/Mac";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -607,10 +657,12 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
 					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage.build/Mac",
 				);
 				INFOPLIST_FILE = ReactKitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks $(PROJECT_DIR)/Carthage.build/Mac";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
@@ -675,6 +727,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage.build/iOS",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -682,7 +735,7 @@
 				);
 				INFOPLIST_FILE = ReactKitTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks $(PROJECT_DIR)/Carthage.build/iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 			};
@@ -694,10 +747,11 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage.build/iOS",
 				);
 				INFOPLIST_FILE = ReactKitTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks $(PROJECT_DIR)/Carthage.build/iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
