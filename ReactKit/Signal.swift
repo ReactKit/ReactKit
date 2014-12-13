@@ -279,6 +279,39 @@ public extension Signal
             _bind(fulfill, reject, configure, self)
         }
     }
+    
+    public func buffer<U>(triggerSignal: Signal<U>) -> Signal<[T]>
+    {
+        return Signal<[T]>(name: "\(self.name)-buffer") { progress, fulfill, reject, configure in
+            
+            var buffer: [T] = []
+            
+            self.progress { (_, progressValue: T) in
+                buffer += [progressValue]
+            }.success { _ -> Void in
+                fulfill(buffer)
+            }
+            
+            triggerSignal.progress { [weak self] (_, progressValue: U) in
+                if let self_ = self {
+                    progress(buffer)
+                    buffer = []
+                }
+            }.success { [weak self] (value: U) -> Void in
+                if let self_ = self {
+                    progress(buffer)
+                    buffer = []
+                }
+            }.failure { [weak self] (error: NSError?, isCancelled: Bool) -> Void in
+                if let self_ = self {
+                    progress(buffer)
+                    buffer = []
+                }
+            }
+            
+            _bind(nil, reject, configure, self)
+        }
+    }
 
     /// limit continuous progress (reaction) for `timeInterval` seconds when first progress is triggered
     /// (see also: underscore.js throttle)
