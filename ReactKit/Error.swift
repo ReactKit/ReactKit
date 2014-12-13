@@ -14,9 +14,9 @@ public enum ReactKitError: Int
     
     case Cancelled = 0
     case CancelledByDeinit = 1
+    case CancelledByUpstream = 2
     
-    case CancelledByTake = 1001
-    case CancelledByTakeUntil = 1002
+    case CancelledByTakeUntil = 1001
 }
 
 /// helper

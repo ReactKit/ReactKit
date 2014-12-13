@@ -56,24 +56,36 @@ public class Signal<T>: Task<T, T, NSError>
 }
 
 /// helper
-private func _reject(reject: NSError -> Void, error: NSError?, signalName: String)
+private func _bind<T>(fulfill: (T -> Void)?, reject: NSError -> Void, configure: TaskConfiguration, upstreamSignal: Signal<T>)
 {
-    if let error = error {
-        reject(error)
-        return
+    let signalName = upstreamSignal.name
+
+    // fulfill/reject downstream on upstream-fulfill/reject/cancel
+    upstreamSignal.then { value, errorInfo -> Void in
+        
+        if let value = value {
+            fulfill?(value)
+            return
+        }
+        else if let errorInfo = errorInfo {
+            // rejected
+            if let error = errorInfo.error {
+                reject(error)
+                return
+            }
+            // cancelled
+            else {
+                let cancelError = _RKError(.CancelledByUpstream, "Signal=\(signalName) is rejected or cancelled.")
+                reject(cancelError)
+            }
+        }
+        
     }
-
-    let cancelError = _RKError(.Cancelled, "Signal=\(signalName) is cancelled.")
-    reject(cancelError)
-}
-
-/// helper
-private func _configure<T>(configure: TaskConfiguration, capturingSignal: Signal<T>)
-{
+    
     // NOTE: newSignal should capture selfSignal
-    configure.pause = { capturingSignal.pause(); return }
-    configure.resume = { capturingSignal.resume(); return }
-    configure.cancel = { capturingSignal.cancel(); return }
+    configure.pause = { upstreamSignal.pause(); return }
+    configure.resume = { upstreamSignal.resume(); return }
+    configure.cancel = { upstreamSignal.cancel(); return }
 }
 
 // Signal Operations
@@ -89,13 +101,9 @@ public extension Signal
                 if filterClosure(progressValue) {
                     progress(progressValue)
                 }
-            }.success { (value: T) -> Void in
-                fulfill(value)
-            }.failure { (error: NSError?, isCancelled: Bool) -> Void in
-                _reject(reject, error, signalName)
             }
         
-            _configure(configure, self)
+            _bind(fulfill, reject, configure, self)
         }
     }
     
@@ -110,11 +118,9 @@ public extension Signal
                 progress(transform(progressValue))
             }.success { (value: T) -> Void in
                 fulfill(transform(value))
-            }.failure { (error: NSError?, isCancelled: Bool) -> Void in
-                _reject(reject, error, signalName)
             }
             
-            _configure(configure, self)
+            _bind(nil, reject, configure, self)
         }
     }
     
@@ -130,11 +136,9 @@ public extension Signal
                 progress(tupleTransform(progressValues))
             }.success { (value: T) -> Void in
                 fulfill(tupleTransform(oldValue: value, newValue: value))
-            }.failure { (error: NSError?, isCancelled: Bool) -> Void in
-                _reject(reject, error, signalName)
             }
             
-            _configure(configure, self)
+            _bind(nil, reject, configure, self)
         }
     }
     
@@ -155,27 +159,10 @@ public extension Signal
                     progress(progressValue)
                     fulfill(progressValue)  // successfully reached maxCount
                 }
-                else {
-                    _reject(reject, nil, signalName)
-                }
-                
-            }.then { (value, errorInfo) -> Void in
-                
-                // NOTE: always `reject` because when `then()` is called, it means `count` is not reaching maxCount.
-                
-                if let errorInfo = errorInfo {
-                    if let error = errorInfo.error {
-                        reject(error)
-                        return
-                    }
-                }
-                
-                let cancelError = _RKError(.CancelledByTake, "Signal=\(signalName) is rejected or cancelled before reaching `maxCount`.")
-                reject(cancelError)
                 
             }
             
-            _configure(configure, self)
+            _bind(fulfill, reject, configure, self)
         }
     }
     
@@ -187,10 +174,6 @@ public extension Signal
             
             self.progress { (_, progressValue: T) in
                 progress(progressValue)
-            }.success { (value: T) -> Void in
-                fulfill(value)
-            }.failure { (error: NSError?, isCancelled: Bool) -> Void in
-                _reject(reject, error, signalName)
             }
 
             let takeUntilSignalName = takeUntilSignal!.name
@@ -198,19 +181,19 @@ public extension Signal
             
             takeUntilSignal?.progress { [weak self] (_, progressValue: U) in
                 if let self_ = self {
-                    self!.cancel(error: cancelError)
+                    self_.cancel(error: cancelError)
                 }
             }.success { [weak self] (value: U) -> Void in
                 if let self_ = self {
-                    self!.cancel(error: cancelError)
+                    self_.cancel(error: cancelError)
                 }
             }.failure { [weak self] (error: NSError?, isCancelled: Bool) -> Void in
                 if let self_ = self {
-                    self!.cancel(error: cancelError)
+                    self_.cancel(error: cancelError)
                 }
             }
             
-            _configure(configure, self)
+            _bind(fulfill, reject, configure, self)
         }
     }
 
@@ -232,7 +215,7 @@ public extension Signal
                 }
             }
             
-            _configure(configure, self)
+            _bind(fulfill, reject, configure, self)
         }
     }
     
@@ -253,7 +236,7 @@ public extension Signal
                 }
             }
             
-            _configure(configure, self)
+            _bind(fulfill, reject, configure, self)
         }
     }
 }

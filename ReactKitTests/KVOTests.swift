@@ -308,9 +308,14 @@ class KVOTests: _TestCase
         
         // then
         takeSignal.then { value, errorInfo -> Void in
+            
             XCTAssertEqual(errorInfo!.error!.domain, ReactKitError.Domain, "`sourceSignal` is cancelled before any progress, so `takeSignal` should fail.")
+            XCTAssertEqual(errorInfo!.error!.code, ReactKitError.CancelledByUpstream.rawValue)
+            
             XCTAssertFalse(errorInfo!.isCancelled, "Though `sourceSignal` is cancelled, `takeSignal` is rejected rather than cancelled.")
+            
             expect.fulfill()
+        
         }
         
         self.perform {
