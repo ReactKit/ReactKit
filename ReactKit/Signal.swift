@@ -91,6 +91,7 @@ private func _bind<T>(fulfill: (T -> Void)?, reject: NSError -> Void, configure:
 // Signal Operations
 public extension Signal
 {
+    /// filter using newValue only
     public func filter(filterClosure: T -> Bool) -> Signal<T>
     {
         return Signal<T>(name: "\(self.name)-filter") { progress, fulfill, reject, configure in
@@ -106,8 +107,25 @@ public extension Signal
             _bind(fulfill, reject, configure, self)
         }
     }
+
+    /// filter using (oldValue, newValue)
+    public func filter2(tupleFilterClosure: (oldValue: T?, newValue: T) -> Bool) -> Signal<T>
+    {
+        return Signal<T>(name: "\(self.name)-filter2") { progress, fulfill, reject, configure in
+            
+            let signalName = self.name
+            
+            self.progress { (progressValues: (oldValue: T?, newValue: T)) in
+                if tupleFilterClosure(progressValues) {
+                    progress(progressValues.newValue)
+                }
+            }
+        
+            _bind(fulfill, reject, configure, self)
+        }
+    }
     
-    /// map + newValue only
+    /// map using newValue only
     public func map<U>(transform: T -> U) -> Signal<U>
     {
         return Signal<U>(name: "\(self.name)-map") { progress, fulfill, reject, configure in
@@ -124,11 +142,10 @@ public extension Signal
         }
     }
     
-    /// map + (oldValue, newValue)
-    // see also: Rx.scan http://www.introtorx.com/content/v1.0.10621.0/07_Aggregation.html#Scan
-    public func mapTuple<U>(tupleTransform: (oldValue: T?, newValue: T) -> U) -> Signal<U>
+    /// map using (oldValue, newValue)
+    public func map2<U>(tupleTransform: (oldValue: T?, newValue: T) -> U) -> Signal<U>
     {
-        return Signal<U>(name: "\(self.name)-map(tupleTransform)") { progress, fulfill, reject, configure in
+        return Signal<U>(name: "\(self.name)-map2") { progress, fulfill, reject, configure in
             
             let signalName = self.name
             

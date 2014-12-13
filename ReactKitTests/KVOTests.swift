@@ -139,6 +139,56 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_filter2()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        
+        // NOTE: this is distinct signal
+        let signal = KVO.signal(obj1, "value").filter2 { (oldValue: AnyObject??, newValue: AnyObject?) -> Bool in
+            
+            // don't filter for first value
+            if oldValue == nil { return true }
+            
+            return oldValue as String != newValue as String
+        }
+        
+        var count = 0
+        
+        // REACT
+        signal ~> { _ in count++; return }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(count, 1)
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(count, 2)
+            
+            obj1.value = "fuga" // same value as before
+            
+            println(count)
+            XCTAssertEqual(count, 2, "`count` should NOT be incremented because previous value was same (should be distinct)")
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(count, 3, "`count` should be incremented.")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     func testKVO_map()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
@@ -180,14 +230,14 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testKVO_mapTuple()
+    func testKVO_map2()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").mapTuple { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
+        let signal = KVO.signal(obj1, "value").map2 { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
             let oldString = (oldValue as? NSString) ?? "empty"
             return "\(oldString) -> \(newValue as String)"
         }
