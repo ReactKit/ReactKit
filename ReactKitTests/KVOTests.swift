@@ -371,6 +371,48 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_skip()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let signal = KVO.signal(obj1, "value").skip(1)  // skip 1 event
+        weak var weakSignal = signal
+        
+        // REACT: obj1.value ~> obj2.value
+        (obj2, "value") <~ signal
+        
+        // REACT: obj1.value ~> println
+        ^{ println("[REACT] new value = \($0)") } <~ signal
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        XCTAssertEqual(obj2.value, "initial")
+        
+        self.perform {
+            
+            XCTAssertNotNil(weakSignal)
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(obj1.value, "hoge")
+            XCTAssertEqual(obj2.value, "initial", "obj2.value should not be changed due to `skip(1)`.")
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(obj1.value, "fuga")
+            XCTAssertEqual(obj2.value, "fuga", "obj2.value should be updated because already skipped once.")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     func testKVO_throttle()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)

@@ -196,6 +196,25 @@ public extension Signal
             _bind(fulfill, reject, configure, self)
         }
     }
+    
+    public func skip(skipCount: Int) -> Signal
+    {
+        return Signal<T>(name: "\(self.name)-skip(\(skipCount))") { progress, fulfill, reject, configure in
+            
+            var count = 0
+            
+            self.progress { (_, progressValue: T) in
+                count++
+                println("\(count), \(skipCount)")
+                if count <= skipCount { return }
+                
+                progress(progressValue)
+                
+            }
+            
+            _bind(fulfill, reject, configure, self)
+        }
+    }
 
     /// limit continuous progress (reaction) for `timeInterval` seconds when first progress is triggered
     /// (see also: underscore.js throttle)
