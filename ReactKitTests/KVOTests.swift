@@ -269,6 +269,44 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_mapAccumulate()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        
+        let signal = KVO.signal(obj1, "value").mapAccumulate(initial: []) { accumulatedValue, newValue -> [String] in
+            return accumulatedValue + [newValue as String]
+        }
+        
+        var result: [String]?
+        
+        // REACT
+        signal ~> { result = $0 }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(obj1.value, "hoge")
+            XCTAssertEqual(result!, [ "hoge" ])
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(obj1.value, "fuga")
+            XCTAssertEqual(result!, [ "hoge", "fuga" ])
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     func testKVO_take()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)

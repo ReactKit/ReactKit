@@ -143,16 +143,34 @@ public extension Signal
     }
     
     /// map using (oldValue, newValue)
-    public func map2<U>(tupleTransform: (oldValue: T?, newValue: T) -> U) -> Signal<U>
+    public func map2<U>(transform2: (oldValue: T?, newValue: T) -> U) -> Signal<U>
     {
         return Signal<U>(name: "\(self.name)-map2") { progress, fulfill, reject, configure in
             
             let signalName = self.name
             
             self.progress { (progressValues: (oldValue: T?, newValue: T)) in
-                progress(tupleTransform(progressValues))
+                progress(transform2(progressValues))
             }.success { (value: T) -> Void in
-                fulfill(tupleTransform(oldValue: value, newValue: value))
+                fulfill(transform2(oldValue: value, newValue: value))
+            }
+            
+            _bind(nil, reject, configure, self)
+        }
+    }
+    
+    /// map using (accumulatedValue, newValue)
+    /// a.k.a `Rx.scan()`
+    public func mapAccumulate<U>(#initial: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
+    {
+        return Signal<U>(name: "\(self.name)-mapAccumulate") { progress, fulfill, reject, configure in
+            var accumulatedValue: U = initial
+            
+            self.progress { p in
+                accumulatedValue = accumulateClosure(accumulatedValue: accumulatedValue, newValue: p.newProgress)
+                progress(accumulatedValue)
+            }.success { _ -> Void in
+                fulfill(accumulatedValue)
             }
             
             _bind(nil, reject, configure, self)
