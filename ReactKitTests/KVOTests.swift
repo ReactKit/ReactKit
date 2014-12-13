@@ -413,6 +413,51 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_skipUntil()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        let stopper = MyObject()
+        
+        let startingSignal = KVO.signal(stopper, "value")    // store startingSignal to live until end of runloop
+        let signal = KVO.signal(obj1, "value").skipUntil(startingSignal)
+        
+        weak var weakSignal = signal
+        
+        // REACT
+        (obj2, "value") <~ signal
+        
+        // REACT
+        ^{ println("[REACT] new value = \($0)") } <~ signal
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        XCTAssertEqual(obj2.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(obj1.value, "hoge")
+            XCTAssertEqual(obj2.value, "initial", "obj2.value should not be changed due to `skipUntil()`.")
+            
+            stopper.value = "DUMMY" // fire startingSignal
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(obj1.value, "fuga")
+            XCTAssertEqual(obj2.value, "fuga", "obj2.value should be updated because `startingSignal` is triggered so that `skipUntil(startingSignal)` should no longer skip.")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     func testKVO_throttle()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)

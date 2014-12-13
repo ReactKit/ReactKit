@@ -215,6 +215,35 @@ public extension Signal
             _bind(fulfill, reject, configure, self)
         }
     }
+    
+    public func skipUntil<U>(skipUntilSignal: Signal<U>) -> Signal
+    {
+        return Signal<T>(name: "\(self.name)-skipUntil") { [weak skipUntilSignal] progress, fulfill, reject, configure in
+            
+            let signalName = self.name
+            
+            var shouldSkip = true
+            
+            self.progress { (_, progressValue: T) in
+                if !shouldSkip {
+                    progress(progressValue)
+                }
+            }
+            
+            let skipUntilSignalName = skipUntilSignal!.name
+            let cancelError = _RKError(.CancelledBySkipUntil, "Signal=\(signalName) is cancelled by skipUntil(\(skipUntilSignalName)).")
+            
+            skipUntilSignal?.progress { (_, progressValue: U) in
+                shouldSkip = false
+            }.success { (value: U) -> Void in
+                shouldSkip = false
+            }.failure { (error: NSError?, isCancelled: Bool) -> Void in
+                shouldSkip = false
+            }
+            
+            _bind(fulfill, reject, configure, self)
+        }
+    }
 
     /// limit continuous progress (reaction) for `timeInterval` seconds when first progress is triggered
     /// (see also: underscore.js throttle)
