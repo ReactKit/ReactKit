@@ -607,6 +607,58 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testBuffer()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        
+        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value").buffer(3)
+        
+        var result: String? = "no result"
+        
+        // REACT
+        signal ~> { (buffer: [AnyObject?]) in
+            let buffer_: [String] = buffer.map { $0 as NSString }
+            result = "-".join(buffer_)
+        }
+        
+        // REACT
+        ^{ println("[REACT] new value = \($0)") } <~ signal
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(obj1.value, "hoge")
+            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered.")
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(obj1.value, "fuga")
+            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered.")
+            
+            obj1.value = "piyo"
+            
+            XCTAssertEqual(obj1.value, "piyo")
+            XCTAssertEqual(result!, "hoge-fuga-piyo", "`result` should be updated with buffered values because buffer reached maximum count.")
+            
+            obj1.value = "foo"
+            
+            XCTAssertEqual(obj1.value, "foo")
+            XCTAssertEqual(result!, "hoge-fuga-piyo", "`result` should NOT be updated because `signal`'s newValue is buffered.")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     func testBuffer_trigger()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)

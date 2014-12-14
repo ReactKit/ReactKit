@@ -292,6 +292,29 @@ public extension Signal
         }
     }
     
+    public func buffer(bufferCount: Int) -> Signal<[T]>
+    {
+        return Signal<[T]>(name: "\(self.name)-buffer") { progress, fulfill, reject, configure in
+            
+            var buffer: [T] = []
+            
+            self.progress { (_, progressValue: T) in
+                buffer += [progressValue]
+                if buffer.count >= bufferCount {
+                    progress(buffer)
+                    buffer = []
+                }
+            }.success { _ -> Void in
+                fulfill(buffer)
+                buffer = []
+            }.failure { _ -> Void in
+                buffer = []
+            }
+            
+            _bind(nil, reject, configure, self)
+        }
+    }
+    
     public func buffer<U>(trigger triggerSignal: Signal<U>) -> Signal<[T]>
     {
         return Signal<[T]>(name: "\(self.name)-buffer") { progress, fulfill, reject, configure in
