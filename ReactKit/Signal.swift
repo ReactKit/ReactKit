@@ -227,7 +227,7 @@ public extension Signal
             }
 
             let triggerSignalName = triggerSignal!.name
-            let cancelError = _RKError(.CancelledByTakeUntil, "Signal=\(signalName) is cancelled by take(until: \(triggerSignalName)).")
+            let cancelError = _RKError(.CancelledByTriggerSignal, "Signal=\(signalName) is cancelled by take(until: \(triggerSignalName)).")
             
             triggerSignal?.progress { [weak self] (_, progressValue: U) in
                 if let self_ = self {
@@ -279,9 +279,6 @@ public extension Signal
                     progress(progressValue)
                 }
             }
-            
-            let triggerSignalName = triggerSignal!.name
-            let cancelError = _RKError(.CancelledBySkipUntil, "Signal=\(signalName) is cancelled by skip(until: \(triggerSignalName)).")
             
             triggerSignal?.progress { (_, progressValue: U) in
                 shouldSkip = false
