@@ -177,10 +177,10 @@ public extension Signal
     
     /// map using (accumulatedValue, newValue)
     /// a.k.a `Rx.scan()`
-    public func mapAccumulate<U>(#initial: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
+    public func map<U>(accumulate initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
     {
-        return Signal<U>(name: "\(self.name)-mapAccumulate") { progress, fulfill, reject, configure in
-            var accumulatedValue: U = initial
+        return Signal<U>(name: "\(self.name)-map(accumulate:)") { progress, fulfill, reject, configure in
+            var accumulatedValue: U = initialValue
             
             self.progress { p in
                 accumulatedValue = accumulateClosure(accumulatedValue: accumulatedValue, newValue: p.newProgress)

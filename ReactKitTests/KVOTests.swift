@@ -329,13 +329,14 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testKVO_mapAccumulate()
+    /// a.k.a `Rx.scan`
+    func testKVO_map_accumulate()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
         let obj1 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").mapAccumulate(initial: []) { accumulatedValue, newValue -> [String] in
+        let signal = KVO.signal(obj1, "value").map(accumulate: []) { accumulatedValue, newValue -> [String] in
             return accumulatedValue + [newValue as String]
         }
         
