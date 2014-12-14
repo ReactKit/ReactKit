@@ -23,7 +23,7 @@ public extension NSNotificationCenter
                 self.removeObserver(observer)
             }
             
-        }.takeUntil(self.deinitSignal)
+        }.take(until: self.deinitSignal)
     }
 }
 

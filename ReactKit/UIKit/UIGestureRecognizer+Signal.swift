@@ -37,6 +37,6 @@ public extension UIGestureRecognizer
             
             self.addTarget(target, action: _targetActionSelector)
             
-        }.takeUntil(self.deinitSignal)
+        }.take(until: self.deinitSignal)
     }
 }

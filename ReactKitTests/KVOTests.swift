@@ -474,7 +474,7 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testKVO_takeUntil()
+    func testKVO_take_until()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -483,7 +483,7 @@ class KVOTests: _TestCase
         let stopper = MyObject()
         
         let stoppingSignal = KVO.signal(stopper, "value")    // store stoppingSignal to live until end of runloop
-        let signal = KVO.signal(obj1, "value").takeUntil(stoppingSignal)
+        let signal = KVO.signal(obj1, "value").take(until: stoppingSignal)
         
         weak var weakSignal = signal
         
@@ -510,7 +510,7 @@ class KVOTests: _TestCase
             obj1.value = "fuga"
             
             XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because signal is stopped via takeUntil(stoppingSignal).")
+            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because signal is stopped via take(until: stoppingSignal).")
             
             expect.fulfill()
             
@@ -561,7 +561,7 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testKVO_skipUntil()
+    func testKVO_skip_until()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -570,7 +570,7 @@ class KVOTests: _TestCase
         let stopper = MyObject()
         
         let startingSignal = KVO.signal(stopper, "value")    // store startingSignal to live until end of runloop
-        let signal = KVO.signal(obj1, "value").skipUntil(startingSignal)
+        let signal = KVO.signal(obj1, "value").skip(until: startingSignal)
         
         weak var weakSignal = signal
         
@@ -590,14 +590,14 @@ class KVOTests: _TestCase
             obj1.value = "hoge"
             
             XCTAssertEqual(obj1.value, "hoge")
-            XCTAssertEqual(obj2.value, "initial", "obj2.value should not be changed due to `skipUntil()`.")
+            XCTAssertEqual(obj2.value, "initial", "obj2.value should not be changed due to `skip(until:)`.")
             
             stopper.value = "DUMMY" // fire startingSignal
             
             obj1.value = "fuga"
             
             XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(obj2.value, "fuga", "obj2.value should be updated because `startingSignal` is triggered so that `skipUntil(startingSignal)` should no longer skip.")
+            XCTAssertEqual(obj2.value, "fuga", "obj2.value should be updated because `startingSignal` is triggered so that `skip(until: startingSignal)` should no longer skip.")
             
             expect.fulfill()
             

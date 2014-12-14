@@ -216,9 +216,9 @@ public extension Signal
         }
     }
     
-    public func takeUntil<U>(triggerSignal: Signal<U>) -> Signal
+    public func take<U>(until triggerSignal: Signal<U>) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-takeUntil") { [weak triggerSignal] progress, fulfill, reject, configure in
+        return Signal<T>(name: "\(self.name)-take(until:)") { [weak triggerSignal] progress, fulfill, reject, configure in
             
             let signalName = self.name
             
@@ -227,7 +227,7 @@ public extension Signal
             }
 
             let triggerSignalName = triggerSignal!.name
-            let cancelError = _RKError(.CancelledByTakeUntil, "Signal=\(signalName) is cancelled by takeUntil(\(triggerSignalName)).")
+            let cancelError = _RKError(.CancelledByTakeUntil, "Signal=\(signalName) is cancelled by take(until: \(triggerSignalName)).")
             
             triggerSignal?.progress { [weak self] (_, progressValue: U) in
                 if let self_ = self {
@@ -266,9 +266,9 @@ public extension Signal
         }
     }
     
-    public func skipUntil<U>(triggerSignal: Signal<U>) -> Signal
+    public func skip<U>(until triggerSignal: Signal<U>) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-skipUntil") { [weak triggerSignal] progress, fulfill, reject, configure in
+        return Signal<T>(name: "\(self.name)-skip(until:)") { [weak triggerSignal] progress, fulfill, reject, configure in
             
             let signalName = self.name
             
@@ -281,7 +281,7 @@ public extension Signal
             }
             
             let triggerSignalName = triggerSignal!.name
-            let cancelError = _RKError(.CancelledBySkipUntil, "Signal=\(signalName) is cancelled by skipUntil(\(triggerSignalName)).")
+            let cancelError = _RKError(.CancelledBySkipUntil, "Signal=\(signalName) is cancelled by skip(until: \(triggerSignalName)).")
             
             triggerSignal?.progress { (_, progressValue: U) in
                 shouldSkip = false

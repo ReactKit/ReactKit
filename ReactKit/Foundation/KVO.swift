@@ -23,7 +23,7 @@ public extension NSObject
             configure.resume = { observer.start() }
             configure.cancel = { observer.stop() }
             
-        }.takeUntil(self.deinitSignal)
+        }.take(until: self.deinitSignal)
     }
 }
 

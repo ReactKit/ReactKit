@@ -46,7 +46,7 @@ public extension UIBarButtonItem
             
             addTargetAction()
             
-        }.takeUntil(self.deinitSignal)
+        }.take(until: self.deinitSignal)
     }
     
     public func signal<T>(mappedValue: T) -> Signal<T>

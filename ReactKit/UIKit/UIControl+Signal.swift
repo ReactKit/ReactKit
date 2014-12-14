@@ -54,6 +54,6 @@ public extension UIControl
             
             self.addTarget(target, action: _targetActionSelector, forControlEvents: controlEvents)
             
-        }.takeUntil(self.deinitSignal)
+        }.take(until: self.deinitSignal)
     }
 }
