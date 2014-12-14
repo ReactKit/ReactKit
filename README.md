@@ -4,6 +4,11 @@ ReactKit
 Swift Reactive Programming.
 
 
+## How to install
+
+See [Wiki page](https://github.com/ReactKit/ReactKit/wiki/How-to-install).
+
+
 ## Example
 
 (For UI Demo, please see [ReactKit/ReactKitCatalog](https://github.com/ReactKit/ReactKitCatalog))
@@ -106,23 +111,36 @@ For more examples, please see XCTest & Demo App.
 
 ReactKit is just a bunch of Cocoa helpers over powerful [SwiftTask](https://github.com/inamiy/SwiftTask) (Promise library) as a basis.
 
-By taking special care of retaining flow, `ReactKit.Signal<T>` will seamlessly become a subclass of `SwiftTask.Task<T, T, NSError?>`, and by using `task.progress()` interface (`<~` operator in ReactKit), `signal` will be able to send the underlying Cocoa events (KVO, NSNotification, etc) continuously over time.
+By taking special care of retaining flow, `ReactKit.Signal<T>` will seamlessly become a subclass of `SwiftTask.Task<T, T, NSError>`, and by using `task.progress()` interface (`<~` operator in ReactKit), `signal` will be able to send the underlying Cocoa events (KVO, NSNotification, etc) continuously over time.
 
-Also, because `signal` can also behave like Promise, it can be chained by `then()` to connect asynchronous tasks in series, so there are much less codes & methods to remember comparing to our great pioneer framework [ReactiveCocoa](https://github.com/ReactiveCocoa/ReactiveCocoa).
+Also, because `signal` can also behave like Promise, it can be chained by `then()` to connect asynchronous tasks in series, so there are much less codes & methods to remember comparing to our great pioneer framework [ReactiveCocoa](https://github.com/ReactiveCocoa/ReactiveCocoa) and many other ReactiveExtension-frameworks.
 
 
 ## Signal Operations
 
 - Instance Methods
-	- `filter(f: T -> Bool)`
-	- `map(f: T -> U)`
-	- `mapTuple(f: (T?, T) -> U)`
-	- `take(maxCount)`
-	- `takeUntil(signal)`
-	- `throttle(timeInterval)`
-	- `debounce(timeInterval)`
+  - `filter(f: T -> Bool)`
+  - `filter2(f: (old: T?, new: T) -> Bool)`
+  - `map(f: T -> U)`
+  - `map(f: T -> Signal<U>)` (a.k.a Rx.flatMap)
+  - `map2(f: (old: T?, new: T) -> U)`
+  - `map(accumulate:accumulateClosure:)` (a.k.a Rx.scan)
+  - `take(count)`
+  - `take(until: Signal)`
+  - `skip(count)`
+  - `skip(until: Signal)`
+  - `buffer(count)`
+  - `buffer(trigger: Signal)`
+  - `throttle(timeInterval)`
+  - `debounce(timeInterval)`
 - Class Methods
-	- `any(signals)`
+  - `any(signals)`
+
+
+## Dependencies
+
+- [SwiftTask](https://github.com/ReactKit/SwiftTask)
+- [SwiftState](https://github.com/ReactKit/SwiftState)
 
 
 ## Licence
