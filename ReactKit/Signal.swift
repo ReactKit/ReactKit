@@ -96,8 +96,6 @@ public extension Signal
     {
         return Signal<T>(name: "\(self.name)-filter") { progress, fulfill, reject, configure in
             
-            let signalName = self.name
-            
             self.progress { (_, progressValue: T) in
                 if filterClosure(progressValue) {
                     progress(progressValue)
@@ -109,14 +107,12 @@ public extension Signal
     }
 
     /// filter using (oldValue, newValue)
-    public func filter2(tupleFilterClosure: (oldValue: T?, newValue: T) -> Bool) -> Signal<T>
+    public func filter2(filterClosure2: (oldValue: T?, newValue: T) -> Bool) -> Signal<T>
     {
         return Signal<T>(name: "\(self.name)-filter2") { progress, fulfill, reject, configure in
             
-            let signalName = self.name
-            
             self.progress { (progressValues: (oldValue: T?, newValue: T)) in
-                if tupleFilterClosure(progressValues) {
+                if filterClosure2(progressValues) {
                     progress(progressValues.newValue)
                 }
             }
@@ -130,8 +126,6 @@ public extension Signal
     {
         return Signal<U>(name: "\(self.name)-map") { progress, fulfill, reject, configure in
             
-            let signalName = self.name
-            
             self.progress { (_, progressValue: T) in
                 progress(transform(progressValue))
             }.success { (value: T) -> Void in
@@ -142,12 +136,34 @@ public extension Signal
         }
     }
     
+    /// map using newValue only & bind to transformed Signal
+    /// a.k.a `Rx.flatMap()`
+    public func map<U>(transform: T -> Signal<U>) -> Signal<U>
+    {
+        return Signal<U>(name: "\(self.name)-map(signal)") { progress, fulfill, reject, configure in
+            
+            var innerSignal: Signal<U>?
+            
+            self.progress { (_, progressValue: T) in
+                innerSignal = transform(progressValue)
+                innerSignal?.progress { (_, progressValue: U) in
+                    progress(progressValue)
+                }
+            }.success { (value: T) -> Void in
+                innerSignal = transform(value)
+                innerSignal?.progress { [weak innerSignal] (_, progressValue: U) in
+                    fulfill(progressValue)
+                }
+            }
+            
+            _bind(nil, reject, configure, self)
+        }
+    }
+    
     /// map using (oldValue, newValue)
     public func map2<U>(transform2: (oldValue: T?, newValue: T) -> U) -> Signal<U>
     {
         return Signal<U>(name: "\(self.name)-map2") { progress, fulfill, reject, configure in
-            
-            let signalName = self.name
             
             self.progress { (progressValues: (oldValue: T?, newValue: T)) in
                 progress(transform2(progressValues))
@@ -181,7 +197,6 @@ public extension Signal
     {
         return Signal<T>(name: "\(self.name)-take(\(maxCount))") { progress, fulfill, reject, configure in
             
-            let signalName = self.name
             var count = 0
             
             self.progress { (_, progressValue: T) in
