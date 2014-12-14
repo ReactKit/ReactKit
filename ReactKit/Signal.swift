@@ -151,7 +151,7 @@ public extension Signal
                 }
             }.success { (value: T) -> Void in
                 innerSignal = transform(value)
-                innerSignal?.progress { [weak innerSignal] (_, progressValue: U) in
+                innerSignal?.progress { (_, progressValue: U) in
                     fulfill(progressValue)
                 }
             }
@@ -216,9 +216,9 @@ public extension Signal
         }
     }
     
-    public func takeUntil<U>(takeUntilSignal: Signal<U>) -> Signal
+    public func takeUntil<U>(triggerSignal: Signal<U>) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-takeUntil") { [weak takeUntilSignal] progress, fulfill, reject, configure in
+        return Signal<T>(name: "\(self.name)-takeUntil") { [weak triggerSignal] progress, fulfill, reject, configure in
             
             let signalName = self.name
             
@@ -226,10 +226,10 @@ public extension Signal
                 progress(progressValue)
             }
 
-            let takeUntilSignalName = takeUntilSignal!.name
-            let cancelError = _RKError(.CancelledByTakeUntil, "Signal=\(signalName) is cancelled by takeUntil(\(takeUntilSignalName)).")
+            let triggerSignalName = triggerSignal!.name
+            let cancelError = _RKError(.CancelledByTakeUntil, "Signal=\(signalName) is cancelled by takeUntil(\(triggerSignalName)).")
             
-            takeUntilSignal?.progress { [weak self] (_, progressValue: U) in
+            triggerSignal?.progress { [weak self] (_, progressValue: U) in
                 if let self_ = self {
                     self_.cancel(error: cancelError)
                 }
@@ -266,9 +266,9 @@ public extension Signal
         }
     }
     
-    public func skipUntil<U>(skipUntilSignal: Signal<U>) -> Signal
+    public func skipUntil<U>(triggerSignal: Signal<U>) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-skipUntil") { [weak skipUntilSignal] progress, fulfill, reject, configure in
+        return Signal<T>(name: "\(self.name)-skipUntil") { [weak triggerSignal] progress, fulfill, reject, configure in
             
             let signalName = self.name
             
@@ -280,10 +280,10 @@ public extension Signal
                 }
             }
             
-            let skipUntilSignalName = skipUntilSignal!.name
-            let cancelError = _RKError(.CancelledBySkipUntil, "Signal=\(signalName) is cancelled by skipUntil(\(skipUntilSignalName)).")
+            let triggerSignalName = triggerSignal!.name
+            let cancelError = _RKError(.CancelledBySkipUntil, "Signal=\(signalName) is cancelled by skipUntil(\(triggerSignalName)).")
             
-            skipUntilSignal?.progress { (_, progressValue: U) in
+            triggerSignal?.progress { (_, progressValue: U) in
                 shouldSkip = false
             }.success { (value: U) -> Void in
                 shouldSkip = false
