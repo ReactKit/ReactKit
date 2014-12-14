@@ -292,7 +292,7 @@ public extension Signal
         }
     }
     
-    public func buffer<U>(triggerSignal: Signal<U>) -> Signal<[T]>
+    public func buffer<U>(trigger triggerSignal: Signal<U>) -> Signal<[T]>
     {
         return Signal<[T]>(name: "\(self.name)-buffer") { progress, fulfill, reject, configure in
             

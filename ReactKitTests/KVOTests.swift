@@ -607,7 +607,7 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testBuffer()
+    func testBuffer_trigger()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -615,7 +615,7 @@ class KVOTests: _TestCase
         let trigger = MyObject()
         
         let triggerSignal = KVO.signal(trigger, "value")
-        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value").buffer(triggerSignal)
+        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value").buffer(trigger: triggerSignal)
         
         var result: String? = "no result"
         
