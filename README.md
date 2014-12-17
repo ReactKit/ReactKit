@@ -3,6 +3,8 @@ ReactKit
 
 Swift Reactive Programming.
 
+[Introducing ReactKit // Speaker Deck](https://speakerdeck.com/inamiy/introducing-reactkit)
+
 
 ## How to install
 
