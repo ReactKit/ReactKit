@@ -13,7 +13,7 @@ public extension NSNotificationCenter
     /// creates new Signal
     public func signal(#notificationName: String, object: AnyObject? = nil) -> Signal<NSNotification?>
     {
-        return Signal(name: "NSNotification-\(notificationName)") { progress, fulfill, reject, configure in
+        return Signal { progress, fulfill, reject, configure in
             
             let observer = self.addObserverForName(notificationName, object: object, queue: nil) { notification in
                 progress(notification)
@@ -23,7 +23,7 @@ public extension NSNotificationCenter
                 self.removeObserver(observer)
             }
             
-        }.take(until: self.deinitSignal)
+        }.name("NSNotification-\(notificationName)").take(until: self.deinitSignal)
     }
 }
 

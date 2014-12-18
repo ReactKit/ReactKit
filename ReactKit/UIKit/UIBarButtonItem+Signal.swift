@@ -12,7 +12,7 @@ public extension UIBarButtonItem
 {
     public func signal<T>(map: UIBarButtonItem? -> T) -> Signal<T>
     {
-        return Signal(name: "\(NSStringFromClass(self.dynamicType))") { progress, fulfill, reject, configure in
+        return Signal { progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 progress(map(self_ as? UIBarButtonItem))
@@ -46,7 +46,7 @@ public extension UIBarButtonItem
             
             addTargetAction()
             
-        }.take(until: self.deinitSignal)
+        }.name("\(NSStringFromClass(self.dynamicType))").take(until: self.deinitSignal)
     }
     
     public func signal<T>(mappedValue: T) -> Signal<T>

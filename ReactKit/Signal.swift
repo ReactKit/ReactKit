@@ -10,12 +10,10 @@ import SwiftTask
 
 public class Signal<T>: Task<T, T, NSError>
 {
-    public let name: String
+    public var name: String = "Default"
     
-    public init(name: String = "Default", initClosure: Task<T, T, NSError>.InitClosure)
+    public init(initClosure: Task<T, T, NSError>.InitClosure)
     {
-        self.name = name
-        
         // NOTE: set weakified=true to avoid "proxy -> signal" retaining
         super.init(weakified: true, initClosure: initClosure)
         
@@ -40,6 +38,12 @@ public class Signal<T>: Task<T, T, NSError>
     public override func cancel(error: NSError? = nil) -> Bool
     {
         return super.cancel(error: error)
+    }
+    
+    public func name(name: String) -> Signal
+    {
+        self.name = name
+        return self
     }
     
     /// Easy strong referencing by owner e.g. UIViewController holding its UI component's signal
@@ -94,7 +98,7 @@ public extension Signal
     /// filter using newValue only
     public func filter(filterClosure: T -> Bool) -> Signal<T>
     {
-        return Signal<T>(name: "\(self.name)-filter") { progress, fulfill, reject, configure in
+        return Signal<T> { progress, fulfill, reject, configure in
             
             self.progress { (_, progressValue: T) in
                 if filterClosure(progressValue) {
@@ -103,13 +107,14 @@ public extension Signal
             }
         
             _bind(fulfill, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-filter")
     }
 
     /// filter using (oldValue, newValue)
     public func filter2(filterClosure2: (oldValue: T?, newValue: T) -> Bool) -> Signal<T>
     {
-        return Signal<T>(name: "\(self.name)-filter2") { progress, fulfill, reject, configure in
+        return Signal<T> { progress, fulfill, reject, configure in
             
             self.progress { (progressValues: (oldValue: T?, newValue: T)) in
                 if filterClosure2(progressValues) {
@@ -118,13 +123,14 @@ public extension Signal
             }
         
             _bind(fulfill, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-filter2")
     }
     
     /// map using newValue only
     public func map<U>(transform: T -> U) -> Signal<U>
     {
-        return Signal<U>(name: "\(self.name)-map") { progress, fulfill, reject, configure in
+        return Signal<U> { progress, fulfill, reject, configure in
             
             self.progress { (_, progressValue: T) in
                 progress(transform(progressValue))
@@ -133,14 +139,15 @@ public extension Signal
             }
             
             _bind(nil, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-map")
     }
     
     /// map using newValue only & bind to transformed Signal
     /// a.k.a `Rx.flatMap()`
     public func map<U>(transform: T -> Signal<U>) -> Signal<U>
     {
-        return Signal<U>(name: "\(self.name)-map(signal)") { progress, fulfill, reject, configure in
+        return Signal<U> { progress, fulfill, reject, configure in
             
             var innerSignal: Signal<U>?
             
@@ -157,13 +164,14 @@ public extension Signal
             }
             
             _bind(nil, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-map(signal)")
     }
     
     /// map using (oldValue, newValue)
     public func map2<U>(transform2: (oldValue: T?, newValue: T) -> U) -> Signal<U>
     {
-        return Signal<U>(name: "\(self.name)-map2") { progress, fulfill, reject, configure in
+        return Signal<U> { progress, fulfill, reject, configure in
             
             self.progress { (progressValues: (oldValue: T?, newValue: T)) in
                 progress(transform2(progressValues))
@@ -172,14 +180,15 @@ public extension Signal
             }
             
             _bind(nil, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-map2")
     }
     
     /// map using (accumulatedValue, newValue)
     /// a.k.a `Rx.scan()`
     public func map<U>(accumulate initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
     {
-        return Signal<U>(name: "\(self.name)-map(accumulate:)") { progress, fulfill, reject, configure in
+        return Signal<U> { progress, fulfill, reject, configure in
             var accumulatedValue: U = initialValue
             
             self.progress { p in
@@ -190,12 +199,12 @@ public extension Signal
             }
             
             _bind(nil, reject, configure, self)
-        }
+        }.name("\(self.name)-map(accumulate:)")
     }
     
     public func take(maxCount: Int) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-take(\(maxCount))") { progress, fulfill, reject, configure in
+        return Signal<T> { progress, fulfill, reject, configure in
             
             var count = 0
             
@@ -213,12 +222,13 @@ public extension Signal
             }
             
             _bind(fulfill, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-take(\(maxCount))")
     }
     
     public func take<U>(until triggerSignal: Signal<U>) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-take(until:)") { [weak triggerSignal] progress, fulfill, reject, configure in
+        return Signal<T> { [weak triggerSignal] progress, fulfill, reject, configure in
             
             let signalName = self.name
             
@@ -244,12 +254,13 @@ public extension Signal
             }
             
             _bind(fulfill, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-take(until:)")
     }
     
     public func skip(skipCount: Int) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-skip(\(skipCount))") { progress, fulfill, reject, configure in
+        return Signal<T> { progress, fulfill, reject, configure in
             
             var count = 0
             
@@ -263,12 +274,13 @@ public extension Signal
             }
             
             _bind(fulfill, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-skip(\(skipCount))")
     }
     
     public func skip<U>(until triggerSignal: Signal<U>) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-skip(until:)") { [weak triggerSignal] progress, fulfill, reject, configure in
+        return Signal<T> { [weak triggerSignal] progress, fulfill, reject, configure in
             
             let signalName = self.name
             
@@ -289,12 +301,13 @@ public extension Signal
             }
             
             _bind(fulfill, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-skip(until:)")
     }
     
     public func buffer(bufferCount: Int) -> Signal<[T]>
     {
-        return Signal<[T]>(name: "\(self.name)-buffer") { progress, fulfill, reject, configure in
+        return Signal<[T]> { progress, fulfill, reject, configure in
             
             var buffer: [T] = []
             
@@ -312,12 +325,13 @@ public extension Signal
             }
             
             _bind(nil, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-buffer")
     }
     
     public func buffer<U>(trigger triggerSignal: Signal<U>) -> Signal<[T]>
     {
-        return Signal<[T]>(name: "\(self.name)-buffer") { progress, fulfill, reject, configure in
+        return Signal<[T]> { progress, fulfill, reject, configure in
             
             var buffer: [T] = []
             
@@ -345,14 +359,15 @@ public extension Signal
             }
             
             _bind(nil, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-buffer")
     }
 
     /// limit continuous progress (reaction) for `timeInterval` seconds when first progress is triggered
     /// (see also: underscore.js throttle)
     public func throttle(timeInterval: NSTimeInterval) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-throttle(\(timeInterval))") { progress, fulfill, reject, configure in
+        return Signal<T> { progress, fulfill, reject, configure in
             
             var lastProgressDate = NSDate(timeIntervalSince1970: 0)
             
@@ -367,14 +382,15 @@ public extension Signal
             }
             
             _bind(fulfill, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-throttle(\(timeInterval))")
     }
     
     /// delay progress (reaction) for `timeInterval` seconds and truly invoke reaction afterward if not interrupted by continuous progress
     /// (see also: underscore.js debounce)
     public func debounce(timeInterval: NSTimeInterval) -> Signal
     {
-        return Signal<T>(name: "\(self.name)-debounce(\(timeInterval))") { progress, fulfill, reject, configure in
+        return Signal<T> { progress, fulfill, reject, configure in
             
             var timerSignal: Signal<Void>? = nil    // retained by self via self.progress
             
@@ -388,7 +404,8 @@ public extension Signal
             }
             
             _bind(fulfill, reject, configure, self)
-        }
+            
+        }.name("\(self.name)-debounce(\(timeInterval))")
     }
 }
 
@@ -399,7 +416,7 @@ public extension Signal
     
     public class func any(signals: [Signal<T>]) -> Signal<ChangedValueTuple>
     {
-        return Signal<ChangedValueTuple>(name: "Signal.any") { progress, fulfill, reject, configure in
+        return Signal<ChangedValueTuple> { progress, fulfill, reject, configure in
             
             // wrap with class for weakifying
             let signalGroup = _SignalGroup(signals: signals)
@@ -428,7 +445,7 @@ public extension Signal
                 self.cancelAll(signalGroup.signals)
             }
             
-        }
+        }.name("Signal.any")
     }
 }
 

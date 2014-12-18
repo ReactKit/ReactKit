@@ -12,7 +12,7 @@ public extension NSTimer
 {
     public class func signal<T>(#timeInterval: NSTimeInterval, userInfo: AnyObject? = nil, repeats: Bool = true, map: NSTimer? -> T) -> Signal<T>
     {
-        return Signal(name: "\(NSStringFromClass(self))") { progress, fulfill, reject, configure in
+        return Signal { progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 progress(map(self_ as? NSTimer))
@@ -38,6 +38,6 @@ public extension NSTimer
                 timer = nil
             }
             
-        }
+        }.name("\(NSStringFromClass(self))")
     }
 }

@@ -13,7 +13,7 @@ public extension NSObject
     /// creates new Signal
     public func signal(#keyPath: String) -> Signal<AnyObject?>
     {
-        return Signal(name: "KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)") { progress, fulfill, reject, configure in
+        return Signal { progress, fulfill, reject, configure in
             
             let observer = _KVOProxy(target: self, keyPath: keyPath) { value in
                 progress(value)
@@ -23,7 +23,7 @@ public extension NSObject
             configure.resume = { observer.start() }
             configure.cancel = { observer.stop() }
             
-        }.take(until: self.deinitSignal)
+        }.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)").take(until: self.deinitSignal)
     }
 }
 
