@@ -9,6 +9,8 @@
 import ReactKit
 import XCTest
 
+let SAFE_DELAY = 0.5
+
 class KVOTests: _TestCase
 {
     func testKVO()
@@ -278,7 +280,7 @@ class KVOTests: _TestCase
             }
             
             // wait for "fuga" to arrive...
-            Async.main(after: 0.2) {
+            Async.main(after: 0.2 + SAFE_DELAY) {
                 
                 XCTAssertEqual(obj1.value, "fuga")
                 XCTAssertEqual(obj2.value, "fuga", "`obj2.value` should be updated because delayed `signal` message arrived.")
