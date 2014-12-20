@@ -12,14 +12,46 @@ public class Signal<T>: Task<T, T, NSError>
 {
     public var name: String = "Default"
     
-    public init(initClosure: Task<T, T, NSError>.InitClosure)
+    ///
+    /// Creates a new signal (event-delivery-pipeline over time).
+    /// Synonym of "stream", "observable", etc.
+    ///
+    /// :param: paused Flag to invoke `initClosure` immediately or not. If `paused = true`, signal's initial state will be `.Paused` (known as "cold signal") and needs to `resume()` in order to start `.Running`. If `paused = false`, `initClosure` will be invoked immediately (known as "hot signal").
+    ///
+    /// :param: initClosure Closure to define returning signal's behavior. Inside this closure, `configure.pause`/`resume`/`cancel` should capture inner logic (player) object. See also comment in `SwiftTask.Task.init()`.
+    ///
+    /// :returns: New Signal.
+    /// 
+    public init(paused: Bool, initClosure: Task<T, T, NSError>.InitClosure)
     {
-        // NOTE: set weakified=true to avoid "proxy -> signal" retaining
-        super.init(weakified: true, initClosure: initClosure)
+        // NOTE: set weakified=true to avoid "(inner) player -> signal" retaining
+        super.init(weakified: true, paused: paused, initClosure: initClosure)
         
         #if DEBUG
             println("[init] \(self) \(self.name)")
         #endif
+    }
+    
+    /// creates paused (cold) signal
+    public convenience init(initClosure: Task<T, T, NSError>.InitClosure)
+    {
+        self.init(paused: true, initClosure: initClosure)
+    }
+    
+    /// creates fulfilled, non-paused (hot) signal
+    public convenience init(value: T)
+    {
+        self.init(paused: false, initClosure: { progress, fulfill, reject, configure in
+            fulfill(value)
+        })
+    }
+    
+    /// creates rejected, non-paused (hot) signal
+    public convenience init(error: NSError)
+    {
+        self.init(paused: false, initClosure: { progress, fulfill, reject, configure in
+            reject(error)
+        })
     }
     
     deinit
@@ -32,6 +64,59 @@ public class Signal<T>: Task<T, T, NSError>
         let cancelError = _RKError(.CancelledByDeinit, "Signal=\(signalName) is cancelled via deinit.")
         
         self.cancel(error: cancelError)
+    }
+    
+    /// progress-chaining with auto-resume
+    public override func progress(progressClosure: ProgressTuple -> Void) -> Task<T, T, NSError>
+    {
+        let signal = super.progress(progressClosure)
+        self.resume()
+        return signal
+    }
+    
+    public func then<U>(thenClosure: (T?, ErrorInfo?) -> U) -> Task<U, U, NSError>
+    {
+        return self.then { (value: T?, errorInfo: ErrorInfo?) -> Task<U, U, NSError> in
+            return Signal<U>(value: thenClosure(value, errorInfo))
+        }
+    }
+    
+    /// then-chaining with auto-resume
+    public func then<U>(thenClosure: (T?, ErrorInfo?) -> Task<U, U, NSError>) -> Task<U, U, NSError>
+    {
+        let signal = super.then(thenClosure)
+        self.resume()
+        return signal
+    }
+    
+    public func success<U>(successClosure: T -> U) -> Task<U, U, NSError>
+    {
+        return self.success { (value: T) -> Task<U, U, NSError> in
+            return Signal<U>(value: successClosure(value))
+        }
+    }
+    
+    /// success-chaining with auto-resume
+    public func success<U>(successClosure: T -> Task<U, U, NSError>) -> Task<U, U, NSError>
+    {
+        let signal = super.success(successClosure)
+        self.resume()
+        return signal
+    }
+    
+    public override func failure(failureClosure: ErrorInfo -> T) -> Task<T, T, NSError>
+    {
+        return self.failure { (errorInfo: ErrorInfo) -> Task<T, T, NSError> in
+            return Signal(value: failureClosure(errorInfo))
+        }
+    }
+    
+    /// failure-chaining with auto-resume
+    public override func failure(failureClosure: ErrorInfo -> Task<T, T, NSError>) -> Task<T, T, NSError>
+    {
+        let signal = super.failure(failureClosure)
+        self.resume()
+        return signal
     }
     
     // required (Swift compiler fails...)

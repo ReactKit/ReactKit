@@ -415,31 +415,37 @@ class KVOTests: _TestCase
     func testKVO_take_fulfilled()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
-        var count = 0
+        var progressCount = 0
+        var successCount = 0
         
         let obj1 = MyObject()
         
         let sourceSignal = KVO.signal(obj1, "value")
         let takeSignal = sourceSignal.take(1)  // only take 1 event
         
-        // then
-        takeSignal.then { value, errorInfo -> Void in
-            count++
+        // REACT 
+        ^{ _ in progressCount++; return } <~ takeSignal
+        
+        // success
+        takeSignal.success { value -> Void in
+            successCount++
             XCTAssertEqual(value! as String, "hoge")
-            XCTAssertTrue(errorInfo == nil)
         }
         
         println("*** Start ***")
         
-        XCTAssertEqual(count, 0)
+        XCTAssertEqual(progressCount, 0)
+        XCTAssertEqual(successCount, 0)
         
         self.perform {
             
             obj1.value = "hoge"
-            XCTAssertEqual(count, 1)
+            XCTAssertEqual(progressCount, 1)
+            XCTAssertEqual(successCount, 1)
             
             obj1.value = "fuga"
-            XCTAssertEqual(count, 1, "`then()` will not be invoked because already fulfilled via `take(1)`.")
+            XCTAssertEqual(progressCount, 1, "`progress()` will not be invoked because already fulfilled via `take(1)`.")
+            XCTAssertEqual(successCount, 1)
             
             expect.fulfill()
         }
@@ -457,15 +463,17 @@ class KVOTests: _TestCase
         let sourceSignal = KVO.signal(obj1, "value")
         let takeSignal = sourceSignal.take(1)  // only take 1 event
         
-        // then
-        takeSignal.then { value, errorInfo -> Void in
+        // failure
+        takeSignal.failure { errorInfo -> NSString? in
             
-            XCTAssertEqual(errorInfo!.error!.domain, ReactKitError.Domain, "`sourceSignal` is cancelled before any progress, so `takeSignal` should fail.")
-            XCTAssertEqual(errorInfo!.error!.code, ReactKitError.CancelledByUpstream.rawValue)
+            XCTAssertEqual(errorInfo.error!.domain, ReactKitError.Domain, "`sourceSignal` is cancelled before any progress, so `takeSignal` should fail.")
+            XCTAssertEqual(errorInfo.error!.code, ReactKitError.CancelledByUpstream.rawValue)
             
-            XCTAssertFalse(errorInfo!.isCancelled, "Though `sourceSignal` is cancelled, `takeSignal` is rejected rather than cancelled.")
+            XCTAssertFalse(errorInfo.isCancelled, "Though `sourceSignal` is cancelled, `takeSignal` is rejected rather than cancelled.")
             
             expect.fulfill()
+            
+            return "DUMMY"
         
         }
         
