@@ -10,8 +10,6 @@ import SwiftTask
 
 public class Signal<T>: Task<T, T, NSError>
 {
-    public var name: String = "Default"
-    
     ///
     /// Creates a new signal (event-delivery-pipeline over time).
     /// Synonym of "stream", "observable", etc.
@@ -28,7 +26,7 @@ public class Signal<T>: Task<T, T, NSError>
         super.init(weakified: true, paused: paused, initClosure: initClosure)
         
         #if DEBUG
-            println("[init] \(self) \(self.name)")
+            println("[init] \(self)")
         #endif
     }
     
@@ -57,7 +55,7 @@ public class Signal<T>: Task<T, T, NSError>
     deinit
     {
         #if DEBUG
-            println("[deinit] \(self) \(self.name)")
+            println("[deinit] \(self)")
         #endif
         
         let signalName = self.name
@@ -123,12 +121,6 @@ public class Signal<T>: Task<T, T, NSError>
     public override func cancel(error: NSError? = nil) -> Bool
     {
         return super.cancel(error: error)
-    }
-    
-    public func name(name: String) -> Signal
-    {
-        self.name = name
-        return self
     }
     
     /// Easy strong referencing by owner e.g. UIViewController holding its UI component's signal
