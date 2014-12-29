@@ -222,22 +222,20 @@ public extension Signal
     
     /// map using newValue only & bind to transformed Signal
     /// a.k.a `Rx.flatMap()`
-    public func map<U>(transform: T -> Signal<U>) -> Signal<U>
+    public func map<U>(transformToSignal: T -> Signal<U>) -> Signal<U>
     {
         return Signal<U> { progress, fulfill, reject, configure in
             
-            var innerSignal: Signal<U>?
-            
             self.progress { (_, progressValue: T) in
-                innerSignal = transform(progressValue)
-                innerSignal?.progress { (_, progressValue: U) in
+                transformToSignal(progressValue).progress { (_, progressValue: U) in
                     progress(progressValue)
                 }
+                return
             }.success { (value: T) -> Void in
-                innerSignal = transform(value)
-                innerSignal?.progress { (_, progressValue: U) in
+                transformToSignal(value).progress { (_, progressValue: U) in
                     fulfill(progressValue)
                 }
+                return
             }
             
             _bind(nil, reject, configure, self)
@@ -266,6 +264,7 @@ public extension Signal
     public func map<U>(accumulate initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
     {
         return Signal<U> { progress, fulfill, reject, configure in
+            
             var accumulatedValue: U = initialValue
             
             self.progress { p in
@@ -276,6 +275,7 @@ public extension Signal
             }
             
             _bind(nil, reject, configure, self)
+            
         }.name("\(self.name)-map(accumulate:)")
     }
     
@@ -343,11 +343,10 @@ public extension Signal
             
             self.progress { (_, progressValue: T) in
                 count++
-                println("\(count), \(skipCount)")
+
                 if count <= skipCount { return }
                 
                 progress(progressValue)
-                
             }
             
             _bind(fulfill, reject, configure, self)
