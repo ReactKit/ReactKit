@@ -226,13 +226,22 @@ public extension Signal
     {
         return Signal<U> { progress, fulfill, reject, configure in
             
+            // NOTE: each of `transformToSignal()` needs to be retained outside
+            var innerSignals: [Signal<U>] = []
+            
             self.progress { (_, progressValue: T) in
-                transformToSignal(progressValue).progress { (_, progressValue: U) in
+                let innerSignal = transformToSignal(progressValue)
+                innerSignals += [innerSignal]
+                
+                innerSignal.progress { (_, progressValue: U) in
                     progress(progressValue)
                 }
                 return
             }.success { (value: T) -> Void in
-                transformToSignal(value).progress { (_, progressValue: U) in
+                let innerSignal = transformToSignal(value)
+                innerSignals += [innerSignal]
+                
+                innerSignal.progress { (_, progressValue: U) in
                     fulfill(progressValue)
                 }
                 return
