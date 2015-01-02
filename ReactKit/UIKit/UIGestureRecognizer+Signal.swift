@@ -13,29 +13,27 @@ public extension UIGestureRecognizer
 {
     public func signal<T>(map: UIGestureRecognizer? -> T) -> Signal<T>
     {
-        return Signal { progress, fulfill, reject, configure in
+        return Signal { [weak self] progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 progress(map(self_ as? UIGestureRecognizer))
             }
             
-            configure.pause = { [weak self] in
+            configure.pause = {
                 if let self_ = self {
                     self_.removeTarget(target, action: _targetActionSelector)
                 }
             }
-            configure.resume = { [weak self] in
+            configure.resume = {
                 if let self_ = self {
                     self_.addTarget(target, action: _targetActionSelector)
                 }
             }
-            configure.cancel = { [weak self] in
+            configure.cancel = {
                 if let self_ = self {
                     self_.removeTarget(target, action: _targetActionSelector)
                 }
             }
-            
-            self.addTarget(target, action: _targetActionSelector)
             
         }.name("\(NSStringFromClass(self.dynamicType))").take(until: self.deinitSignal)
     }

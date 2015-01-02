@@ -11,16 +11,36 @@ import Foundation
 public extension NSNotificationCenter
 {
     /// creates new Signal
-    public func signal(#notificationName: String, object: AnyObject? = nil) -> Signal<NSNotification?>
+    public func signal(#notificationName: String, object: AnyObject? = nil, queue: NSOperationQueue? = nil) -> Signal<NSNotification?>
     {
-        return Signal { progress, fulfill, reject, configure in
+        return Signal { [weak self] progress, fulfill, reject, configure in
             
-            let observer = self.addObserverForName(notificationName, object: object, queue: nil) { notification in
-                progress(notification)
+            var observer: NSObjectProtocol?
+            
+            configure.pause = {
+                if let self_ = self {
+                    if let observer_ = observer {
+                        self_.removeObserver(observer_)
+                        observer = nil
+                    }
+                }
             }
-            
+            configure.resume = {
+                if let self_ = self {
+                    if observer == nil {
+                        observer = self_.addObserverForName(notificationName, object: object, queue: queue) { notification in
+                            progress(notification)
+                        }
+                    }
+                }
+            }
             configure.cancel = {
-                self.removeObserver(observer)
+                if let self_ = self {
+                    if let observer_ = observer {
+                        self_.removeObserver(observer_)
+                        observer = nil
+                    }
+                }
             }
             
         }.name("NSNotification-\(notificationName)").take(until: self.deinitSignal)

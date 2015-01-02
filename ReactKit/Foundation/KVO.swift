@@ -13,15 +13,17 @@ public extension NSObject
     /// creates new Signal
     public func signal(#keyPath: String) -> Signal<AnyObject?>
     {
-        return Signal { progress, fulfill, reject, configure in
+        return Signal { [weak self] progress, fulfill, reject, configure in
             
-            let observer = _KVOProxy(target: self, keyPath: keyPath) { value in
-                progress(value)
+            if let self_ = self {
+                let observer = _KVOProxy(target: self_, keyPath: keyPath) { value in
+                    progress(value)
+                }
+                
+                configure.pause = { observer.stop() }
+                configure.resume = { observer.start() }
+                configure.cancel = { observer.stop() }
             }
-            
-            configure.pause = { observer.stop() }
-            configure.resume = { observer.start() }
-            configure.cancel = { observer.stop() }
             
         }.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)").take(until: self.deinitSignal)
     }

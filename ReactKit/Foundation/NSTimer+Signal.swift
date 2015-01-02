@@ -20,18 +20,14 @@ public extension NSTimer
             
             var timer: NSTimer?
             
-            let createTimer: Void -> NSTimer = {
-                return NSTimer.scheduledTimerWithTimeInterval(timeInterval, target: target, selector: _targetActionSelector, userInfo: userInfo, repeats: repeats)
-            }
-            
-            timer = createTimer()
-            
             configure.pause = {
                 timer?.invalidate()
                 timer = nil
             }
             configure.resume = {
-                timer = createTimer()
+                if timer == nil {
+                    timer = NSTimer.scheduledTimerWithTimeInterval(timeInterval, target: target, selector: _targetActionSelector, userInfo: userInfo, repeats: repeats)
+                }
             }
             configure.cancel = {
                 timer?.invalidate()

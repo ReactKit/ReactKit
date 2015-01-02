@@ -12,7 +12,7 @@ public extension UIControl
 {
     public func signal<T>(#controlEvents: UIControlEvents, map: UIControl? -> T) -> Signal<T>
     {
-        return Signal { progress, fulfill, reject, configure in
+        return Signal { [weak self] progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 
@@ -36,23 +36,21 @@ public extension UIControl
             // Set copies of same closure when using `[weak self]`,
             // or swift-compiler will fail with exit 1 in Swift 1.1.
             //
-            configure.pause = { [weak self] in
+            configure.pause = {
                 if let self_ = self {
                     self_.removeTarget(target, action: _targetActionSelector, forControlEvents: controlEvents)
                 }
             }
-            configure.resume = { [weak self] in
+            configure.resume = {
                 if let self_ = self {
                     self_.addTarget(target, action: _targetActionSelector, forControlEvents: controlEvents)
                 }
             }
-            configure.cancel = { [weak self] in
+            configure.cancel = {
                 if let self_ = self {
                     self_.removeTarget(target, action: _targetActionSelector, forControlEvents: controlEvents)
                 }
             }
-            
-            self.addTarget(target, action: _targetActionSelector, forControlEvents: controlEvents)
             
         }.name("\(NSStringFromClass(self.dynamicType))-\(controlEvents)").take(until: self.deinitSignal)
     }
