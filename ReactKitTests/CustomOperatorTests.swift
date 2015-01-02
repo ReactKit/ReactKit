@@ -54,7 +54,7 @@ class CustomOperatorTests: _TestCase
     }
 }
 
-class AsyncCustomOperatorTests: KVOTests
+class AsyncCustomOperatorTests: CustomOperatorTests
 {
     override var isAsync: Bool { return true }
 }
