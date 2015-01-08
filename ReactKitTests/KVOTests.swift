@@ -858,7 +858,11 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    /// a.k.a `Rx.combineLatest()`
+    //
+    // NOTE: 
+    // `merge2()` works like both `Rx.merge()` and `Rx.combineLatest()`.
+    // This test demonstrates `combineLatest` example.
+    //
     func testKVO_merge2()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
@@ -902,7 +906,6 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    /// a.k.a `Rx.combineLatest()`
     /// almost same as `testKVO_merge2()`
     func testKVO_combineLatest()
     {
