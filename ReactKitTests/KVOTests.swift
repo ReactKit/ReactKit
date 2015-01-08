@@ -232,8 +232,7 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    /// a.k.a `Rx.flatMap`
-    func testKVO_map_signal()
+    func testKVO_flatMap()
     {
         // NOTE: this is async test
         if !self.isAsync { return }
@@ -244,7 +243,7 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         // NOTE: `mapClosure` is returning Signal
-        let signal = KVO.signal(obj1, "value").map { (value: AnyObject?) -> Signal<AnyObject?> in
+        let signal = KVO.signal(obj1, "value").flatMap { (value: AnyObject?) -> Signal<AnyObject?> in
             // delay sending value for 0.01 sec
             return NSTimer.signal(timeInterval: 0.01, repeats: false) { _ in value }
         }

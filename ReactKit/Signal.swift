@@ -221,8 +221,7 @@ public extension Signal
     }
     
     /// map using newValue only & bind to transformed Signal
-    /// a.k.a `Rx.flatMap()`
-    public func map<U>(transformToSignal: T -> Signal<U>) -> Signal<U>
+    public func flatMap<U>(transform: T -> Signal<U>) -> Signal<U>
     {
         return Signal<U> { progress, fulfill, reject, configure in
             
@@ -230,26 +229,24 @@ public extension Signal
             var innerSignals: [Signal<U>] = []
             
             self.progress { (_, progressValue: T) in
-                let innerSignal = transformToSignal(progressValue)
+                let innerSignal = transform(progressValue)
                 innerSignals += [innerSignal]
                 
                 innerSignal.progress { (_, progressValue: U) in
                     progress(progressValue)
                 }
-                return
             }.success { (value: T) -> Void in
-                let innerSignal = transformToSignal(value)
+                let innerSignal = transform(value)
                 innerSignals += [innerSignal]
                 
                 innerSignal.progress { (_, progressValue: U) in
                     fulfill(progressValue)
                 }
-                return
             }
             
             _bind(nil, reject, configure, self)
             
-        }.name("\(self.name)-map(signal)")
+            }.name("\(self.name)-flatMap")
     }
     
     /// map using (oldValue, newValue)
