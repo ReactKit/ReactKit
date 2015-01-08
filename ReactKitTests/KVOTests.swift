@@ -814,6 +814,51 @@ class KVOTests: _TestCase
     
     // MARK: Multiple Signal Operations
     
+    func testKVO_merge()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        let obj3 = MyObject()
+        
+        let signal1 = KVO.signal(obj1, "value")
+        let signal2 = KVO.signal(obj2, "number")
+        
+        var bundledSignal = Signal<AnyObject?>.merge([signal1, signal2]).map { (value: AnyObject?) -> NSString? in
+            
+            let valueString: AnyObject = value ?? "nil"
+            
+            return "\(valueString)"
+        }
+        
+        // REACT
+        (obj3, "value") <~ bundledSignal
+        
+        println("*** Start ***")
+        
+        self.perform {
+            XCTAssertEqual(obj3.value, "initial")
+            
+            obj1.value = "test1"
+            XCTAssertEqual(obj3.value, "test1")
+            
+            obj1.value = "test2"
+            XCTAssertEqual(obj3.value, "test2")
+            
+            obj2.value = "test3"
+            XCTAssertEqual(obj3.value, "test2", "`obj3.value` should NOT be updated because `bundledSignal` doesn't react to `obj2.value`.")
+            
+            obj2.number = 123
+            XCTAssertEqual(obj3.value, "123")
+            
+            expect.fulfill()
+        }
+        
+        self.wait()
+    }
+    
+    /// a.k.a `Rx.combineLatest()`
     func testKVO_merge2()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
@@ -825,34 +870,14 @@ class KVOTests: _TestCase
         let signal1 = KVO.signal(obj1, "value")
         let signal2 = KVO.signal(obj2, "number")
         
-        var bundledSignal = Signal.merge2([signal1, signal2]).filter { values, changedValue in
-            
-            println("values = \(values)")
-            println("changedValue = \(changedValue)")
-            
-            if let str = changedValue as? NSString {
-                return str == "test2"
-            }
-            else if let number = changedValue as? NSNumber {
-                return true
-            }
-            
-            return false
-            
-        }.map { (values, changedValue: AnyObject?) -> NSString? in
-            
-            // NOTE: changedValue may be NSString or NSNumber
-            if let changedValue: AnyObject = changedValue {
-                return "\(changedValue)" // use if-let to unwrap optional, removing "Optional()" string
-            }
-            return nil
+        let bundledSignal = Signal<AnyObject?>.merge2([signal1, signal2]).map { (values: [AnyObject??], _) -> NSString? in
+            let value0: AnyObject = (values[0] ?? "notYet") ?? "nil"
+            let value1: AnyObject = (values[1] ?? "notYet") ?? "nil"
+            return "\(value0)-\(value1)"
         }
         
         // REACT
         (obj3, "value") <~ bundledSignal
-        
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ bundledSignal
         
         println("*** Start ***")
         
@@ -860,16 +885,16 @@ class KVOTests: _TestCase
             XCTAssertEqual(obj3.value, "initial")
             
             obj1.value = "test1"
-            XCTAssertEqual(obj3.value, "initial", "obj3.value should not be updated because of filter (only 'test2' is allowed).")
+            XCTAssertEqual(obj3.value, "test1-notYet")
             
             obj1.value = "test2"
-            XCTAssertEqual(obj3.value, "test2", "obj3.value should be updated.")
+            XCTAssertEqual(obj3.value, "test2-notYet")
             
             obj2.value = "test3"
-            XCTAssertEqual(obj3.value, "test2", "obj3.value should not be updated because of filter (only 'test2' is allowed).")
+            XCTAssertEqual(obj3.value, "test2-notYet", "`obj3.value` should NOT be updated because `bundledSignal` doesn't react to `obj2.value`.")
             
             obj2.number = 123
-            XCTAssertEqual(obj3.value, "123", "obj3.value should be updated because number is not filtered.")
+            XCTAssertEqual(obj3.value, "test2-123")
             
             expect.fulfill()
         }
@@ -877,7 +902,9 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testKVO_multiple()
+    // MARK: Multiple Reactions
+    
+    func testKVO_multiple_reactions()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
