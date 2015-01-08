@@ -17,7 +17,7 @@ public enum ReactKitError: Int
     case CancelledByUpstream = 2
     case CancelledByTriggerSignal = 3
     case CancelledByInternalSignal = 4
-
+    
     case RejectedByInternalTask = 1000
 }
 

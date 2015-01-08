@@ -10,11 +10,16 @@ import SwiftTask
 
 public class Signal<T>: Task<T, T, NSError>
 {
+    public override var description: String
+    {
+        return "<\(self.name); state=\(self.state.rawValue)>"
+    }
+    
     ///
     /// Creates a new signal (event-delivery-pipeline over time).
     /// Synonym of "stream", "observable", etc.
     ///
-    /// :param: paused Flag to invoke `initClosure` immediately or not. If `paused = true`, signal's initial state will be `.Paused` (known as "cold signal") and needs to `resume()` in order to start `.Running`. If `paused = false`, `initClosure` will be invoked immediately (known as "hot signal").
+    /// :param: paused Flag to invoke `initClosure` immediately or not. If `paused = true`, signal's initial state will be `.Paused` (lazy, similar to "cold signal") and needs to `resume()` in order to start `.Running`. If `paused = false`, `initClosure` will be invoked immediately.
     ///
     /// :param: initClosure Closure to define returning signal's behavior. Inside this closure, `configure.pause`/`resume`/`cancel` should capture inner logic (player) object. See also comment in `SwiftTask.Task.init()`.
     ///
@@ -25,29 +30,32 @@ public class Signal<T>: Task<T, T, NSError>
         // NOTE: set weakified=true to avoid "(inner) player -> signal" retaining
         super.init(weakified: true, paused: paused, initClosure: initClosure)
         
+        self.name = "DefaultSignal"
+        
         #if DEBUG
             println("[init] \(self)")
         #endif
     }
     
-    /// creates paused (cold) signal
+    /// creates paused signal
     public convenience init(initClosure: Task<T, T, NSError>.InitClosure)
     {
         self.init(paused: true, initClosure: initClosure)
     }
     
-    /// creates fulfilled, non-paused (hot) signal
-    public convenience init(value: T)
+    /// creates fulfilled (progress once) signal
+    public convenience init(paused: Bool = true, value: T)
     {
-        self.init(paused: false, initClosure: { progress, fulfill, reject, configure in
+        self.init(paused: paused, initClosure: { progress, fulfill, reject, configure in
+            progress(value)
             fulfill(value)
         })
     }
     
-    /// creates rejected, non-paused (hot) signal
-    public convenience init(error: NSError)
+    /// creates rejected signal
+    public convenience init(paused: Bool = true, error: NSError)
     {
-        self.init(paused: false, initClosure: { progress, fulfill, reject, configure in
+        self.init(paused: paused, initClosure: { progress, fulfill, reject, configure in
             reject(error)
         })
     }
@@ -75,7 +83,7 @@ public class Signal<T>: Task<T, T, NSError>
     public func then<U>(thenClosure: (T?, ErrorInfo?) -> U) -> Task<U, U, NSError>
     {
         return self.then { (value: T?, errorInfo: ErrorInfo?) -> Task<U, U, NSError> in
-            return Signal<U>(value: thenClosure(value, errorInfo))
+            return Signal<U>(paused: false, value: thenClosure(value, errorInfo))   // non-paused
         }
     }
     
@@ -90,7 +98,7 @@ public class Signal<T>: Task<T, T, NSError>
     public func success<U>(successClosure: T -> U) -> Task<U, U, NSError>
     {
         return self.success { (value: T) -> Task<U, U, NSError> in
-            return Signal<U>(value: successClosure(value))
+            return Signal<U>(paused: false, value: successClosure(value))   // non-paused
         }
     }
     
@@ -105,7 +113,7 @@ public class Signal<T>: Task<T, T, NSError>
     public override func failure(failureClosure: ErrorInfo -> T) -> Task<T, T, NSError>
     {
         return self.failure { (errorInfo: ErrorInfo) -> Task<T, T, NSError> in
-            return Signal(value: failureClosure(errorInfo))
+            return Signal(paused: false, value: failureClosure(errorInfo))  // non-paused
         }
     }
     
@@ -245,8 +253,9 @@ public extension Signal
             }
             
             _bind(nil, reject, configure, self)
-            
-            }.name("\(self.name)-flatMap")
+
+        }.name("\(self.name)-flatMap")
+        
     }
     
     /// map using (oldValue, newValue)
@@ -349,7 +358,6 @@ public extension Signal
             
             self.progress { (_, progressValue: T) in
                 count++
-
                 if count <= skipCount { return }
                 
                 progress(progressValue)
@@ -618,6 +626,7 @@ public extension Signal
             
         }.name("Signal.merge2")
     }
+    
 }
 
 /// wrapper-class for weakifying
