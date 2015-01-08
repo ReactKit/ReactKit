@@ -902,6 +902,51 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    /// a.k.a `Rx.combineLatest()`
+    /// almost same as `testKVO_merge2()`
+    func testKVO_combineLatest()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        let obj3 = MyObject()
+        
+        let signal1 = KVO.signal(obj1, "value")
+        let signal2 = KVO.signal(obj2, "number")
+        
+        let bundledSignal = Signal<AnyObject?>.combineLatest([signal1, signal2]).map { (values: [AnyObject??]) -> NSString? in
+            let value0: AnyObject = (values[0] ?? "notYet") ?? "nil"
+            let value1: AnyObject = (values[1] ?? "notYet") ?? "nil"
+            return "\(value0)-\(value1)"
+        }
+        
+        // REACT
+        (obj3, "value") <~ bundledSignal
+        
+        println("*** Start ***")
+        
+        self.perform {
+            XCTAssertEqual(obj3.value, "initial")
+            
+            obj1.value = "test1"
+            XCTAssertEqual(obj3.value, "test1-notYet")
+            
+            obj1.value = "test2"
+            XCTAssertEqual(obj3.value, "test2-notYet")
+            
+            obj2.value = "test3"
+            XCTAssertEqual(obj3.value, "test2-notYet", "`obj3.value` should NOT be updated because `bundledSignal` doesn't react to `obj2.value`.")
+            
+            obj2.number = 123
+            XCTAssertEqual(obj3.value, "test2-123")
+            
+            expect.fulfill()
+        }
+        
+        self.wait()
+    }
+    
     // MARK: Multiple Reactions
     
     func testKVO_multiple_reactions()

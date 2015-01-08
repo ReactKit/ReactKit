@@ -629,6 +629,21 @@ public extension Signal
     
 }
 
+/// Signal + ReactiveExtension Semantics
+/// (TODO: move to new file, but doesn't work in Swift 1.1. ERROR = ld: symbol(s) not found for architecture x86_64)
+public extension Signal
+{
+    public func scan<U>(initial initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
+    {
+        return self.map(accumulate: initialValue, accumulateClosure)
+    }
+
+    public class func combineLatest<U>(signals: [Signal<U>]) -> Signal<[T?]>
+    {
+        return self.merge2(signals).map { values, _ in values }
+    }
+}
+
 /// wrapper-class for weakifying
 internal class _SignalGroup<T>
 {
