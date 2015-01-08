@@ -387,6 +387,21 @@ public extension Signal
         }.name("\(self.name)-skip(until:)")
     }
     
+    public func merge(signal: Signal<T>) -> Signal<T>
+    {
+        return Signal<T>.merge([signal, self])
+    }
+    
+    public func merge(signals: [Signal<T>]) -> Signal<T>
+    {
+        return Signal<T>.merge(signals + [self])
+    }
+    
+    public func merge(initial initialValue: T) -> Signal<T>
+    {
+        return Signal<T>.merge([Signal(value: initialValue), self])
+    }
+    
     public func buffer(bufferCount: Int) -> Signal<[T]>
     {
         return Signal<[T]> { progress, fulfill, reject, configure in
@@ -494,40 +509,114 @@ public extension Signal
 // Multiple Signal Operations
 public extension Signal
 {
-    public typealias ChangedValueTuple = (values: [T?], changedValue: T)
+    // TODO: using variadic parameters didn't work when `signal.merge(...)` invoking `Signal.merge(...)`. Swift bug?
     
-    public class func any(signals: [Signal<T>]) -> Signal<ChangedValueTuple>
+    ///
+    /// Merges multiple signals (`Signal<U>`) into single signal, with force-casting to `Signal<T>`.
+    ///
+    /// - e.g. `let intSignal: Signal<Int> = Signal<Int>.merge([anySignal1, anySignal2, ...])`,
+    ///   where `anySignalX` is `Signal<Any>` and force-casting from Any to Int.
+    ///
+    /// NOTE: This method is conceptually equal to `Signal<T>.merge2(signals).map { $1 }`.
+    ///
+    public class func merge<U>(signals: [Signal<U>]) -> Signal<T>
     {
-        return Signal<ChangedValueTuple> { progress, fulfill, reject, configure in
+        return Signal<T> { progress, fulfill, reject, configure in
             
-            // wrap with class for weakifying
             let signalGroup = _SignalGroup(signals: signals)
             
             for signal in signals {
-                signal.progress { [weak signalGroup] (_, progressValue: T) in
-                    if let signalGroup = signalGroup {
-                        let signals = signalGroup.signals
-                        
-                        let values: [T?] = signals.map { $0.progress }
-                        let valueTuple = ChangedValueTuple(values: values, changedValue: progressValue)
-                        
-                        progress(valueTuple)
+                signal.progress { (_, progressValue: U) in
+                    progress(progressValue as T)
+                }.then { value, errorInfo -> Void in
+                    if let value = value {
+                        fulfill(value as T)
+                    }
+                    else if let errorInfo = errorInfo {
+                        if let error = errorInfo.error {
+                            reject(error)
+                        }
+                        else {
+                            let error = _RKError(.CancelledByInternalSignal, "One of signal is cancelled in Signal.merge().")
+                            reject(error)
+                        }
                     }
                 }
             }
             
             // NOTE: signals should be captured by class-type signalGroup, which should be captured by new signal
             configure.pause = {
-                self.pauseAll(signalGroup.signals)
+                Signal<U>.pauseAll(signalGroup.signals)
             }
             configure.resume = {
-                self.resumeAll(signalGroup.signals)
+                Signal<U>.resumeAll(signalGroup.signals)
             }
             configure.cancel = {
-                self.cancelAll(signalGroup.signals)
+                Signal<U>.cancelAll(signalGroup.signals)
             }
             
-        }.name("Signal.any")
+        }.name("Signal.merge")
+    }
+    
+    public typealias ChangedValueTuple = (values: [T?], changedValue: T)
+    
+    ///
+    /// Merges multiple signals (`Signal<U>`) into single signal,
+    /// combining latest values `[U?]` as well as changed value `U` together as `([U?], U)` tuple,
+    /// and finally force-casting to `Signal<([T?], T)>`.
+    ///
+    /// This is a generalized method for `Rx.merge()` and `Rx.combineLatest()`.
+    ///
+    public class func merge2<U>(signals: [Signal<U>]) -> Signal<ChangedValueTuple>
+    {
+        return Signal<ChangedValueTuple> { progress, fulfill, reject, configure in
+            
+            // wrap with class for weakifying
+            let signalGroup = _SignalGroup<U>(signals: signals)
+            
+            func extractValuesAndHandle(valueSourceTuple tuple: (signalGroup: _SignalGroup<U>?, changedValue: U), #handler: ChangedValueTuple -> Void)
+            {
+                if let signalGroup = tuple.signalGroup {
+                    let signals = signalGroup.signals
+                    
+                    let values: [T?] = signals.map { $0.progress as? T }
+                    let valueTuple = ChangedValueTuple(values: values, changedValue: tuple.changedValue as T)
+                    
+                    handler(valueTuple)
+                }
+            }
+            
+            for signal in signals {
+                signal.progress { [weak signalGroup] (_, progressValue: U) in
+                    extractValuesAndHandle(valueSourceTuple: (signalGroup, progressValue), handler: progress)
+                }.then { [weak signalGroup] value, errorInfo -> Void in
+                    if let value = value {
+                        extractValuesAndHandle(valueSourceTuple: (signalGroup, value), handler: fulfill)
+                    }
+                    else if let errorInfo = errorInfo {
+                        if let error = errorInfo.error {
+                            reject(error)
+                        }
+                        else {
+                            let error = _RKError(.CancelledByInternalSignal, "One of signal is cancelled in Signal.merge2().")
+                            reject(error)
+                        }
+                    }
+                }
+            }
+            
+            // NOTE: signals should be captured by class-type signalGroup, which should be captured by new signal
+            configure.pause = {
+                Signal<U>.pauseAll(signalGroup.signals)
+            }
+            configure.resume = {
+                Signal<U>.resumeAll(signalGroup.signals)
+            }
+            configure.cancel = {
+                Signal<U>.cancelAll(signalGroup.signals)
+            }
+            
+        }.name("Signal.merge2")
     }
 }
 

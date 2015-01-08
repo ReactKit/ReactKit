@@ -814,7 +814,7 @@ class KVOTests: _TestCase
     
     // MARK: Multiple Signal Operations
     
-    func testKVO_any()
+    func testKVO_merge2()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -825,7 +825,7 @@ class KVOTests: _TestCase
         let signal1 = KVO.signal(obj1, "value")
         let signal2 = KVO.signal(obj2, "number")
         
-        var bundledSignal = Signal.any([signal1, signal2]).filter { values, changedValue in
+        var bundledSignal = Signal.merge2([signal1, signal2]).filter { values, changedValue in
             
             println("values = \(values)")
             println("changedValue = \(changedValue)")
