@@ -517,7 +517,7 @@ public extension Signal
 // Multiple Signal Operations
 public extension Signal
 {
-    // TODO: using variadic parameters didn't work when `signal.merge(...)` invoking `Signal.merge(...)`. Swift bug?
+    // TODO: when using variadic parameters, `signal.merge(...)` can't find `Signal.merge(...)` to invoke. Swift bug?
     
     ///
     /// Merges multiple signals (`Signal<U>`) into single signal, with force-casting to `Signal<T>`.
