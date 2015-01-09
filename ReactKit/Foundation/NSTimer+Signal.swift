@@ -16,6 +16,10 @@ public extension NSTimer
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 progress(map(self_ as? NSTimer))
+                
+                if !repeats {
+                    fulfill(map(self_ as? NSTimer))
+                }
             }
             
             var timer: NSTimer?
