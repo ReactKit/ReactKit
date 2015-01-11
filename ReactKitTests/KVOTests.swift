@@ -826,9 +826,7 @@ class KVOTests: _TestCase
         let signal2 = KVO.signal(obj2, "number")
         
         var bundledSignal = Signal<AnyObject?>.merge([signal1, signal2]).map { (value: AnyObject?) -> NSString? in
-            
             let valueString: AnyObject = value ?? "nil"
-            
             return "\(valueString)"
         }
         
@@ -943,6 +941,70 @@ class KVOTests: _TestCase
             
             obj2.number = 123
             XCTAssertEqual(obj3.value, "test2-123")
+            
+            expect.fulfill()
+        }
+        
+        self.wait()
+    }
+    
+    func testKVO_concat()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        
+        let signal1: Signal<AnyObject?> = NSTimer.signal(timeInterval: 0.1, userInfo: nil, repeats: false) { _ in "Next" }
+        let signal2: Signal<AnyObject?> = NSTimer.signal(timeInterval: 0.3, userInfo: nil, repeats: false) { _ in 123 }
+        
+        var concatSignal = Signal<AnyObject?>.concat([signal1, signal2]).map { (value: AnyObject?) -> NSString? in
+            let valueString: AnyObject = value ?? "nil"
+            return "\(valueString)"
+        }
+        
+        // REACT
+        (obj1, "value") <~ concatSignal
+        
+        println("*** Start ***")
+        
+        self.perform {
+            XCTAssertEqual(obj1.value, "initial")
+            
+            Async.main(after: 0.2) {
+                XCTAssertEqual(obj1.value, "Next")
+            }
+            
+            Async.main(after: 0.4) {
+                XCTAssertEqual(obj1.value, "123")
+                expect.fulfill()
+            }
+        }
+        
+        self.wait()
+    }
+
+    func testKVO_startWith()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let signal1 = KVO.signal(obj1, "value")
+        
+        var bundledSignal = signal1.startWith("start!")
+        
+        // REACT
+        (obj2, "value") <~ bundledSignal
+        
+        println("*** Start ***")
+        
+        self.perform {
+            // NOTE: not "initial"
+            XCTAssertEqual(obj2.value, "start!", "`obj2.value` should not stay with 'initial' & `startWith()`'s initialValue should be set.")
+            
+            obj1.value = "test1"
+            XCTAssertEqual(obj2.value, "test1")
             
             expect.fulfill()
         }

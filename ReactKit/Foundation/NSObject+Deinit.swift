@@ -29,7 +29,7 @@ public extension NSObject
         if signal == nil {
             signal = Signal<AnyObject?> { (progress, fulfill, reject, configure) in
                 // do nothing
-            }.name("deinitSignal")
+            }.name("\(NSStringFromClass(self.dynamicType))-deinitSignal")
             
             #if DEBUG
                 signal?.then { value, errorInfo -> Void in

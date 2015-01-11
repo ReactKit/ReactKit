@@ -50,6 +50,7 @@ public class Signal<T>: Task<T, T, NSError>
             progress(value)
             fulfill(value)
         })
+        self.name = "FulfilledSignal"
     }
     
     /// creates rejected signal
@@ -58,6 +59,7 @@ public class Signal<T>: Task<T, T, NSError>
         self.init(paused: paused, initClosure: { progress, fulfill, reject, configure in
             reject(error)
         })
+        self.name = "RejectedSignal"
     }
     
     deinit
@@ -398,16 +400,32 @@ public extension Signal
     public func merge(signal: Signal<T>) -> Signal<T>
     {
         return Signal<T>.merge([signal, self])
+            .name("\(self.name)-merge")
     }
     
     public func merge(signals: [Signal<T>]) -> Signal<T>
     {
         return Signal<T>.merge(signals + [self])
+            .name("\(self.name)-merge")
     }
     
-    public func merge(initial initialValue: T) -> Signal<T>
+    public func concat(nextSignal: Signal<T>) -> Signal<T>
     {
-        return Signal<T>.merge([Signal(value: initialValue), self])
+        return Signal<T>.concat([self, nextSignal])
+            .name("\(self.name)-concat")
+    }
+    
+    public func concat(nextSignals: [Signal<T>]) -> Signal<T>
+    {
+        return Signal<T>.concat([self] + nextSignals)
+            .name("\(self.name)-concat")
+    }
+    
+    /// `concat()` initialValue first
+    public func startWith(initialValue: T) -> Signal<T>
+    {
+        return Signal<T>.concat([Signal(value: initialValue), self])
+            .name("\(self.name)-startWith")
     }
     
     public func buffer(bufferCount: Int) -> Signal<[T]>
@@ -517,8 +535,6 @@ public extension Signal
 // Multiple Signal Operations
 public extension Signal
 {
-    // TODO: when using variadic parameters, `signal.merge(...)` can't find `Signal.merge(...)` to invoke. Swift bug?
-    
     ///
     /// Merges multiple signals (`Signal<U>`) into single signal, with force-casting to `Signal<T>`.
     ///
@@ -627,9 +643,62 @@ public extension Signal
         }.name("Signal.merge2")
     }
     
+    public class func concat<U>(signals: [Signal<U>]) -> Signal<T>
+    {
+        precondition(signals.count > 0)
+        
+        if signals.count == 1 {
+            return signals.first!.asSignal(T)
+        }
+        
+        return Signal<T> { progress, fulfill, reject, configure in
+            
+            // NOTE: to call this method recursively, local-closure must be declared first (as Optional) before assignment
+            var concatRecursively: (([Signal<U>], lastValue: U?) -> Void)!
+            
+            concatRecursively = { signals, lastValue in
+                
+                if let signal = signals.first {
+                    
+                    signal.progress { _, progressValue in
+                        progress(progressValue as T)
+                    }.success { value -> Void in
+                        concatRecursively(Array(signals[1..<signals.count]), lastValue: value)
+                    }.failure { errorInfo -> Void in
+                        if let error = errorInfo.error {
+                            reject(error)
+                        }
+                        else {
+                            let error = _RKError(.CancelledByInternalSignal, "One of signal is cancelled in Signal.concat().")
+                            reject(error)
+                        }
+                    }
+                }
+                else {
+                    assert(lastValue != nil, "Should not reach here without `lastValue`.")
+                    fulfill(lastValue! as T)
+                }
+                
+            }
+            
+            concatRecursively(signals, lastValue: nil)
+            
+            configure.pause = {
+                Signal<U>.pauseAll(signals)
+            }
+            configure.resume = {
+                Signal<U>.resumeAll(signals)
+            }
+            configure.cancel = {
+                Signal<U>.cancelAll(signals)
+            }
+            
+        }.name("Signal.concat")
+    }
+    
 }
 
-/// Signal + ReactiveExtension Semantics
+/// Signal + Rx Semantics
 /// (TODO: move to new file, but doesn't work in Swift 1.1. ERROR = ld: symbol(s) not found for architecture x86_64)
 public extension Signal
 {
