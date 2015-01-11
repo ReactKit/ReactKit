@@ -278,7 +278,7 @@ public extension Signal
     
     /// map using (accumulatedValue, newValue)
     /// a.k.a `Rx.scan()`
-    public func map<U>(accumulate initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
+    public func mapAccumulate<U>(initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
     {
         return Signal<U> { progress, fulfill, reject, configure in
             
@@ -702,9 +702,9 @@ public extension Signal
 /// (TODO: move to new file, but doesn't work in Swift 1.1. ERROR = ld: symbol(s) not found for architecture x86_64)
 public extension Signal
 {
-    public func scan<U>(initial initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
+    public func scan<U>(initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
     {
-        return self.map(accumulate: initialValue, accumulateClosure)
+        return self.mapAccumulate(initialValue, accumulateClosure)
     }
 
     public class func combineLatest<U>(signals: [Signal<U>]) -> Signal<[T?]>

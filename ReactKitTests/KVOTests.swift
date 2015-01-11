@@ -337,7 +337,7 @@ class KVOTests: _TestCase
         
         let obj1 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").map(accumulate: []) { accumulatedValue, newValue -> [String] in
+        let signal = KVO.signal(obj1, "value").mapAccumulate([]) { accumulatedValue, newValue -> [String] in
             return accumulatedValue + [newValue as String]
         }
         
