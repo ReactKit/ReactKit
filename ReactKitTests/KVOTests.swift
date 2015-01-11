@@ -580,7 +580,7 @@ class KVOTests: _TestCase
         let stopper = MyObject()
         
         let startingSignal = KVO.signal(stopper, "value")    // store startingSignal to live until end of runloop
-        let signal = KVO.signal(obj1, "value").skip(until: startingSignal)
+        let signal = KVO.signal(obj1, "value").skipUntil(startingSignal)
         
         weak var weakSignal = signal
         
@@ -600,14 +600,14 @@ class KVOTests: _TestCase
             obj1.value = "hoge"
             
             XCTAssertEqual(obj1.value, "hoge")
-            XCTAssertEqual(obj2.value, "initial", "obj2.value should not be changed due to `skip(until:)`.")
+            XCTAssertEqual(obj2.value, "initial", "obj2.value should not be changed due to `skipUntil()`.")
             
             stopper.value = "DUMMY" // fire startingSignal
             
             obj1.value = "fuga"
             
             XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(obj2.value, "fuga", "obj2.value should be updated because `startingSignal` is triggered so that `skip(until: startingSignal)` should no longer skip.")
+            XCTAssertEqual(obj2.value, "fuga", "obj2.value should be updated because `startingSignal` is triggered so that `skipUntil(startingSignal)` should no longer skip.")
             
             expect.fulfill()
             

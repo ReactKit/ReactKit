@@ -370,7 +370,7 @@ public extension Signal
         }.name("\(self.name)-skip(\(skipCount))")
     }
     
-    public func skip<U>(until triggerSignal: Signal<U>) -> Signal
+    public func skipUntil<U>(triggerSignal: Signal<U>) -> Signal
     {
         return Signal<T> { [weak triggerSignal] progress, fulfill, reject, configure in
             
@@ -394,7 +394,7 @@ public extension Signal
             
             _bind(fulfill, reject, configure, self)
             
-        }.name("\(self.name)-skip(until:)")
+        }.name("\(self.name)-skipUntil")
     }
     
     public func merge(signal: Signal<T>) -> Signal<T>
