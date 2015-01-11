@@ -41,7 +41,19 @@ public extension Signal
                     }
                 }
             }
-            return
+            
+            configure.pause = {
+                task.pause()
+                return
+            }
+            configure.resume = {
+                task.resume()
+                return
+            }
+            configure.cancel = {
+                task.cancel()
+                return
+            }
         }
     }
     
@@ -76,7 +88,19 @@ public extension Signal
                     }
                 }
             }
-            return
+            
+            configure.pause = {
+                task.pause()
+                return
+            }
+            configure.resume = {
+                task.resume()
+                return
+            }
+            configure.cancel = {
+                task.cancel()
+                return
+            }
         }
     }
     
