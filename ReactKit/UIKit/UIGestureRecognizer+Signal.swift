@@ -35,6 +35,6 @@ public extension UIGestureRecognizer
                 }
             }
             
-        }.name("\(NSStringFromClass(self.dynamicType))").take(until: self.deinitSignal)
+        }.name("\(NSStringFromClass(self.dynamicType))").takeUntil(self.deinitSignal)
     }
 }

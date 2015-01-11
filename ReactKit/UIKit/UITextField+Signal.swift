@@ -17,6 +17,6 @@ public extension UITextField
                 return sender.text
             }
             return nil
-        }.take(until: self.deinitSignal)
+        }.takeUntil(self.deinitSignal)
     }
 }

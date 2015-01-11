@@ -320,7 +320,7 @@ public extension Signal
         }.name("\(self.name)-take(\(maxCount))")
     }
     
-    public func take<U>(until triggerSignal: Signal<U>) -> Signal
+    public func takeUntil<U>(triggerSignal: Signal<U>) -> Signal
     {
         return Signal<T> { [weak triggerSignal] progress, fulfill, reject, configure in
             
@@ -331,7 +331,7 @@ public extension Signal
             }
 
             let triggerSignalName = triggerSignal!.name
-            let cancelError = _RKError(.CancelledByTriggerSignal, "Signal=\(signalName) is cancelled by take(until: \(triggerSignalName)).")
+            let cancelError = _RKError(.CancelledByTriggerSignal, "Signal=\(signalName) is cancelled by takeUntil(\(triggerSignalName)).")
             
             triggerSignal?.progress { [weak self] (_, progressValue: U) in
                 if let self_ = self {
@@ -349,7 +349,7 @@ public extension Signal
             
             _bind(fulfill, reject, configure, self)
             
-        }.name("\(self.name)-take(until:)")
+        }.name("\(self.name)-takeUntil")
     }
     
     public func skip(skipCount: Int) -> Signal

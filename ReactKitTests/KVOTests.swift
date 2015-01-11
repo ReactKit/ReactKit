@@ -493,7 +493,7 @@ class KVOTests: _TestCase
         let stopper = MyObject()
         
         let stoppingSignal = KVO.signal(stopper, "value")    // store stoppingSignal to live until end of runloop
-        let signal = KVO.signal(obj1, "value").take(until: stoppingSignal)
+        let signal = KVO.signal(obj1, "value").takeUntil(stoppingSignal)
         
         weak var weakSignal = signal
         
@@ -520,7 +520,7 @@ class KVOTests: _TestCase
             obj1.value = "fuga"
             
             XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because signal is stopped via take(until: stoppingSignal).")
+            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because signal is stopped via takeUntil(stoppingSignal).")
             
             expect.fulfill()
             

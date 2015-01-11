@@ -42,7 +42,7 @@ public extension UIBarButtonItem
                 removeTargetAction()
             }
             
-        }.name("\(NSStringFromClass(self.dynamicType))").take(until: self.deinitSignal)
+        }.name("\(NSStringFromClass(self.dynamicType))").takeUntil(self.deinitSignal)
     }
     
     public func signal<T>(mappedValue: T) -> Signal<T>

@@ -25,7 +25,7 @@ public extension NSObject
                 configure.cancel = { observer.stop() }
             }
             
-        }.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)").take(until: self.deinitSignal)
+        }.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
     }
 }
 
