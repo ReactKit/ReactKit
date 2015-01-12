@@ -8,7 +8,7 @@
 
 import SwiftTask
 
-public class Signal<T>: Task<T, T, NSError>
+public class Signal<T>: Task<T, Void, NSError>
 {
     public override var description: String
     {
@@ -25,7 +25,7 @@ public class Signal<T>: Task<T, T, NSError>
     ///
     /// :returns: New Signal.
     /// 
-    public init(paused: Bool, initClosure: Task<T, T, NSError>.InitClosure)
+    public init(paused: Bool, initClosure: Task<T, Void, NSError>.InitClosure)
     {
         // NOTE: set weakified=true to avoid "(inner) player -> signal" retaining
         super.init(weakified: true, paused: paused, initClosure: initClosure)
@@ -38,7 +38,7 @@ public class Signal<T>: Task<T, T, NSError>
     }
     
     /// creates paused signal
-    public convenience init(initClosure: Task<T, T, NSError>.InitClosure)
+    public convenience init(initClosure: Task<T, Void, NSError>.InitClosure)
     {
         self.init(paused: true, initClosure: initClosure)
     }
@@ -48,7 +48,7 @@ public class Signal<T>: Task<T, T, NSError>
     {
         self.init(paused: paused, initClosure: { progress, fulfill, reject, configure in
             progress(value)
-            fulfill(value)
+            fulfill()
         })
         self.name = "FulfilledSignal"
     }
@@ -75,52 +75,52 @@ public class Signal<T>: Task<T, T, NSError>
     }
     
     /// progress-chaining with auto-resume
-    public override func progress(progressClosure: ProgressTuple -> Void) -> Task<T, T, NSError>
+    public override func progress(progressClosure: ProgressTuple -> Void) -> Task<T, Void, NSError>
     {
         let signal = super.progress(progressClosure)
         self.resume()
         return signal
     }
     
-    public func then<U>(thenClosure: (T?, ErrorInfo?) -> U) -> Task<U, U, NSError>
+    public func then<U>(thenClosure: (Void?, ErrorInfo?) -> U) -> Task<U, Void, NSError>
     {
-        return self.then { (value: T?, errorInfo: ErrorInfo?) -> Task<U, U, NSError> in
+        return self.then { (value: Void?, errorInfo: ErrorInfo?) -> Task<U, Void, NSError> in
             return Signal<U>(paused: false, value: thenClosure(value, errorInfo))   // non-paused
         }
     }
     
     /// then-chaining with auto-resume
-    public func then<U>(thenClosure: (T?, ErrorInfo?) -> Task<U, U, NSError>) -> Task<U, U, NSError>
+    public func then<U>(thenClosure: (Void?, ErrorInfo?) -> Task<U, Void, NSError>) -> Task<U, Void, NSError>
     {
         let signal = super.then(thenClosure)
         self.resume()
         return signal
     }
     
-    public func success<U>(successClosure: T -> U) -> Task<U, U, NSError>
+    public func success<U>(successClosure: Void -> U) -> Task<U, Void, NSError>
     {
-        return self.success { (value: T) -> Task<U, U, NSError> in
-            return Signal<U>(paused: false, value: successClosure(value))   // non-paused
+        return self.success { _ -> Task<U, Void, NSError> in
+            return Signal<U>(paused: false, value: successClosure())   // non-paused
         }
     }
     
     /// success-chaining with auto-resume
-    public func success<U>(successClosure: T -> Task<U, U, NSError>) -> Task<U, U, NSError>
+    public func success<U>(successClosure: Void -> Task<U, Void, NSError>) -> Task<U, Void, NSError>
     {
         let signal = super.success(successClosure)
         self.resume()
         return signal
     }
     
-    public override func failure(failureClosure: ErrorInfo -> T) -> Task<T, T, NSError>
+    public func failure(failureClosure: ErrorInfo -> T) -> Task<T, Void, NSError>
     {
-        return self.failure { (errorInfo: ErrorInfo) -> Task<T, T, NSError> in
+        return self.failure { (errorInfo: ErrorInfo) -> Task<T, Void, NSError> in
             return Signal(paused: false, value: failureClosure(errorInfo))  // non-paused
         }
     }
     
     /// failure-chaining with auto-resume
-    public override func failure(failureClosure: ErrorInfo -> Task<T, T, NSError>) -> Task<T, T, NSError>
+    public override func failure(failureClosure: ErrorInfo -> Task<T, Void, NSError>) -> Task<T, Void, NSError>
     {
         let signal = super.failure(failureClosure)
         self.resume()
@@ -147,15 +147,15 @@ public class Signal<T>: Task<T, T, NSError>
 }
 
 /// helper
-private func _bind<T>(fulfill: (T -> Void)?, reject: NSError -> Void, configure: TaskConfiguration, upstreamSignal: Signal<T>)
+private func _bind<T>(fulfill: (Void -> Void)?, reject: NSError -> Void, configure: TaskConfiguration, upstreamSignal: Signal<T>)
 {
     let signalName = upstreamSignal.name
 
     // fulfill/reject downstream on upstream-fulfill/reject/cancel
     upstreamSignal.then { value, errorInfo -> Void in
         
-        if let value = value {
-            fulfill?(value)
+        if value != nil {
+            fulfill?()
             return
         }
         else if let errorInfo = errorInfo {
@@ -221,8 +221,8 @@ public extension Signal
             
             self.progress { (_, progressValue: T) in
                 progress(transform(progressValue))
-            }.success { (value: T) -> Void in
-                fulfill(transform(value))
+            }.success {
+                fulfill()
             }
             
             _bind(nil, reject, configure, self)
@@ -245,13 +245,8 @@ public extension Signal
                 innerSignal.progress { (_, progressValue: U) in
                     progress(progressValue)
                 }
-            }.success { (value: T) -> Void in
-                let innerSignal = transform(value)
-                innerSignals += [innerSignal]
-                
-                innerSignal.progress { (_, progressValue: U) in
-                    fulfill(progressValue)
-                }
+            }.success {
+                fulfill()
             }
             
             _bind(nil, reject, configure, self)
@@ -267,8 +262,8 @@ public extension Signal
             
             self.progress { (progressValues: (oldValue: T?, newValue: T)) in
                 progress(transform2(progressValues))
-            }.success { (value: T) -> Void in
-                fulfill(transform2(oldValue: value, newValue: value))
+            }.success {
+                fulfill()
             }
             
             _bind(nil, reject, configure, self)
@@ -287,8 +282,8 @@ public extension Signal
             self.progress { p in
                 accumulatedValue = accumulateClosure(accumulatedValue: accumulatedValue, newValue: p.newProgress)
                 progress(accumulatedValue)
-            }.success { _ -> Void in
-                fulfill(accumulatedValue)
+            }.success {
+                fulfill()
             }
             
             _bind(nil, reject, configure, self)
@@ -310,7 +305,7 @@ public extension Signal
                 }
                 else if count == maxCount {
                     progress(progressValue)
-                    fulfill(progressValue)  // successfully reached maxCount
+                    fulfill()   // successfully reached maxCount
                 }
                 
             }
@@ -337,7 +332,7 @@ public extension Signal
                 if let self_ = self {
                     self_.cancel(error: cancelError)
                 }
-            }.success { [weak self] (value: U) -> Void in
+            }.success { [weak self] in
                 if let self_ = self {
                     self_.cancel(error: cancelError)
                 }
@@ -386,7 +381,7 @@ public extension Signal
             
             triggerSignal?.progress { (_, progressValue: U) in
                 shouldSkip = false
-            }.success { (value: U) -> Void in
+            }.success {
                 shouldSkip = false
             }.failure { (error: NSError?, isCancelled: Bool) -> Void in
                 shouldSkip = false
@@ -440,8 +435,8 @@ public extension Signal
                     progress(buffer)
                     buffer = []
                 }
-            }.success { _ -> Void in
-                fulfill(buffer)
+            }.success {
+                fulfill()
                 buffer = []
             }.failure { _ -> Void in
                 buffer = []
@@ -460,8 +455,8 @@ public extension Signal
             
             self.progress { (_, progressValue: T) in
                 buffer += [progressValue]
-            }.success { _ -> Void in
-                fulfill(buffer)
+            }.success {
+                fulfill()
             }
             
             triggerSignal.progress { [weak self] (_, progressValue: U) in
@@ -469,7 +464,7 @@ public extension Signal
                     progress(buffer)
                     buffer = []
                 }
-            }.success { [weak self] (value: U) -> Void in
+            }.success { [weak self] in
                 if let self_ = self {
                     progress(buffer)
                     buffer = []
@@ -553,8 +548,8 @@ public extension Signal
                 signal.progress { (_, progressValue: U) in
                     progress(progressValue as T)
                 }.then { value, errorInfo -> Void in
-                    if let value = value {
-                        fulfill(value as T)
+                    if value != nil {
+                        fulfill()
                     }
                     else if let errorInfo = errorInfo {
                         if let error = errorInfo.error {
@@ -614,8 +609,8 @@ public extension Signal
                 signal.progress { [weak signalGroup] (_, progressValue: U) in
                     extractValuesAndHandle(valueSourceTuple: (signalGroup, progressValue), handler: progress)
                 }.then { [weak signalGroup] value, errorInfo -> Void in
-                    if let value = value {
-                        extractValuesAndHandle(valueSourceTuple: (signalGroup, value), handler: fulfill)
+                    if value != nil {
+                        fulfill()
                     }
                     else if let errorInfo = errorInfo {
                         if let error = errorInfo.error {
@@ -654,16 +649,16 @@ public extension Signal
         return Signal<T> { progress, fulfill, reject, configure in
             
             // NOTE: to call this method recursively, local-closure must be declared first (as Optional) before assignment
-            var concatRecursively: (([Signal<U>], lastValue: U?) -> Void)!
+            var concatRecursively: (([Signal<U>]) -> Void)!
             
-            concatRecursively = { signals, lastValue in
+            concatRecursively = { signals in
                 
                 if let signal = signals.first {
                     
                     signal.progress { _, progressValue in
                         progress(progressValue as T)
-                    }.success { value -> Void in
-                        concatRecursively(Array(signals[1..<signals.count]), lastValue: value)
+                    }.success {
+                        concatRecursively(Array(signals[1..<signals.count]))
                     }.failure { errorInfo -> Void in
                         if let error = errorInfo.error {
                             reject(error)
@@ -675,13 +670,12 @@ public extension Signal
                     }
                 }
                 else {
-                    assert(lastValue != nil, "Should not reach here without `lastValue`.")
-                    fulfill(lastValue! as T)
+                    fulfill()
                 }
                 
             }
             
-            concatRecursively(signals, lastValue: nil)
+            concatRecursively(signals)
             
             configure.pause = {
                 Signal<U>.pauseAll(signals)

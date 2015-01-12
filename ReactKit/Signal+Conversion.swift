@@ -29,7 +29,7 @@ public extension Signal
             task.then { value, errorInfo -> Void in
                 if let value = value {
                     progress(value)
-                    fulfill(value)
+                    fulfill()
                 }
                 else if let errorInfo = errorInfo {
                     if let error = errorInfo.error as? NSError {
@@ -76,7 +76,7 @@ public extension Signal
                 
                 if let value = value {
                     progress(task!.progress, value)
-                    fulfill(task!.progress, value)
+                    fulfill()
                 }
                 else if let errorInfo = errorInfo {
                     if let error = errorInfo.error as? NSError {

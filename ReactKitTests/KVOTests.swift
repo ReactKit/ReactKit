@@ -426,9 +426,8 @@ class KVOTests: _TestCase
         ^{ _ in progressCount++; return } <~ takeSignal
         
         // success
-        takeSignal.success { value -> Void in
+        takeSignal.success {
             successCount++
-            XCTAssertEqual(value! as String, "hoge")
         }
         
         println("*** Start ***")
