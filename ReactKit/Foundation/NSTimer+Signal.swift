@@ -18,7 +18,7 @@ public extension NSTimer
                 progress(map(self_ as? NSTimer))
                 
                 if !repeats {
-                    fulfill(map(self_ as? NSTimer))
+                    fulfill()
                 }
             }
             
