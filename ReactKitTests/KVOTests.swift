@@ -331,7 +331,7 @@ class KVOTests: _TestCase
     }
     
     /// a.k.a `Rx.scan`
-    func testKVO_map_accumulate()
+    func testKVO_mapAccumulate()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -484,7 +484,7 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testKVO_take_until()
+    func testKVO_takeUntil()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -571,7 +571,7 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testKVO_skip_until()
+    func testKVO_skipUntil()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -616,7 +616,7 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testBuffer()
+    func testKVO_buffer()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -668,7 +668,7 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testBuffer_trigger()
+    func testKVO_bufferBy()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -676,7 +676,7 @@ class KVOTests: _TestCase
         let trigger = MyObject()
         
         let triggerSignal = KVO.signal(trigger, "value")
-        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value").buffer(trigger: triggerSignal)
+        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value").bufferBy(triggerSignal)
         
         var result: String? = "no result"
         
