@@ -16,6 +16,47 @@ public extension Signal
         return self.map { $0 as U }
     }
     
+    //--------------------------------------------------
+    /// MARK: - From Values
+    //--------------------------------------------------
+    
+    /// creates once (progress once & fulfill) signal
+    public class func once(value: T, paused: Bool = true) -> Signal<T>
+    {
+        return Signal(paused: paused) { progress, fulfill, reject, configure in
+            progress(value)
+            fulfill()
+        }.name("OnceSignal")
+    }
+    
+    /// creates never (no progress & fulfill & reject) signal
+    public class func never(paused: Bool = true) -> Signal<T>
+    {
+        return Signal(paused: paused) { progress, fulfill, reject, configure in
+            // do nothing
+        }.name("NeverSignal")
+    }
+    
+    /// creates empty (fulfilled without any progress) signal
+    public class func fulfilled(paused: Bool = true) -> Signal<T>
+    {
+        return Signal(paused: paused) { progress, fulfill, reject, configure in
+            fulfill()
+        }.name("FulfilledSignal")
+    }
+    
+    /// creates error (rejected) signal
+    public class func rejected(error: NSError, paused: Bool = true) -> Signal<T>
+    {
+        return Signal(paused: paused) { progress, fulfill, reject, configure in
+            reject(error)
+        }.name("RejectedSignal")
+    }
+    
+    //--------------------------------------------------
+    /// MARK: - From SwiftTask
+    //--------------------------------------------------
+    
     ///
     /// Converts `Task<P, V, E>` to `Signal<V>`.
     ///
@@ -54,7 +95,8 @@ public extension Signal
                 task.cancel()
                 return
             }
-        }
+            
+        }.name("Signal.fromTask")
     }
     
     ///
@@ -101,7 +143,29 @@ public extension Signal
                 task.cancel()
                 return
             }
-        }
+            
+        }.name("Signal.fromProgressTask")
     }
     
+    //--------------------------------------------------
+    // MARK: - Rx Semantics
+    //--------------------------------------------------
+    
+    /// alias for `Signal.fulfilled()`
+    public class func just(value: T, paused: Bool = true) -> Signal<T>
+    {
+        return self.once(value, paused: paused)
+    }
+    
+    /// alias for `Signal.fulfilled()`
+    public class func empty(paused: Bool = true) -> Signal<T>
+    {
+        return self.fulfilled(paused: paused)
+    }
+    
+    /// alias for `Signal.rejected()`
+    public class func error(error: NSError, paused: Bool = true) -> Signal<T>
+    {
+        return self.rejected(error, paused: paused)
+    }
 }

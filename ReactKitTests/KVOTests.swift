@@ -7,6 +7,7 @@
 //
 
 import ReactKit
+import SwiftTask
 import XCTest
 
 let SAFE_DELAY = 0.5
@@ -456,13 +457,12 @@ class KVOTests: _TestCase
         let expect = self.expectationWithDescription(__FUNCTION__)
         
         let obj1 = MyObject()
-        let obj2 = MyObject()
         
         let sourceSignal = KVO.signal(obj1, "value")
-        let takeSignal = sourceSignal.take(1)  // only take 1 event
+        let takeSignal = sourceSignal.take(1)   // only take 1 event
         
         // failure
-        takeSignal.failure { errorInfo -> NSString? in
+        takeSignal.failure { errorInfo -> Void in
             
             XCTAssertEqual(errorInfo.error!.domain, ReactKitError.Domain, "`sourceSignal` is cancelled before any progress, so `takeSignal` should fail.")
             XCTAssertEqual(errorInfo.error!.code, ReactKitError.CancelledByUpstream.rawValue)
@@ -470,13 +470,11 @@ class KVOTests: _TestCase
             XCTAssertFalse(errorInfo.isCancelled, "Though `sourceSignal` is cancelled, `takeSignal` is rejected rather than cancelled.")
             
             expect.fulfill()
-            
-            return "DUMMY"
         
         }
         
-        self.perform {
-            sourceSignal.cancel()
+        self.perform { [weak sourceSignal] in
+            sourceSignal?.cancel()
             return
         }
         
@@ -1009,6 +1007,51 @@ class KVOTests: _TestCase
         }
         
         self.wait()
+    }
+    
+    func testKVO_zip()
+    {
+        if self.isAsync { return }
+        
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let signal1: Signal<Any> = Signal(values: [0, 1, 2, 3, 4]).concat(Signal.fulfilled().delay(01.1))
+        let signal2: Signal<Any> = Signal(values: ["A", "B", "C"]).concat(Signal.fulfilled().delay(02.2))
+        
+        var bundledSignal = signal1.zip(signal2).map { (values: [Any]) -> String in
+            let valueStrings = values.map { "\($0)" }
+            return "-".join(valueStrings)
+        }
+        
+        println("*** Start ***")
+        
+        var reactCount = 0
+        
+        // REACT
+        bundledSignal ~> { value in
+            reactCount++
+            
+            println(value)
+            
+            switch reactCount {
+                case 1:
+                    XCTAssertEqual(value, "0-A")
+                case 2:
+                    XCTAssertEqual(value, "1-B")
+                case 3:
+                    XCTAssertEqual(value, "2-C")
+                default:
+                    XCTFail("Should never reach here.")
+            }
+        }
+        
+        bundledSignal.then { _ in
+            expect.fulfill()
+        }
+        
+        self.wait()
+        
+        XCTAssertEqual(reactCount, 3)
     }
     
     // MARK: Multiple Reactions
