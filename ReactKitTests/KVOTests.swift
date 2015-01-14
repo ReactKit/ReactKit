@@ -901,7 +901,6 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    /// almost same as `testKVO_merge2()`
     func testKVO_combineLatest()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
@@ -913,14 +912,14 @@ class KVOTests: _TestCase
         let signal1 = KVO.signal(obj1, "value")
         let signal2 = KVO.signal(obj2, "number")
         
-        let bundledSignal = Signal<AnyObject?>.combineLatest([signal1, signal2]).map { (values: [AnyObject??]) -> NSString? in
-            let value0: AnyObject = (values[0] ?? "notYet") ?? "nil"
-            let value1: AnyObject = (values[1] ?? "notYet") ?? "nil"
+        let combinedSignal = Signal<AnyObject?>.combineLatest([signal1, signal2]).map { (values: [AnyObject?]) -> NSString? in
+            let value0: AnyObject = (values[0] ?? "nil")
+            let value1: AnyObject = (values[1] ?? "nil")
             return "\(value0)-\(value1)"
         }
         
         // REACT
-        (obj3, "value") <~ bundledSignal
+        (obj3, "value") <~ combinedSignal
         
         println("*** Start ***")
         
@@ -928,16 +927,19 @@ class KVOTests: _TestCase
             XCTAssertEqual(obj3.value, "initial")
             
             obj1.value = "test1"
-            XCTAssertEqual(obj3.value, "test1-notYet")
+            XCTAssertEqual(obj3.value, "initial", "`combinedSignal` should not send value because only `obj1.value` is changed.")
             
             obj1.value = "test2"
-            XCTAssertEqual(obj3.value, "test2-notYet")
-            
-            obj2.value = "test3"
-            XCTAssertEqual(obj3.value, "test2-notYet", "`obj3.value` should NOT be updated because `bundledSignal` doesn't react to `obj2.value`.")
+            XCTAssertEqual(obj3.value, "initial", "`combinedSignal` should not send value because only `obj1.value` is changed.")
             
             obj2.number = 123
-            XCTAssertEqual(obj3.value, "test2-123")
+            XCTAssertEqual(obj3.value, "test2-123", "`obj3.value` should be updated for the first time because both `obj1.value` & `obj2.number` has been changed.")
+            
+            obj2.number = 456
+            XCTAssertEqual(obj3.value, "test2-456")
+            
+            obj1.value = "test4"
+            XCTAssertEqual(obj3.value, "test4-456")
             
             expect.fulfill()
         }

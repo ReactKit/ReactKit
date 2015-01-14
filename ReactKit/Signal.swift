@@ -686,6 +686,16 @@ public extension Signal
         }.name("Signal.merge2")
     }
     
+    public class func combineLatest<U>(signals: [Signal<U>]) -> Signal<[T]>
+    {
+        return self.merge2(signals).filter { values, _ in
+            let areAllNonNil = values.reduce(true) { (previous, value) -> Bool in
+                return previous && (value != nil)
+            }
+            return areAllNonNil
+        }.map { values, _ in values.map { $0! } }
+    }
+    
     public class func concat<U>(signals: [Signal<U>]) -> Signal<T>
     {
         precondition(signals.count > 0)
@@ -803,11 +813,6 @@ public extension Signal
     public func scan<U>(initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
     {
         return self.mapAccumulate(initialValue, accumulateClosure)
-    }
-
-    public class func combineLatest<U>(signals: [Signal<U>]) -> Signal<[T?]>
-    {
-        return self.merge2(signals).map { values, _ in values }
     }
 }
 
