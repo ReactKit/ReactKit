@@ -689,8 +689,9 @@ public extension Signal
     public class func combineLatest<U>(signals: [Signal<U>]) -> Signal<[T]>
     {
         return self.merge2(signals).filter { values, _ in
-            let areAllNonNil = values.reduce(true) { (previous, value) -> Bool in
-                return previous && (value != nil)
+            var areAllNonNil = true
+            for value in values {
+                if value == nil { areAllNonNil = false; break }
             }
             return areAllNonNil
         }.map { values, _ in values.map { $0! } }
@@ -767,8 +768,9 @@ public extension Signal
                     
                     storedValuesArray[i] += [progressValue as T]
                     
-                    let canProgress = storedValuesArray.reduce(true) { (previous, storedValues) -> Bool in
-                        return previous && (storedValues.count > 0)
+                    var canProgress: Bool = true
+                    for storedValues in storedValuesArray {
+                        if storedValues.count == 0 { canProgress = false; break }
                     }
                     
                     if canProgress {
