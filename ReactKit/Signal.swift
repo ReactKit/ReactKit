@@ -699,11 +699,7 @@ public extension Signal
     
     public class func concat<U>(signals: [Signal<U>]) -> Signal<T>
     {
-        precondition(signals.count > 0)
-        
-        if signals.count == 1 {
-            return signals.first!.asSignal(T)
-        }
+        precondition(signals.count > 1)
         
         return Signal<T> { progress, fulfill, reject, configure in
             
