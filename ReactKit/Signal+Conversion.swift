@@ -11,6 +11,20 @@ import SwiftTask
 
 public extension Signal
 {
+    ///
+    /// FIXME:
+    /// Currently in Swift 1.1, `signal.asSignal(U)` is only available
+    /// when both `T` of `signal: Signal<T>` and `U` are non-Optional.
+    /// Otherwise, "Swift dynamic cast failure" will occur (bug?).
+    ///
+    /// To work around this issue, use `map { $0 as U? }` directly
+    /// to convert from `Signal<T?>` to `Signal<U?>` as follows:
+    ///
+    /// ```
+    /// let signal: Signal<AnyObject?> = ...`
+    /// let convertedSignal: Signal<String?> = signal.map { $0 as String? }
+    /// ```
+    ///
     public func asSignal<U>(type: U.Type) -> Signal<U>
     {
         return self.map { $0 as U }
