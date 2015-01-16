@@ -8,48 +8,55 @@
 
 import SwiftTask
 
-public class Signal<T>: Task<T, T, NSError>
+public class Signal<T>: Task<T, Void, NSError>
 {
+    public override var description: String
+    {
+        return "<\(self.name); state=\(self.state.rawValue)>"
+    }
+    
     ///
     /// Creates a new signal (event-delivery-pipeline over time).
     /// Synonym of "stream", "observable", etc.
-    ///
-    /// :param: paused Flag to invoke `initClosure` immediately or not. If `paused = true`, signal's initial state will be `.Paused` (known as "cold signal") and needs to `resume()` in order to start `.Running`. If `paused = false`, `initClosure` will be invoked immediately (known as "hot signal").
     ///
     /// :param: initClosure Closure to define returning signal's behavior. Inside this closure, `configure.pause`/`resume`/`cancel` should capture inner logic (player) object. See also comment in `SwiftTask.Task.init()`.
     ///
     /// :returns: New Signal.
     /// 
-    public init(paused: Bool, initClosure: Task<T, T, NSError>.InitClosure)
+    public init(initClosure: Task<T, Void, NSError>.InitClosure)
     {
-        // NOTE: set weakified=true to avoid "(inner) player -> signal" retaining
-        super.init(weakified: true, paused: paused, initClosure: initClosure)
+        //
+        // NOTE: 
+        // - set `weakified = true` to avoid "(inner) player -> signal" retaining
+        // - set `paused = true` for lazy evaluation (similar to "cold signal")
+        //
+        super.init(weakified: true, paused: true, initClosure: initClosure)
+        
+        self.name = "DefaultSignal"
         
         #if DEBUG
             println("[init] \(self)")
         #endif
     }
     
-    /// creates paused (cold) signal
-    public convenience init(initClosure: Task<T, T, NSError>.InitClosure)
+    // TODO: move this to Signal+Conversion.swift (undefined symbols error in Swift 1.1)
+    ///
+    /// creates signal from SequenceType (e.g. Array) and fulfills at last
+    ///
+    /// - e.g. Signal(values: [1, 2, 3])
+    ///
+    /// a.k.a `Rx.fromArray`
+    ///
+    public convenience init<S: SequenceType where S.Generator.Element == T>(values: S)
     {
-        self.init(paused: true, initClosure: initClosure)
-    }
-    
-    /// creates fulfilled, non-paused (hot) signal
-    public convenience init(value: T)
-    {
-        self.init(paused: false, initClosure: { progress, fulfill, reject, configure in
-            fulfill(value)
+        self.init(initClosure: { progress, fulfill, reject, configure in
+            var generator = values.generate()
+            while let value: T = generator.next() {
+                progress(value)
+            }
+            fulfill()
         })
-    }
-    
-    /// creates rejected, non-paused (hot) signal
-    public convenience init(error: NSError)
-    {
-        self.init(paused: false, initClosure: { progress, fulfill, reject, configure in
-            reject(error)
-        })
+        self.name = "Signal(array:)"
     }
     
     deinit
@@ -65,52 +72,58 @@ public class Signal<T>: Task<T, T, NSError>
     }
     
     /// progress-chaining with auto-resume
-    public override func progress(progressClosure: ProgressTuple -> Void) -> Task<T, T, NSError>
+    public override func progress(progressClosure: ProgressTuple -> Void) -> Task<T, Void, NSError>
     {
         let signal = super.progress(progressClosure)
         self.resume()
         return signal
     }
     
-    public func then<U>(thenClosure: (T?, ErrorInfo?) -> U) -> Task<U, U, NSError>
+    /// then(value)-chaining with auto-resume
+    public func then(thenClosure: (Void?, ErrorInfo?) -> Void) -> Task<T, Void, NSError>
     {
-        return self.then { (value: T?, errorInfo: ErrorInfo?) -> Task<U, U, NSError> in
-            return Signal<U>(value: thenClosure(value, errorInfo))
+        return self.then { (value: Void?, errorInfo: ErrorInfo?) -> Task<T, Void, NSError> in
+            thenClosure(value, errorInfo)
+            return Task<T, Void, NSError>(value: ())
         }
     }
     
-    /// then-chaining with auto-resume
-    public func then<U>(thenClosure: (T?, ErrorInfo?) -> Task<U, U, NSError>) -> Task<U, U, NSError>
+    /// then(task)-chaining with auto-resume
+    public func then<U>(thenClosure: (Void?, ErrorInfo?) -> Task<U, Void, NSError>) -> Task<U, Void, NSError>
     {
         let signal = super.then(thenClosure)
         self.resume()
         return signal
     }
     
-    public func success<U>(successClosure: T -> U) -> Task<U, U, NSError>
+    /// success(value)-chaining with auto-resume
+    public func success(successClosure: Void -> Void) -> Task<T, Void, NSError>
     {
-        return self.success { (value: T) -> Task<U, U, NSError> in
-            return Signal<U>(value: successClosure(value))
+        return self.success { _ -> Task<T, Void, NSError> in
+            successClosure()
+            return Task<T, Void, NSError>(value: ())
         }
     }
     
-    /// success-chaining with auto-resume
-    public func success<U>(successClosure: T -> Task<U, U, NSError>) -> Task<U, U, NSError>
+    /// success(task)-chaining with auto-resume
+    public func success<U>(successClosure: Void -> Task<U, Void, NSError>) -> Task<U, Void, NSError>
     {
         let signal = super.success(successClosure)
         self.resume()
         return signal
     }
     
-    public override func failure(failureClosure: ErrorInfo -> T) -> Task<T, T, NSError>
+    /// failure(value)-chaining with auto-resume
+    public override func failure(failureClosure: ErrorInfo -> Void) -> Task<T, Void, NSError>
     {
-        return self.failure { (errorInfo: ErrorInfo) -> Task<T, T, NSError> in
-            return Signal(value: failureClosure(errorInfo))
+        return self.failure { (errorInfo: ErrorInfo) -> Task<T, Void, NSError> in
+            failureClosure(errorInfo)
+            return Task<T, Void, NSError>(value: ())
         }
     }
     
-    /// failure-chaining with auto-resume
-    public override func failure(failureClosure: ErrorInfo -> Task<T, T, NSError>) -> Task<T, T, NSError>
+    /// failure(task)-chaining with auto-resume
+    public override func failure<U>(failureClosure: ErrorInfo -> Task<U, Void, NSError>) -> Task<U, Void, NSError>
     {
         let signal = super.failure(failureClosure)
         self.resume()
@@ -137,15 +150,15 @@ public class Signal<T>: Task<T, T, NSError>
 }
 
 /// helper
-private func _bind<T>(fulfill: (T -> Void)?, reject: NSError -> Void, configure: TaskConfiguration, upstreamSignal: Signal<T>)
+private func _bind<T>(fulfill: (Void -> Void)?, reject: NSError -> Void, configure: TaskConfiguration, upstreamSignal: Signal<T>)
 {
     let signalName = upstreamSignal.name
 
     // fulfill/reject downstream on upstream-fulfill/reject/cancel
     upstreamSignal.then { value, errorInfo -> Void in
         
-        if let value = value {
-            fulfill?(value)
+        if value != nil {
+            fulfill?()
             return
         }
         else if let errorInfo = errorInfo {
@@ -169,7 +182,10 @@ private func _bind<T>(fulfill: (T -> Void)?, reject: NSError -> Void, configure:
     configure.cancel = { upstreamSignal.cancel(); return }
 }
 
-// Signal Operations
+//--------------------------------------------------
+// MARK: - Signal Operations (Instance Methods)
+//--------------------------------------------------
+
 public extension Signal
 {
     /// filter using newValue only
@@ -211,8 +227,8 @@ public extension Signal
             
             self.progress { (_, progressValue: T) in
                 progress(transform(progressValue))
-            }.success { (value: T) -> Void in
-                fulfill(transform(value))
+            }.success {
+                fulfill()
             }
             
             _bind(nil, reject, configure, self)
@@ -221,8 +237,7 @@ public extension Signal
     }
     
     /// map using newValue only & bind to transformed Signal
-    /// a.k.a `Rx.flatMap()`
-    public func map<U>(transformToSignal: T -> Signal<U>) -> Signal<U>
+    public func flatMap<U>(transform: T -> Signal<U>) -> Signal<U>
     {
         return Signal<U> { progress, fulfill, reject, configure in
             
@@ -230,26 +245,20 @@ public extension Signal
             var innerSignals: [Signal<U>] = []
             
             self.progress { (_, progressValue: T) in
-                let innerSignal = transformToSignal(progressValue)
+                let innerSignal = transform(progressValue)
                 innerSignals += [innerSignal]
                 
                 innerSignal.progress { (_, progressValue: U) in
                     progress(progressValue)
                 }
-                return
-            }.success { (value: T) -> Void in
-                let innerSignal = transformToSignal(value)
-                innerSignals += [innerSignal]
-                
-                innerSignal.progress { (_, progressValue: U) in
-                    fulfill(progressValue)
-                }
-                return
+            }.success {
+                fulfill()
             }
             
             _bind(nil, reject, configure, self)
-            
-        }.name("\(self.name)-map(signal)")
+
+        }.name("\(self.name)-flatMap")
+        
     }
     
     /// map using (oldValue, newValue)
@@ -259,8 +268,8 @@ public extension Signal
             
             self.progress { (progressValues: (oldValue: T?, newValue: T)) in
                 progress(transform2(progressValues))
-            }.success { (value: T) -> Void in
-                fulfill(transform2(oldValue: value, newValue: value))
+            }.success {
+                fulfill()
             }
             
             _bind(nil, reject, configure, self)
@@ -270,7 +279,7 @@ public extension Signal
     
     /// map using (accumulatedValue, newValue)
     /// a.k.a `Rx.scan()`
-    public func map<U>(accumulate initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
+    public func mapAccumulate<U>(initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
     {
         return Signal<U> { progress, fulfill, reject, configure in
             
@@ -279,8 +288,8 @@ public extension Signal
             self.progress { p in
                 accumulatedValue = accumulateClosure(accumulatedValue: accumulatedValue, newValue: p.newProgress)
                 progress(accumulatedValue)
-            }.success { _ -> Void in
-                fulfill(accumulatedValue)
+            }.success {
+                fulfill()
             }
             
             _bind(nil, reject, configure, self)
@@ -302,7 +311,7 @@ public extension Signal
                 }
                 else if count == maxCount {
                     progress(progressValue)
-                    fulfill(progressValue)  // successfully reached maxCount
+                    fulfill()   // successfully reached maxCount
                 }
                 
             }
@@ -312,7 +321,7 @@ public extension Signal
         }.name("\(self.name)-take(\(maxCount))")
     }
     
-    public func take<U>(until triggerSignal: Signal<U>) -> Signal
+    public func takeUntil<U>(triggerSignal: Signal<U>) -> Signal
     {
         return Signal<T> { [weak triggerSignal] progress, fulfill, reject, configure in
             
@@ -323,13 +332,13 @@ public extension Signal
             }
 
             let triggerSignalName = triggerSignal!.name
-            let cancelError = _RKError(.CancelledByTriggerSignal, "Signal=\(signalName) is cancelled by take(until: \(triggerSignalName)).")
+            let cancelError = _RKError(.CancelledByTriggerSignal, "Signal=\(signalName) is cancelled by takeUntil(\(triggerSignalName)).")
             
             triggerSignal?.progress { [weak self] (_, progressValue: U) in
                 if let self_ = self {
                     self_.cancel(error: cancelError)
                 }
-            }.success { [weak self] (value: U) -> Void in
+            }.success { [weak self] in
                 if let self_ = self {
                     self_.cancel(error: cancelError)
                 }
@@ -341,7 +350,7 @@ public extension Signal
             
             _bind(fulfill, reject, configure, self)
             
-        }.name("\(self.name)-take(until:)")
+        }.name("\(self.name)-takeUntil")
     }
     
     public func skip(skipCount: Int) -> Signal
@@ -352,7 +361,6 @@ public extension Signal
             
             self.progress { (_, progressValue: T) in
                 count++
-
                 if count <= skipCount { return }
                 
                 progress(progressValue)
@@ -363,7 +371,7 @@ public extension Signal
         }.name("\(self.name)-skip(\(skipCount))")
     }
     
-    public func skip<U>(until triggerSignal: Signal<U>) -> Signal
+    public func skipUntil<U>(triggerSignal: Signal<U>) -> Signal
     {
         return Signal<T> { [weak triggerSignal] progress, fulfill, reject, configure in
             
@@ -379,7 +387,7 @@ public extension Signal
             
             triggerSignal?.progress { (_, progressValue: U) in
                 shouldSkip = false
-            }.success { (value: U) -> Void in
+            }.success {
                 shouldSkip = false
             }.failure { (error: NSError?, isCancelled: Bool) -> Void in
                 shouldSkip = false
@@ -387,7 +395,47 @@ public extension Signal
             
             _bind(fulfill, reject, configure, self)
             
-        }.name("\(self.name)-skip(until:)")
+        }.name("\(self.name)-skipUntil")
+    }
+    
+    public func merge(signal: Signal<T>) -> Signal<T>
+    {
+        return self.merge([signal])
+    }
+    
+    public func merge(signals: [Signal<T>]) -> Signal<T>
+    {
+        return Signal<T>.merge(signals + [self])
+            .name("\(self.name)-merge")
+    }
+    
+    public func concat(nextSignal: Signal<T>) -> Signal<T>
+    {
+        return self.concat([nextSignal])
+    }
+    
+    public func concat(nextSignals: [Signal<T>]) -> Signal<T>
+    {
+        return Signal<T>.concat([self] + nextSignals)
+            .name("\(self.name)-concat")
+    }
+    
+    /// `concat()` initialValue first
+    public func startWith(initialValue: T) -> Signal<T>
+    {
+        return Signal<T>.concat([Signal.once(initialValue), self])
+            .name("\(self.name)-startWith")
+    }
+    
+    public func zip(signal: Signal<T>) -> Signal<[T]>
+    {
+        return self.zip([signal])
+    }
+    
+    public func zip(signals: [Signal<T>]) -> Signal<[T]>
+    {
+        return Signal<T>.zip([self] + signals)
+            .name("\(self.name)-zip")
     }
     
     public func buffer(bufferCount: Int) -> Signal<[T]>
@@ -402,8 +450,8 @@ public extension Signal
                     progress(buffer)
                     buffer = []
                 }
-            }.success { _ -> Void in
-                fulfill(buffer)
+            }.success {
+                fulfill()
                 buffer = []
             }.failure { _ -> Void in
                 buffer = []
@@ -414,7 +462,7 @@ public extension Signal
         }.name("\(self.name)-buffer")
     }
     
-    public func buffer<U>(trigger triggerSignal: Signal<U>) -> Signal<[T]>
+    public func bufferBy<U>(triggerSignal: Signal<U>) -> Signal<[T]>
     {
         return Signal<[T]> { progress, fulfill, reject, configure in
             
@@ -422,8 +470,8 @@ public extension Signal
             
             self.progress { (_, progressValue: T) in
                 buffer += [progressValue]
-            }.success { _ -> Void in
-                fulfill(buffer)
+            }.success {
+                fulfill()
             }
             
             triggerSignal.progress { [weak self] (_, progressValue: U) in
@@ -431,7 +479,7 @@ public extension Signal
                     progress(buffer)
                     buffer = []
                 }
-            }.success { [weak self] (value: U) -> Void in
+            }.success { [weak self] in
                 if let self_ = self {
                     progress(buffer)
                     buffer = []
@@ -446,6 +494,32 @@ public extension Signal
             _bind(nil, reject, configure, self)
             
         }.name("\(self.name)-buffer")
+    }
+    
+    /// delay `progress` and `fulfill` for `timerInterval` seconds
+    public func delay(timeInterval: NSTimeInterval) -> Signal<T>
+    {
+        return Signal<T> { progress, fulfill, reject, configure in
+            
+            self.progress { (_, progressValue: T) in
+                var timerSignal: Signal<Void>? = NSTimer.signal(timeInterval: timeInterval, repeats: false) { _ in }
+                
+                timerSignal!.progress { _ -> Void in
+                    progress(progressValue)
+                    timerSignal = nil
+                }
+            }.success { _ -> Void in
+                var timerSignal: Signal<Void>? = NSTimer.signal(timeInterval: timeInterval, repeats: false) { _ in }
+                
+                timerSignal!.progress { _ -> Void in
+                    fulfill()
+                    timerSignal = nil
+                }
+            }
+            
+            _bind(nil, reject, configure, self)
+            
+        }.name("\(self.name)-delay(\(timeInterval))")
     }
 
     /// limit continuous progress (reaction) for `timeInterval` seconds when first progress is triggered
@@ -494,43 +568,245 @@ public extension Signal
     }
 }
 
-// Multiple Signal Operations
+//--------------------------------------------------
+// MARK: - Signal Operations (Class Methods)
+//--------------------------------------------------
+
 public extension Signal
 {
-    public typealias ChangedValueTuple = (values: [T?], changedValue: T)
-    
-    public class func any(signals: [Signal<T>]) -> Signal<ChangedValueTuple>
+    ///
+    /// Merges multiple signals (`Signal<U>`) into single signal, with force-casting to `Signal<T>`.
+    ///
+    /// - e.g. `let intSignal: Signal<Int> = Signal<Int>.merge([anySignal1, anySignal2, ...])`,
+    ///   where `anySignalX` is `Signal<Any>` and force-casting from Any to Int.
+    ///
+    /// NOTE: This method is conceptually equal to `Signal<T>.merge2(signals).map { $1 }`.
+    ///
+    public class func merge<U>(signals: [Signal<U>]) -> Signal<T>
     {
-        return Signal<ChangedValueTuple> { progress, fulfill, reject, configure in
+        return Signal<T> { progress, fulfill, reject, configure in
             
-            // wrap with class for weakifying
             let signalGroup = _SignalGroup(signals: signals)
             
             for signal in signals {
-                signal.progress { [weak signalGroup] (_, progressValue: T) in
-                    if let signalGroup = signalGroup {
-                        let signals = signalGroup.signals
-                        
-                        let values: [T?] = signals.map { $0.progress }
-                        let valueTuple = ChangedValueTuple(values: values, changedValue: progressValue)
-                        
-                        progress(valueTuple)
+                signal.progress { (_, progressValue: U) in
+                    progress(progressValue as T)
+                }.then { value, errorInfo -> Void in
+                    if value != nil {
+                        fulfill()
+                    }
+                    else if let errorInfo = errorInfo {
+                        if let error = errorInfo.error {
+                            reject(error)
+                        }
+                        else {
+                            let error = _RKError(.CancelledByInternalSignal, "One of signal is cancelled in Signal.merge().")
+                            reject(error)
+                        }
                     }
                 }
             }
             
             // NOTE: signals should be captured by class-type signalGroup, which should be captured by new signal
             configure.pause = {
-                self.pauseAll(signalGroup.signals)
+                Signal<U>.pauseAll(signalGroup.signals)
             }
             configure.resume = {
-                self.resumeAll(signalGroup.signals)
+                Signal<U>.resumeAll(signalGroup.signals)
             }
             configure.cancel = {
-                self.cancelAll(signalGroup.signals)
+                Signal<U>.cancelAll(signalGroup.signals)
             }
             
-        }.name("Signal.any")
+        }.name("Signal.merge")
+    }
+    
+    public typealias ChangedValueTuple = (values: [T?], changedValue: T)
+    
+    ///
+    /// Merges multiple signals (`Signal<U>`) into single signal,
+    /// combining latest values `[U?]` as well as changed value `U` together as `([U?], U)` tuple,
+    /// and finally force-casting to `Signal<([T?], T)>`.
+    ///
+    /// This is a generalized method for `Rx.merge()` and `Rx.combineLatest()`.
+    ///
+    public class func merge2<U>(signals: [Signal<U>]) -> Signal<ChangedValueTuple>
+    {
+        return Signal<ChangedValueTuple> { progress, fulfill, reject, configure in
+            
+            // wrap with class for weakifying
+            let signalGroup = _SignalGroup<U>(signals: signals)
+            
+            func extractValuesAndHandle(valueSourceTuple tuple: (signalGroup: _SignalGroup<U>?, changedValue: U), #handler: ChangedValueTuple -> Void)
+            {
+                if let signalGroup = tuple.signalGroup {
+                    let signals = signalGroup.signals
+                    
+                    let values: [T?] = signals.map { $0.progress as? T }
+                    let valueTuple = ChangedValueTuple(values: values, changedValue: tuple.changedValue as T)
+                    
+                    handler(valueTuple)
+                }
+            }
+            
+            for signal in signals {
+                signal.progress { [weak signalGroup] (_, progressValue: U) in
+                    extractValuesAndHandle(valueSourceTuple: (signalGroup, progressValue), handler: progress)
+                }.then { [weak signalGroup] value, errorInfo -> Void in
+                    if value != nil {
+                        fulfill()
+                    }
+                    else if let errorInfo = errorInfo {
+                        if let error = errorInfo.error {
+                            reject(error)
+                        }
+                        else {
+                            let error = _RKError(.CancelledByInternalSignal, "One of signal is cancelled in Signal.merge2().")
+                            reject(error)
+                        }
+                    }
+                }
+            }
+            
+            // NOTE: signals should be captured by class-type signalGroup, which should be captured by new signal
+            configure.pause = {
+                Signal<U>.pauseAll(signalGroup.signals)
+            }
+            configure.resume = {
+                Signal<U>.resumeAll(signalGroup.signals)
+            }
+            configure.cancel = {
+                Signal<U>.cancelAll(signalGroup.signals)
+            }
+            
+        }.name("Signal.merge2")
+    }
+    
+    public class func combineLatest<U>(signals: [Signal<U>]) -> Signal<[T]>
+    {
+        return self.merge2(signals).filter { values, _ in
+            var areAllNonNil = true
+            for value in values {
+                if value == nil { areAllNonNil = false; break }
+            }
+            return areAllNonNil
+        }.map { values, _ in values.map { $0! } }
+    }
+    
+    public class func concat<U>(signals: [Signal<U>]) -> Signal<T>
+    {
+        precondition(signals.count > 1)
+        
+        return Signal<T> { progress, fulfill, reject, configure in
+            
+            // NOTE: to call this method recursively, local-closure must be declared first (as Optional) before assignment
+            var concatRecursively: (([Signal<U>]) -> Void)!
+            
+            concatRecursively = { signals in
+                
+                if let signal = signals.first {
+                    
+                    signal.progress { _, progressValue in
+                        progress(progressValue as T)
+                    }.success {
+                        concatRecursively(Array(signals[1..<signals.count]))
+                    }.failure { errorInfo -> Void in
+                        if let error = errorInfo.error {
+                            reject(error)
+                        }
+                        else {
+                            let error = _RKError(.CancelledByInternalSignal, "One of signal is cancelled in Signal.concat().")
+                            reject(error)
+                        }
+                    }
+                }
+                else {
+                    fulfill()
+                }
+                
+            }
+            
+            concatRecursively(signals)
+            
+            configure.pause = {
+                Signal<U>.pauseAll(signals)
+            }
+            configure.resume = {
+                Signal<U>.resumeAll(signals)
+            }
+            configure.cancel = {
+                Signal<U>.cancelAll(signals)
+            }
+            
+        }.name("Signal.concat")
+    }
+    
+    public class func zip<U>(signals: [Signal<U>]) -> Signal<[T]>
+    {
+        precondition(signals.count > 1)
+        
+        return Signal<[T]> { progress, fulfill, reject, configure in
+           
+            let signalCount = signals.count
+
+            var storedValuesArray: [[T]] = []
+            for i in 0..<signalCount {
+                storedValuesArray.append([])
+            }
+            
+            for i in 0..<signalCount {
+                
+                signals[i].progress { (_, progressValue: U) in
+                    
+                    storedValuesArray[i] += [progressValue as T]
+                    
+                    var canProgress: Bool = true
+                    for storedValues in storedValuesArray {
+                        if storedValues.count == 0 { canProgress = false; break }
+                    }
+                    
+                    if canProgress {
+                        var firstStoredValues: [T] = []
+                        
+                        for i in 0..<signalCount {
+                            let firstStoredValue = storedValuesArray[i].removeAtIndex(0)
+                            firstStoredValues.append(firstStoredValue)
+                        }
+                        
+                        progress(firstStoredValues)
+                    }
+                    
+                }.success { _ -> Void in
+                    fulfill()
+                }
+            }
+            
+            configure.pause = {
+                Signal<U>.pauseAll(signals)
+            }
+            configure.resume = {
+                Signal<U>.resumeAll(signals)
+            }
+            configure.cancel = {
+                Signal<U>.cancelAll(signals)
+            }
+            
+        }.name("Signal.zip")
+    }
+    
+}
+
+
+//--------------------------------------------------
+/// MARK: - Rx Semantics
+/// (TODO: move to new file, but doesn't work in Swift 1.1. ERROR = ld: symbol(s) not found for architecture x86_64)
+//--------------------------------------------------
+
+public extension Signal
+{
+    public func scan<U>(initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
+    {
+        return self.mapAccumulate(initialValue, accumulateClosure)
     }
 }
 

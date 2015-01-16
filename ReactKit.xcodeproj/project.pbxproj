@@ -46,6 +46,8 @@
 		4875886319E4D95A00828AD0 /* UIControl+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885F19E4D95A00828AD0 /* UIControl+Signal.swift */; };
 		4875886419E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875886019E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift */; };
 		4875886519E4D95A00828AD0 /* UITextField+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875886119E4D95A00828AD0 /* UITextField+Signal.swift */; };
+		4890AA901A5B70650028586C /* Signal+Conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4890AA8F1A5B70650028586C /* Signal+Conversion.swift */; };
+		4890AA911A5B70650028586C /* Signal+Conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4890AA8F1A5B70650028586C /* Signal+Conversion.swift */; };
 		48DDE7721A0C41A300125F36 /* NSObject+Own.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DDE7711A0C41A300125F36 /* NSObject+Own.swift */; };
 		48DDE7731A0C41A300125F36 /* NSObject+Own.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DDE7711A0C41A300125F36 /* NSObject+Own.swift */; };
 		48FD5B3C19E51E7100913946 /* UIBarButtonItem+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FD5B3B19E51E7100913946 /* UIBarButtonItem+Signal.swift */; };
@@ -79,6 +81,7 @@
 		4875885F19E4D95A00828AD0 /* UIControl+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIControl+Signal.swift"; sourceTree = "<group>"; };
 		4875886019E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIGestureRecognizer+Signal.swift"; sourceTree = "<group>"; };
 		4875886119E4D95A00828AD0 /* UITextField+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITextField+Signal.swift"; sourceTree = "<group>"; };
+		4890AA8F1A5B70650028586C /* Signal+Conversion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Signal+Conversion.swift"; sourceTree = "<group>"; };
 		48DDE7711A0C41A300125F36 /* NSObject+Own.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+Own.swift"; sourceTree = "<group>"; };
 		48FD5B3B19E51E7100913946 /* UIBarButtonItem+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIBarButtonItem+Signal.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -162,6 +165,7 @@
 			children = (
 				1FED88FD19C1EB120065658B /* ReactKit.h */,
 				1FED895C19C1EBD60065658B /* Signal.swift */,
+				4890AA8F1A5B70650028586C /* Signal+Conversion.swift */,
 				1F8C3AAA1A2D8614000D9CF8 /* Error.swift */,
 				1F79710E19E414F70067A4C4 /* Foundation */,
 				4875885D19E4D95A00828AD0 /* UIKit */,
@@ -408,6 +412,7 @@
 				4875885B19E4D94800828AD0 /* TargetAction.swift in Sources */,
 				48DDE7721A0C41A300125F36 /* NSObject+Own.swift in Sources */,
 				4875885519E4D94800828AD0 /* KVO.swift in Sources */,
+				4890AA901A5B70650028586C /* Signal+Conversion.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -432,6 +437,7 @@
 				4875885A19E4D94800828AD0 /* NSObject+Deinit.swift in Sources */,
 				4875886319E4D95A00828AD0 /* UIControl+Signal.swift in Sources */,
 				1FED896219C1EBD60065658B /* Signal.swift in Sources */,
+				4890AA911A5B70650028586C /* Signal+Conversion.swift in Sources */,
 				1F8C3AAC1A2D8614000D9CF8 /* Error.swift in Sources */,
 				4875885C19E4D94800828AD0 /* TargetAction.swift in Sources */,
 				4875885619E4D94800828AD0 /* KVO.swift in Sources */,

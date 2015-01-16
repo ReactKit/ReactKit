@@ -1,9 +1,7 @@
-ReactKit
+<img src="https://avatars3.githubusercontent.com/u/8986128" width="36" height="36"> ReactKit
 ========
 
 Swift Reactive Programming.
-
-[Introducing ReactKit // Speaker Deck](https://speakerdeck.com/inamiy/introducing-reactkit)
 
 
 ## How to install
@@ -13,7 +11,7 @@ See [Wiki page](https://github.com/ReactKit/ReactKit/wiki/How-to-install).
 
 ## Example
 
-(For UI Demo, please see [ReactKit/ReactKitCatalog](https://github.com/ReactKit/ReactKitCatalog))
+For UI Demo, please see [ReactKit/ReactKitCatalog](https://github.com/ReactKit/ReactKitCatalog).
 
 ### Key-Value Observing
 
@@ -106,37 +104,57 @@ self.buttonEnablingSignal = anyTextSignal.map { (values, changedValue) -> NSNumb
 (self.okButton, "enabled") <~ self.buttonEnablingSignal!
 ```
 
-For more examples, please see XCTest & Demo App.
+For more examples, please see XCTestCases.
 
 
 ## How it works
 
-ReactKit is just a bunch of Cocoa helpers over powerful [SwiftTask](https://github.com/inamiy/SwiftTask) (Promise library) as a basis.
+ReactKit is based on powerful [SwiftTask](https://github.com/ReactKit/SwiftTask) (JavaScript Promise-like) library, allowing to deliver multiple events (KVO, NSNotification, Target-Action, etc) continuously over time using its `progress` feature (`<~` operator in ReactKit).
 
-By taking special care of retaining flow, `ReactKit.Signal<T>` will seamlessly become a subclass of `SwiftTask.Task<T, T, NSError>`, and by using `task.progress()` interface (`<~` operator in ReactKit), `signal` will be able to send the underlying Cocoa events (KVO, NSNotification, etc) continuously over time.
+Unlike many Reactive Extensions (Rx) libraries including [ReactiveCocoa](https://github.com/ReactiveCocoa/ReactiveCocoa) which has a basic concept of "hot" and "cold" signals, ReactKit gracefully integrated them into one **hot + paused (lazy) signal** `Signal<T>` class as well as **not adopting the concept of Disposable** but using `signal.cancel()` feature instead.
 
-Also, because `signal` can also behave like Promise, it can be chained by `then()` to connect asynchronous tasks in series, so there are much less codes & methods to remember comparing to our great pioneer framework [ReactiveCocoa](https://github.com/ReactiveCocoa/ReactiveCocoa) and many other ReactiveExtension-frameworks.
+Also in ReactKit, Rx's `signal.subscribe(onNext, onError, onComplete)` method is interpreted as `signal.progress()` (`<~`) and `signal.then()`/`success()`/`failure()` separately. When they are called on needs, they will start lazy evaluation.
 
 
-## Signal Operations
+## Methods
+
+### Signal Operations
 
 - Instance Methods
   - `filter(f: T -> Bool)`
   - `filter2(f: (old: T?, new: T) -> Bool)`
   - `map(f: T -> U)`
-  - `map(f: T -> Signal<U>)` (a.k.a Rx.flatMap)
+  - `flatMap(f: T -> Signal<U>)`
   - `map2(f: (old: T?, new: T) -> U)`
-  - `map(accumulate:accumulateClosure:)` (a.k.a Rx.scan)
+  - `mapAccumulate(initialValue, accumulator)` (alias: `scan`)
   - `take(count)`
-  - `take(until: Signal)`
+  - `takeUntil(signal)`
   - `skip(count)`
-  - `skip(until: Signal)`
+  - `skipUntil(signal)`
+  - `merge(signal)`
+  - `concat(signal)`
+  - `startWith(initialValue)`
+  - `zip(signal)`
   - `buffer(count)`
-  - `buffer(trigger: Signal)`
+  - `bufferBy(signal)`
+  - `delay(timeInterval)`
   - `throttle(timeInterval)`
   - `debounce(timeInterval)`
 - Class Methods
-  - `any(signals)`
+  - `merge(signals)`
+  - `merge2(signals)` (generalized method for `merge` & `combineLatest`)
+  - `combineLatest(signals)`
+  - `concat(signals)`
+  - `zip(signals)`
+
+### Helpers
+
+- `asSignal(ValueType)` (WARNING: currently works for non-Optional only)
+- `Signal.once(value)` (alias: `just`)
+- `Signal.never()`
+- `Signal.fulfilled()` (alias: `empty`)
+- `Signal.rejected()` (alias: `error`)
+- `Signal(values:)` (a.k.a Rx.fromArray)
 
 
 ## Dependencies
@@ -145,6 +163,11 @@ Also, because `signal` can also behave like Promise, it can be chained by `then(
 - [SwiftState](https://github.com/ReactKit/SwiftState)
 
 
+## References
+
+- [Introducing ReactKit // Speaker Deck](https://speakerdeck.com/inamiy/introducing-reactkit) (ver 0.3.0)
+
+
 ## Licence
 
-[MIT](https://github.com/inamiy/ReactKit/blob/master/LICENSE)
+[MIT](https://github.com/ReactKit/ReactKit/blob/master/LICENSE)
