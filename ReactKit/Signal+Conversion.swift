@@ -35,34 +35,34 @@ public extension Signal
     //--------------------------------------------------
     
     /// creates once (progress once & fulfill) signal
-    public class func once(value: T, paused: Bool = true) -> Signal<T>
+    public class func once(value: T) -> Signal<T>
     {
-        return Signal(paused: paused) { progress, fulfill, reject, configure in
+        return Signal { progress, fulfill, reject, configure in
             progress(value)
             fulfill()
         }.name("OnceSignal")
     }
     
     /// creates never (no progress & fulfill & reject) signal
-    public class func never(paused: Bool = true) -> Signal<T>
+    public class func never() -> Signal<T>
     {
-        return Signal(paused: paused) { progress, fulfill, reject, configure in
+        return Signal { progress, fulfill, reject, configure in
             // do nothing
         }.name("NeverSignal")
     }
     
     /// creates empty (fulfilled without any progress) signal
-    public class func fulfilled(paused: Bool = true) -> Signal<T>
+    public class func fulfilled() -> Signal<T>
     {
-        return Signal(paused: paused) { progress, fulfill, reject, configure in
+        return Signal { progress, fulfill, reject, configure in
             fulfill()
         }.name("FulfilledSignal")
     }
     
     /// creates error (rejected) signal
-    public class func rejected(error: NSError, paused: Bool = true) -> Signal<T>
+    public class func rejected(error: NSError) -> Signal<T>
     {
-        return Signal(paused: paused) { progress, fulfill, reject, configure in
+        return Signal { progress, fulfill, reject, configure in
             reject(error)
         }.name("RejectedSignal")
     }
@@ -166,20 +166,20 @@ public extension Signal
     //--------------------------------------------------
     
     /// alias for `Signal.fulfilled()`
-    public class func just(value: T, paused: Bool = true) -> Signal<T>
+    public class func just(value: T) -> Signal<T>
     {
-        return self.once(value, paused: paused)
+        return self.once(value)
     }
     
     /// alias for `Signal.fulfilled()`
-    public class func empty(paused: Bool = true) -> Signal<T>
+    public class func empty() -> Signal<T>
     {
-        return self.fulfilled(paused: paused)
+        return self.fulfilled()
     }
     
     /// alias for `Signal.rejected()`
-    public class func error(error: NSError, paused: Bool = true) -> Signal<T>
+    public class func error(error: NSError) -> Signal<T>
     {
-        return self.rejected(error, paused: paused)
+        return self.rejected(error)
     }
 }

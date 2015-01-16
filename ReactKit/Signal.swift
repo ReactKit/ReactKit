@@ -19,28 +19,24 @@ public class Signal<T>: Task<T, Void, NSError>
     /// Creates a new signal (event-delivery-pipeline over time).
     /// Synonym of "stream", "observable", etc.
     ///
-    /// :param: paused Flag to invoke `initClosure` immediately or not. If `paused = true`, signal's initial state will be `.Paused` (lazy, similar to "cold signal") and needs to `resume()` in order to start `.Running`. If `paused = false`, `initClosure` will be invoked immediately.
-    ///
     /// :param: initClosure Closure to define returning signal's behavior. Inside this closure, `configure.pause`/`resume`/`cancel` should capture inner logic (player) object. See also comment in `SwiftTask.Task.init()`.
     ///
     /// :returns: New Signal.
     /// 
-    public init(paused: Bool, initClosure: Task<T, Void, NSError>.InitClosure)
+    public init(initClosure: Task<T, Void, NSError>.InitClosure)
     {
-        // NOTE: set weakified=true to avoid "(inner) player -> signal" retaining
-        super.init(weakified: true, paused: paused, initClosure: initClosure)
+        //
+        // NOTE: 
+        // - set `weakified = true` to avoid "(inner) player -> signal" retaining
+        // - set `paused = true` for lazy evaluation (similar to "cold signal")
+        //
+        super.init(weakified: true, paused: true, initClosure: initClosure)
         
         self.name = "DefaultSignal"
         
         #if DEBUG
             println("[init] \(self)")
         #endif
-    }
-    
-    /// creates paused signal
-    public convenience init(initClosure: Task<T, Void, NSError>.InitClosure)
-    {
-        self.init(paused: true, initClosure: initClosure)
     }
     
     // TODO: move this to Signal+Conversion.swift (undefined symbols error in Swift 1.1)
@@ -53,7 +49,7 @@ public class Signal<T>: Task<T, Void, NSError>
     ///
     public convenience init<S: SequenceType where S.Generator.Element == T>(values: S)
     {
-        self.init(paused: true, initClosure: { progress, fulfill, reject, configure in
+        self.init(initClosure: { progress, fulfill, reject, configure in
             var generator = values.generate()
             while let value: T = generator.next() {
                 progress(value)
