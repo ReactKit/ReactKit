@@ -31,8 +31,6 @@
 		484553991A4CF97C007770CA /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484552D11A4CF97B007770CA /* Async.swift */; };
 		4845539A1A4CF97C007770CA /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484552D11A4CF97B007770CA /* Async.swift */; };
 		484554ED1A4CF9CD007770CA /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 484554EC1A4CF9CD007770CA /* SwiftTask.framework */; };
-		484554EF1A4CF9D1007770CA /* SwiftState.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 484554EE1A4CF9D1007770CA /* SwiftState.framework */; };
-		484554F01A4CF9E1007770CA /* SwiftState.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 484554EE1A4CF9D1007770CA /* SwiftState.framework */; };
 		484554F11A4CF9E3007770CA /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 484554EC1A4CF9CD007770CA /* SwiftTask.framework */; };
 		4875885519E4D94800828AD0 /* KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885119E4D94800828AD0 /* KVO.swift */; };
 		4875885619E4D94800828AD0 /* KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885119E4D94800828AD0 /* KVO.swift */; };
@@ -72,7 +70,6 @@
 		1FED8AA919C1ECD30065658B /* _TestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _TestCase.swift; sourceTree = "<group>"; };
 		484552D11A4CF97B007770CA /* Async.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
 		484554EC1A4CF9CD007770CA /* SwiftTask.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftTask.framework; path = Carthage/Checkouts/SwiftTask/build/Debug/SwiftTask.framework; sourceTree = "<group>"; };
-		484554EE1A4CF9D1007770CA /* SwiftState.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftState.framework; path = Carthage/Checkouts/SwiftState/build/Debug/SwiftState.framework; sourceTree = "<group>"; };
 		4875885119E4D94800828AD0 /* KVO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KVO.swift; sourceTree = "<group>"; };
 		4875885219E4D94800828AD0 /* Notification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 		4875885319E4D94800828AD0 /* NSObject+Deinit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+Deinit.swift"; sourceTree = "<group>"; };
@@ -91,7 +88,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				484554EF1A4CF9D1007770CA /* SwiftState.framework in Frameworks */,
 				484554ED1A4CF9CD007770CA /* SwiftTask.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -108,7 +104,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				484554F01A4CF9E1007770CA /* SwiftState.framework in Frameworks */,
 				484554F11A4CF9E3007770CA /* SwiftTask.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -140,7 +135,6 @@
 		1FED88EE19C1EB120065658B = {
 			isa = PBXGroup;
 			children = (
-				484554EE1A4CF9D1007770CA /* SwiftState.framework */,
 				484554EC1A4CF9CD007770CA /* SwiftTask.framework */,
 				484552CE1A4CF97B007770CA /* Checkouts */,
 				1FED88FA19C1EB120065658B /* ReactKit */,

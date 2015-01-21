@@ -160,7 +160,6 @@ Also in ReactKit, Rx's `signal.subscribe(onNext, onError, onComplete)` method is
 ## Dependencies
 
 - [SwiftTask](https://github.com/ReactKit/SwiftTask)
-- [SwiftState](https://github.com/ReactKit/SwiftState)
 
 
 ## References

@@ -5,13 +5,6 @@
       location = "group:Carthage/Checkouts"
       name = "Checkouts">
       <Group
-         location = "group:SwiftState"
-         name = "SwiftState">
-         <FileRef
-            location = "group:SwiftState.xcodeproj">
-         </FileRef>
-      </Group>
-      <Group
          location = "group:SwiftTask"
          name = "SwiftTask">
          <FileRef
