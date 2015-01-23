@@ -440,6 +440,8 @@ public extension Signal
     
     public func buffer(bufferCount: Int) -> Signal<[T]>
     {
+        precondition(bufferCount > 0)
+        
         return Signal<[T]> { progress, fulfill, reject, configure in
             
             var buffer: [T] = []
@@ -451,6 +453,9 @@ public extension Signal
                     buffer = []
                 }
             }.success {
+                if buffer.count > 0 {
+                    progress(buffer)
+                }
                 fulfill()
                 buffer = []
             }.failure { _ -> Void in
