@@ -452,14 +452,9 @@ public extension Signal
                     progress(buffer)
                     buffer = []
                 }
-            }.success {
-                if buffer.count > 0 {
-                    progress(buffer)
-                }
+            }.success { _ -> Void in
+                progress(buffer)
                 fulfill()
-                buffer = []
-            }.failure { _ -> Void in
-                buffer = []
             }
             
             _bind(nil, reject, configure, self)
@@ -469,27 +464,23 @@ public extension Signal
     
     public func bufferBy<U>(triggerSignal: Signal<U>) -> Signal<[T]>
     {
-        return Signal<[T]> { progress, fulfill, reject, configure in
+        return Signal<[T]> { [weak triggerSignal] progress, fulfill, reject, configure in
             
             var buffer: [T] = []
             
             self.progress { (_, progressValue: T) in
                 buffer += [progressValue]
-            }.success {
+            }.success { _ -> Void in
+                progress(buffer)
                 fulfill()
             }
             
-            triggerSignal.progress { [weak self] (_, progressValue: U) in
+            triggerSignal?.progress { [weak self] _ in
                 if let self_ = self {
                     progress(buffer)
                     buffer = []
                 }
-            }.success { [weak self] in
-                if let self_ = self {
-                    progress(buffer)
-                    buffer = []
-                }
-            }.failure { [weak self] (error: NSError?, isCancelled: Bool) -> Void in
+            }.then { [weak self] _ -> Void in
                 if let self_ = self {
                     progress(buffer)
                     buffer = []
@@ -498,7 +489,7 @@ public extension Signal
             
             _bind(nil, reject, configure, self)
             
-        }.name("\(self.name)-buffer")
+        }.name("\(self.name)-bufferBy")
     }
     
     /// delay `progress` and `fulfill` for `timerInterval` seconds
