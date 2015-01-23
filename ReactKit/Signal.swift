@@ -65,8 +65,7 @@ public class Signal<T>: Task<T, Void, NSError>
             println("[deinit] \(self)")
         #endif
         
-        let signalName = self.name
-        let cancelError = _RKError(.CancelledByDeinit, "Signal=\(signalName) is cancelled via deinit.")
+        let cancelError = _RKError(.CancelledByDeinit, "Signal=\(self.name) is cancelled via deinit.")
         
         self.cancel(error: cancelError)
     }
@@ -149,7 +148,7 @@ public class Signal<T>: Task<T, Void, NSError>
     
 }
 
-/// helper
+/// helper method to bind downstream's `fulfill`/`reject`/`configure` handlers with upstream
 private func _bind<T>(fulfill: (Void -> Void)?, reject: NSError -> Void, configure: TaskConfiguration, upstreamSignal: Signal<T>)
 {
     let signalName = upstreamSignal.name
@@ -176,7 +175,7 @@ private func _bind<T>(fulfill: (Void -> Void)?, reject: NSError -> Void, configu
         
     }
     
-    // NOTE: newSignal should capture selfSignal
+    // NOTE: downstreamSignal should capture upstreamSignal
     configure.pause = { upstreamSignal.pause(); return }
     configure.resume = { upstreamSignal.resume(); return }
     configure.cancel = { upstreamSignal.cancel(); return }
@@ -294,7 +293,7 @@ public extension Signal
             
             _bind(nil, reject, configure, self)
             
-        }.name("\(self.name)-map(accumulate:)")
+        }.name("\(self.name)-mapAccumulate")
     }
     
     public func take(maxCount: Int) -> Signal
@@ -325,30 +324,30 @@ public extension Signal
     {
         return Signal<T> { [weak triggerSignal] progress, fulfill, reject, configure in
             
-            let signalName = self.name
-            
-            self.progress { (_, progressValue: T) in
-                progress(progressValue)
-            }
+            if let triggerSignal = triggerSignal {
 
-            let triggerSignalName = triggerSignal!.name
-            let cancelError = _RKError(.CancelledByTriggerSignal, "Signal=\(signalName) is cancelled by takeUntil(\(triggerSignalName)).")
-            
-            triggerSignal?.progress { [weak self] (_, progressValue: U) in
-                if let self_ = self {
-                    self_.cancel(error: cancelError)
+                self.progress { (_, progressValue: T) in
+                    progress(progressValue)
                 }
-            }.success { [weak self] in
-                if let self_ = self {
-                    self_.cancel(error: cancelError)
+
+                let cancelError = _RKError(.CancelledByTriggerSignal, "Signal=\(self.name) is cancelled by takeUntil(\(triggerSignal.name)).")
+                
+                triggerSignal.progress { [weak self] _ in
+                    if let self_ = self {
+                        self_.cancel(error: cancelError)
+                    }
+                }.then { [weak self] _ -> Void in
+                    if let self_ = self {
+                        self_.cancel(error: cancelError)
+                    }
                 }
-            }.failure { [weak self] (error: NSError?, isCancelled: Bool) -> Void in
-                if let self_ = self {
-                    self_.cancel(error: cancelError)
-                }
+                
+                _bind(fulfill, reject, configure, self)
             }
-            
-            _bind(fulfill, reject, configure, self)
+            else {
+                let cancelError = _RKError(.CancelledByTriggerSignal, "Signal=\(self.name) is cancelled by takeUntil() with `triggerSignal` already been deinited.")
+                self.cancel(error: cancelError)
+            }
             
         }.name("\(self.name)-takeUntil")
     }
@@ -375,8 +374,6 @@ public extension Signal
     {
         return Signal<T> { [weak triggerSignal] progress, fulfill, reject, configure in
             
-            let signalName = self.name
-            
             var shouldSkip = true
             
             self.progress { (_, progressValue: T) in
@@ -385,11 +382,14 @@ public extension Signal
                 }
             }
             
-            triggerSignal?.progress { (_, progressValue: U) in
-                shouldSkip = false
-            }.success {
-                shouldSkip = false
-            }.failure { (error: NSError?, isCancelled: Bool) -> Void in
+            if let triggerSignal = triggerSignal {
+                triggerSignal.progress { _ in
+                    shouldSkip = false
+                }.then { _ -> Void in
+                    shouldSkip = false
+                }
+            }
+            else {
                 shouldSkip = false
             }
             
