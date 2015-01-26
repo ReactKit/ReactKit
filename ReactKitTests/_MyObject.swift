@@ -22,11 +22,11 @@ class MyObject: NSObject
     override init()
     {
         super.init()
-        println("[init] MyObject \(self.hash)")
+//        println("[init] MyObject \(self.hash)")
     }
     
     deinit
     {
-        println("[deinit] MyObject \(self.hash)")
+//        println("[deinit] MyObject \(self.hash)")
     }
 }

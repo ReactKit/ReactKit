@@ -23,18 +23,16 @@ internal class _TargetActionProxy
     {
         self.handler = handler
         
-//        super.init()
-        
-        #if DEBUG
-            println("[init] \(self)")
-        #endif
+//        #if DEBUG
+//            println("[init] \(self)")
+//        #endif
     }
     
     deinit
     {
-        #if DEBUG
-            println("[deinit] \(self)")
-        #endif
+//        #if DEBUG
+//            println("[deinit] \(self)")
+//        #endif
     }
     
     // NOTE: add @objc for 'does not implement methodSignatureForSelector' error

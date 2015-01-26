@@ -58,16 +58,16 @@ internal class _KVOProxy: NSObject
         
         self.start()
         
-        #if DEBUG
-            println("[init] \(self)")
-        #endif
+//        #if DEBUG
+//            println("[init] \(self)")
+//        #endif
     }
     
     deinit
     {
-        #if DEBUG
-            println("[deinit] \(self)")
-        #endif
+//        #if DEBUG
+//            println("[deinit] \(self)")
+//        #endif
         
         self.stop()
     }

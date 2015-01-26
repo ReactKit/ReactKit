@@ -34,9 +34,9 @@ public class Signal<T>: Task<T, Void, NSError>
         
         self.name = "DefaultSignal"
         
-        #if DEBUG
-            println("[init] \(self)")
-        #endif
+//        #if DEBUG
+//            println("[init] \(self)")
+//        #endif
     }
     
     // TODO: move this to Signal+Conversion.swift (undefined symbols error in Swift 1.1)
@@ -61,9 +61,9 @@ public class Signal<T>: Task<T, Void, NSError>
     
     deinit
     {
-        #if DEBUG
-            println("[deinit] \(self)")
-        #endif
+//        #if DEBUG
+//            println("[deinit] \(self)")
+//        #endif
         
         let cancelError = _RKError(.CancelledByDeinit, "Signal=\(self.name) is cancelled via deinit.")
         
