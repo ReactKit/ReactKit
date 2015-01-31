@@ -78,9 +78,9 @@ internal class _KVOProxy: NSObject
         
         _isObserving = true
         
-        #if DEBUG
-            println("[KVO] start")
-        #endif
+//        #if DEBUG
+//            println("[KVO] start")
+//        #endif
         
         self._target.addObserver(self, forKeyPath: self._keyPath, options: .New, context: &ReactKitKVOContext)
     }
@@ -91,9 +91,9 @@ internal class _KVOProxy: NSObject
         
         _isObserving = false
         
-        #if DEBUG
-            println("[KVO] stop")
-        #endif
+//        #if DEBUG
+//            println("[KVO] stop")
+//        #endif
         
         self._target.removeObserver(self, forKeyPath: self._keyPath)
     }
@@ -104,9 +104,9 @@ internal class _KVOProxy: NSObject
             return super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
         }
         else {
-            #if DEBUG
-                println("[KVO] changed keyPath=\(self._keyPath), change=\(change)")
-            #endif
+//            #if DEBUG
+//                println("[KVO] changed keyPath=\(self._keyPath), change=\(change)")
+//            #endif
             
             let newValue: AnyObject? = change[NSKeyValueChangeNewKey]
             self._handler(newValue!)

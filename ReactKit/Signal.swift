@@ -39,26 +39,6 @@ public class Signal<T>: Task<T, Void, NSError>
 //        #endif
     }
     
-    // TODO: move this to Signal+Conversion.swift (undefined symbols error in Swift 1.1)
-    ///
-    /// creates signal from SequenceType (e.g. Array) and fulfills at last
-    ///
-    /// - e.g. Signal(values: [1, 2, 3])
-    ///
-    /// a.k.a `Rx.fromArray`
-    ///
-    public convenience init<S: SequenceType where S.Generator.Element == T>(values: S)
-    {
-        self.init(initClosure: { progress, fulfill, reject, configure in
-            var generator = values.generate()
-            while let value: T = generator.next() {
-                progress(value)
-            }
-            fulfill()
-        })
-        self.name = "Signal(array:)"
-    }
-    
     deinit
     {
 //        #if DEBUG
@@ -179,6 +159,67 @@ private func _bind<T>(fulfill: (Void -> Void)?, reject: NSError -> Void, configu
     configure.pause = { upstreamSignal.pause(); return }
     configure.resume = { upstreamSignal.resume(); return }
     configure.cancel = { upstreamSignal.cancel(); return }
+}
+
+//--------------------------------------------------
+// MARK: - Init Helper
+/// (TODO: move to new file, but doesn't work in Swift 1.1. ERROR = ld: symbol(s) not found for architecture x86_64)
+//--------------------------------------------------
+
+public extension Signal
+{
+    /// creates once (progress once & fulfill) signal
+    /// NOTE: this method can't move to other file due to Swift 1.1
+    public class func once(value: T) -> Signal<T>
+    {
+        return Signal { progress, fulfill, reject, configure in
+            progress(value)
+            fulfill()
+        }.name("OnceSignal")
+    }
+    
+    /// creates never (no progress & fulfill & reject) signal
+    public class func never() -> Signal<T>
+    {
+        return Signal { progress, fulfill, reject, configure in
+            // do nothing
+        }.name("NeverSignal")
+    }
+    
+    /// creates empty (fulfilled without any progress) signal
+    public class func fulfilled() -> Signal<T>
+    {
+        return Signal { progress, fulfill, reject, configure in
+            fulfill()
+        }.name("FulfilledSignal")
+    }
+    
+    /// creates error (rejected) signal
+    public class func rejected(error: NSError) -> Signal<T>
+    {
+        return Signal { progress, fulfill, reject, configure in
+            reject(error)
+        }.name("RejectedSignal")
+    }
+    
+    ///
+    /// creates signal from SequenceType (e.g. Array) and fulfills at last
+    ///
+    /// - e.g. Signal(values: [1, 2, 3])
+    ///
+    /// a.k.a `Rx.fromArray`
+    ///
+    public convenience init<S: SequenceType where S.Generator.Element == T>(values: S)
+    {
+        self.init(initClosure: { progress, fulfill, reject, configure in
+            var generator = values.generate()
+            while let value: T = generator.next() {
+                progress(value)
+            }
+            fulfill()
+        })
+        self.name = "Signal(array:)"
+    }
 }
 
 //--------------------------------------------------
@@ -800,6 +841,25 @@ public extension Signal
 
 public extension Signal
 {
+    /// alias for `Signal.fulfilled()`
+    public class func just(value: T) -> Signal<T>
+    {
+        return self.once(value)
+    }
+    
+    /// alias for `Signal.fulfilled()`
+    public class func empty() -> Signal<T>
+    {
+        return self.fulfilled()
+    }
+    
+    /// alias for `Signal.rejected()`
+    public class func error(error: NSError) -> Signal<T>
+    {
+        return self.rejected(error)
+    }
+    
+    /// alias for `signal.mapAccumulate()`
     public func scan<U>(initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
     {
         return self.mapAccumulate(initialValue, accumulateClosure)
