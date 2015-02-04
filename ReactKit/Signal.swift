@@ -50,6 +50,14 @@ public class Signal<T>: Task<T, Void, NSError>
         self.cancel(error: cancelError)
     }
     
+    /// progress-chaining without auto-resume, useful for injecting side-effects
+    /// a.k.a Rx.do, tap
+    public func peek(peekClosure: T -> Void) -> Self
+    {
+        super.progress { _, value in peekClosure(value) }
+        return self
+    }
+    
     /// progress-chaining with auto-resume
     public override func progress(progressClosure: ProgressTuple -> Void) -> Task<T, Void, NSError>
     {
