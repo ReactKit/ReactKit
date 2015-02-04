@@ -137,30 +137,33 @@ public class Signal<T>: Task<T, Void, NSError>
 }
 
 /// helper method to bind downstream's `fulfill`/`reject`/`configure` handlers with upstream
-private func _bind<T>(fulfill: (Void -> Void)?, reject: NSError -> Void, configure: TaskConfiguration, upstreamSignal: Signal<T>)
+private func _bindToUpstreamSignal<T>(upstreamSignal: Signal<T>, fulfill: (Void -> Void)?, reject: (NSError -> Void)?, configure: TaskConfiguration)
 {
-    let signalName = upstreamSignal.name
-
-    // fulfill/reject downstream on upstream-fulfill/reject/cancel
-    upstreamSignal.then { value, errorInfo -> Void in
+    if fulfill != nil || reject != nil {
         
-        if value != nil {
-            fulfill?()
-            return
-        }
-        else if let errorInfo = errorInfo {
-            // rejected
-            if let error = errorInfo.error {
-                reject(error)
+        let signalName = upstreamSignal.name
+
+        // fulfill/reject downstream on upstream-fulfill/reject/cancel
+        upstreamSignal.then { value, errorInfo -> Void in
+            
+            if value != nil {
+                fulfill?()
                 return
             }
-            // cancelled
-            else {
-                let cancelError = _RKError(.CancelledByUpstream, "Signal=\(signalName) is rejected or cancelled.")
-                reject(cancelError)
+            else if let errorInfo = errorInfo {
+                // rejected
+                if let error = errorInfo.error {
+                    reject?(error)
+                    return
+                }
+                // cancelled
+                else {
+                    let cancelError = _RKError(.CancelledByUpstream, "Signal=\(signalName) is rejected or cancelled.")
+                    reject?(cancelError)
+                }
             }
+            
         }
-        
     }
     
     // NOTE: downstreamSignal should capture upstreamSignal
@@ -236,6 +239,17 @@ public extension Signal
 
 public extension Signal
 {
+    /// creates your own customizable & method-chainable signal without writing `return Signal<U> { ... }`
+    public func customize<U>(
+        customizeClosure: (upstreamSignal: Signal<T>, progress: Signal<U>.ProgressHandler, fulfill: Signal<U>.FulfillHandler, reject: Signal<U>.RejectHandler) -> Void
+    ) -> Signal<U>
+    {
+        return Signal<U> { progress, fulfill, reject, configure in
+            customizeClosure(upstreamSignal: self, progress: progress, fulfill: fulfill, reject: reject)
+            _bindToUpstreamSignal(self, nil, nil, configure)
+        }
+    }
+    
     /// filter using newValue only
     public func filter(filterClosure: T -> Bool) -> Signal<T>
     {
@@ -247,7 +261,7 @@ public extension Signal
                 }
             }
         
-            _bind(fulfill, reject, configure, self)
+            _bindToUpstreamSignal(self, fulfill, reject, configure)
             
         }.name("\(self.name)-filter")
     }
@@ -263,7 +277,7 @@ public extension Signal
                 }
             }
         
-            _bind(fulfill, reject, configure, self)
+            _bindToUpstreamSignal(self, fulfill, reject, configure)
             
         }.name("\(self.name)-filter2")
     }
@@ -279,7 +293,7 @@ public extension Signal
                 fulfill()
             }
             
-            _bind(nil, reject, configure, self)
+            _bindToUpstreamSignal(self, nil, reject, configure)
             
         }.name("\(self.name)-map")
     }
@@ -303,7 +317,7 @@ public extension Signal
                 fulfill()
             }
             
-            _bind(nil, reject, configure, self)
+            _bindToUpstreamSignal(self, nil, reject, configure)
 
         }.name("\(self.name)-flatMap")
         
@@ -320,7 +334,7 @@ public extension Signal
                 fulfill()
             }
             
-            _bind(nil, reject, configure, self)
+            _bindToUpstreamSignal(self, nil, reject, configure)
             
         }.name("\(self.name)-map2")
     }
@@ -340,7 +354,7 @@ public extension Signal
                 fulfill()
             }
             
-            _bind(nil, reject, configure, self)
+            _bindToUpstreamSignal(self, nil, reject, configure)
             
         }.name("\(self.name)-mapAccumulate")
     }
@@ -364,7 +378,7 @@ public extension Signal
                 
             }
             
-            _bind(fulfill, reject, configure, self)
+            _bindToUpstreamSignal(self, fulfill, reject, configure)
             
         }.name("\(self.name)-take(\(maxCount))")
     }
@@ -391,7 +405,7 @@ public extension Signal
                     }
                 }
                 
-                _bind(fulfill, reject, configure, self)
+                _bindToUpstreamSignal(self, fulfill, reject, configure)
             }
             else {
                 let cancelError = _RKError(.CancelledByTriggerSignal, "Signal=\(self.name) is cancelled by takeUntil() with `triggerSignal` already been deinited.")
@@ -414,7 +428,7 @@ public extension Signal
                 progress(progressValue)
             }
             
-            _bind(fulfill, reject, configure, self)
+            _bindToUpstreamSignal(self, fulfill, reject, configure)
             
         }.name("\(self.name)-skip(\(skipCount))")
     }
@@ -442,7 +456,7 @@ public extension Signal
                 shouldSkip = false
             }
             
-            _bind(fulfill, reject, configure, self)
+            _bindToUpstreamSignal(self, fulfill, reject, configure)
             
         }.name("\(self.name)-skipUntil")
     }
@@ -506,7 +520,7 @@ public extension Signal
                 fulfill()
             }
             
-            _bind(nil, reject, configure, self)
+            _bindToUpstreamSignal(self, nil, reject, configure)
             
         }.name("\(self.name)-buffer")
     }
@@ -536,7 +550,7 @@ public extension Signal
                 }
             }
             
-            _bind(nil, reject, configure, self)
+            _bindToUpstreamSignal(self, nil, reject, configure)
             
         }.name("\(self.name)-bufferBy")
     }
@@ -562,7 +576,7 @@ public extension Signal
                 }
             }
             
-            _bind(nil, reject, configure, self)
+            _bindToUpstreamSignal(self, nil, reject, configure)
             
         }.name("\(self.name)-delay(\(timeInterval))")
     }
@@ -585,7 +599,7 @@ public extension Signal
                 }
             }
             
-            _bind(fulfill, reject, configure, self)
+            _bindToUpstreamSignal(self, fulfill, reject, configure)
             
         }.name("\(self.name)-throttle(\(timeInterval))")
     }
@@ -607,7 +621,7 @@ public extension Signal
                 }
             }
             
-            _bind(fulfill, reject, configure, self)
+            _bindToUpstreamSignal(self, fulfill, reject, configure)
             
         }.name("\(self.name)-debounce(\(timeInterval))")
     }
