@@ -649,7 +649,7 @@ public extension Signal
             
             for signal in signals {
                 signal.progress { (_, progressValue: U) in
-                    progress(progressValue as T)
+                    progress(progressValue as! T)
                 }.then { value, errorInfo -> Void in
                     if value != nil {
                         fulfill()
@@ -702,7 +702,7 @@ public extension Signal
                     let signals = signalGroup.signals
                     
                     let values: [T?] = signals.map { $0.progress as? T }
-                    let valueTuple = ChangedValueTuple(values: values, changedValue: tuple.changedValue as T)
+                    let valueTuple = ChangedValueTuple(values: values, changedValue: tuple.changedValue as! T)
                     
                     handler(valueTuple)
                 }
@@ -766,7 +766,7 @@ public extension Signal
                 if let signal = signals.first {
                     
                     signal.progress { _, progressValue in
-                        progress(progressValue as T)
+                        progress(progressValue as! T)
                     }.success {
                         concatRecursively(Array(signals[1..<signals.count]))
                     }.failure { errorInfo -> Void in
@@ -817,7 +817,7 @@ public extension Signal
                 
                 signals[i].progress { (_, progressValue: U) in
                     
-                    storedValuesArray[i] += [progressValue as T]
+                    storedValuesArray[i] += [progressValue as! T]
                     
                     var canProgress: Bool = true
                     for storedValues in storedValuesArray {
