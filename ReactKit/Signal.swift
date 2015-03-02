@@ -269,16 +269,12 @@ public extension Signal
     /// filter using (oldValue, newValue)
     public func filter2(filterClosure2: (oldValue: T?, newValue: T) -> Bool) -> Signal<T>
     {
-        return Signal<T> { progress, fulfill, reject, configure in
-            
-            self.progress { (progressValues: (oldValue: T?, newValue: T)) in
-                if filterClosure2(progressValues) {
-                    progress(progressValues.newValue)
-                }
-            }
+        var oldValue: T?
         
-            _bindToUpstreamSignal(self, fulfill, reject, configure)
-            
+        return self.filter { (newValue: T) -> Bool in
+            let flag = filterClosure2(oldValue: oldValue, newValue: newValue)
+            oldValue = newValue
+            return flag
         }.name("\(self.name)-filter2")
     }
     
@@ -326,16 +322,12 @@ public extension Signal
     /// map using (oldValue, newValue)
     public func map2<U>(transform2: (oldValue: T?, newValue: T) -> U) -> Signal<U>
     {
-        return Signal<U> { progress, fulfill, reject, configure in
-            
-            self.progress { (progressValues: (oldValue: T?, newValue: T)) in
-                progress(transform2(progressValues))
-            }.success {
-                fulfill()
-            }
-            
-            _bindToUpstreamSignal(self, nil, reject, configure)
-            
+        var oldValue: T?
+        
+        return self.map { (newValue: T) -> U in
+            let mappedValue = transform2(oldValue: oldValue, newValue: newValue)
+            oldValue = newValue
+            return mappedValue
         }.name("\(self.name)-map2")
     }
     
@@ -645,8 +637,6 @@ public extension Signal
     {
         return Signal<T> { progress, fulfill, reject, configure in
             
-            let signalGroup = _SignalGroup(signals: signals)
-            
             for signal in signals {
                 signal.progress { (_, progressValue: U) in
                     progress(progressValue as T)
@@ -666,15 +656,15 @@ public extension Signal
                 }
             }
             
-            // NOTE: signals should be captured by class-type signalGroup, which should be captured by new signal
+            // NOTE: signals should be captured by new signal
             configure.pause = {
-                Signal<U>.pauseAll(signalGroup.signals)
+                Signal<U>.pauseAll(signals)
             }
             configure.resume = {
-                Signal<U>.resumeAll(signalGroup.signals)
+                Signal<U>.resumeAll(signals)
             }
             configure.cancel = {
-                Signal<U>.cancelAll(signalGroup.signals)
+                Signal<U>.cancelAll(signals)
             }
             
         }.name("Signal.merge")
@@ -693,25 +683,16 @@ public extension Signal
     {
         return Signal<ChangedValueTuple> { progress, fulfill, reject, configure in
             
-            // wrap with class for weakifying
-            let signalGroup = _SignalGroup<U>(signals: signals)
+            var states = [U?](count: signals.count, repeatedValue: nil)
             
-            func extractValuesAndHandle(valueSourceTuple tuple: (signalGroup: _SignalGroup<U>?, changedValue: U), #handler: ChangedValueTuple -> Void)
-            {
-                if let signalGroup = tuple.signalGroup {
-                    let signals = signalGroup.signals
-                    
-                    let values: [T?] = signals.map { $0.progress as? T }
-                    let valueTuple = ChangedValueTuple(values: values, changedValue: tuple.changedValue as T)
-                    
-                    handler(valueTuple)
-                }
-            }
-            
-            for signal in signals {
-                signal.progress { [weak signalGroup] (_, progressValue: U) in
-                    extractValuesAndHandle(valueSourceTuple: (signalGroup, progressValue), handler: progress)
-                }.then { [weak signalGroup] value, errorInfo -> Void in
+            for i in 0..<signals.count {
+                
+                let signal = signals[i]
+                
+                signal.progress { (_, progressValue: U) in
+                    states[i] = progressValue
+                    progress((states.map { $0 as? T }, progressValue as T))
+                }.then { value, errorInfo -> Void in
                     if value != nil {
                         fulfill()
                     }
@@ -727,15 +708,14 @@ public extension Signal
                 }
             }
             
-            // NOTE: signals should be captured by class-type signalGroup, which should be captured by new signal
             configure.pause = {
-                Signal<U>.pauseAll(signalGroup.signals)
+                Signal<U>.pauseAll(signals)
             }
             configure.resume = {
-                Signal<U>.resumeAll(signalGroup.signals)
+                Signal<U>.resumeAll(signals)
             }
             configure.cancel = {
-                Signal<U>.cancelAll(signalGroup.signals)
+                Signal<U>.cancelAll(signals)
             }
             
         }.name("Signal.merge2")
@@ -746,7 +726,10 @@ public extension Signal
         return self.merge2(signals).filter { values, _ in
             var areAllNonNil = true
             for value in values {
-                if value == nil { areAllNonNil = false; break }
+                if value == nil {
+                    areAllNonNil = false
+                    break
+                }
             }
             return areAllNonNil
         }.map { values, _ in values.map { $0! } }
@@ -821,7 +804,10 @@ public extension Signal
                     
                     var canProgress: Bool = true
                     for storedValues in storedValuesArray {
-                        if storedValues.count == 0 { canProgress = false; break }
+                        if storedValues.count == 0 {
+                            canProgress = false
+                            break
+                        }
                     }
                     
                     if canProgress {
@@ -885,17 +871,6 @@ public extension Signal
     public func scan<U>(initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Signal<U>
     {
         return self.mapAccumulate(initialValue, accumulateClosure)
-    }
-}
-
-/// wrapper-class for weakifying
-internal class _SignalGroup<T>
-{
-    internal let signals: [Signal<T>]
-    
-    internal init(signals: [Signal<T>])
-    {
-        self.signals = signals
     }
 }
 
