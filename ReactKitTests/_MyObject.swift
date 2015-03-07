@@ -15,9 +15,11 @@ class MyObject: NSObject
     // http://vperi.com/2014/08/11/key-value-observation-in-swift-beta-5/
     dynamic var value: String = "initial"
     
-    dynamic var number: NSNumber = 1
+    dynamic var number: NSNumber = 0
     
     dynamic var notification: NSNotification?
+    
+    dynamic var array: NSArray = []
     
     override init()
     {
