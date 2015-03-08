@@ -10,13 +10,13 @@ import Foundation
 
 public extension NSObject
 {
-    /// creates new Signal
+    /// creates new KVO Signal (new value only)
     public func signal(#keyPath: String) -> Signal<AnyObject?>
     {
         return Signal { [weak self] progress, fulfill, reject, configure in
             
             if let self_ = self {
-                let observer = _KVOProxy(target: self_, keyPath: keyPath) { value in
+                let observer = _KVOProxy(target: self_, keyPath: keyPath) { value, change, indexSet in
                     progress(value)
                 }
                 
@@ -27,6 +27,33 @@ public extension NSObject
             
         }.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
     }
+    
+    ///
+    /// creates new KVO Signal (new value, keyValueChange, indexSet),
+    /// useful for array model with combination of `mutableArrayValueForKey()`.
+    ///
+    /// e.g.
+    /// let itemsSignal = model.detailedSignal("items")
+    /// itemsSignal ~> { changedItems, change, indexSet in ... /* do something with changed items */}
+    /// let itemsProxy = model.mutableArrayValueForKey("items")
+    /// itemsProxy.insertObject(newItem, atIndex: 0) // itemsSignal will send **both** `newItem` and `index`
+    ///
+    public func detailedSignal(#keyPath: String) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
+    {
+        return Signal { [weak self] progress, fulfill, reject, configure in
+            
+            if let self_ = self {
+                let observer = _KVOProxy(target: self_, keyPath: keyPath) { value, change, indexSet in
+                    progress(value, change, indexSet)
+                }
+                
+                configure.pause = { observer.stop() }
+                configure.resume = { observer.start() }
+                configure.cancel = { observer.stop() }
+            }
+            
+        }.name("KVO(detailed)-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
+    }
 }
 
 /// KVO helper
@@ -36,19 +63,26 @@ public struct KVO
     {
         return object.signal(keyPath: keyPath)
     }
+
+    public static func detailedSignal(object: NSObject, _ keyPath: String) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
+    {
+        return object.detailedSignal(keyPath: keyPath)
+    }
 }
 
 private var ReactKitKVOContext = 0
 
 internal class _KVOProxy: NSObject
 {
+    internal typealias _Handler = (value: AnyObject?, change: NSKeyValueChange, indexSet: NSIndexSet?) -> Void
+    
     internal let _target: NSObject
     internal let _keyPath: String
-    internal let _handler: (AnyObject -> Void)
+    internal let _handler: _Handler
     
     internal var _isObserving: Bool = false
     
-    internal init(target: NSObject, keyPath: String, handler: (AnyObject -> Void))
+    internal init(target: NSObject, keyPath: String, handler: _Handler)
     {
         self._target = target
         self._keyPath = keyPath
@@ -105,11 +139,33 @@ internal class _KVOProxy: NSObject
         }
         else {
 //            #if DEBUG
+//                println()
 //                println("[KVO] changed keyPath=\(self._keyPath), change=\(change)")
+//                println("change[NSKeyValueChangeKindKey] = \(change[NSKeyValueChangeKindKey])")
+//                println("change[NSKeyValueChangeNewKey] = \(change[NSKeyValueChangeNewKey])")
+//                println("change[NSKeyValueChangeOldKey] = \(change[NSKeyValueChangeOldKey])")
+//                println("change[NSKeyValueChangeIndexesKey] = \(change[NSKeyValueChangeIndexesKey])")
+//                println()
 //            #endif
             
             let newValue: AnyObject? = change[NSKeyValueChangeNewKey]
-            self._handler(newValue!)
+            let keyValueChange: NSKeyValueChange = NSKeyValueChange(rawValue: (change[NSKeyValueChangeKindKey] as NSNumber).unsignedLongValue)!
+            let indexSet: NSIndexSet? = change[NSKeyValueChangeIndexesKey] as? NSIndexSet
+            
+            self._handler(value: newValue, change: keyValueChange, indexSet: indexSet)
+        }
+    }
+}
+
+extension NSKeyValueChange: Printable
+{
+    public var description: String
+    {
+        switch self {
+            case .Setting:      return "Setting"
+            case .Insertion:    return "Insertion"
+            case .Removal:      return "Removal"
+            case .Replacement:  return "Replacement"
         }
     }
 }
