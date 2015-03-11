@@ -32,7 +32,10 @@ public extension NSObject
     public func startingSignal(#keyPath: String, nilValue: AnyObject? = nil) -> Signal<AnyObject?>
     {
         var initial: AnyObject? = self.valueForKeyPath(keyPath)
-        initial = (initial is NSNull) ? nilValue : initial
+        if initial is NSNull {
+            initial = nil
+        }
+        initial = initial ?? nilValue
         return self.signal(keyPath: keyPath, nilValue: nilValue).startWith(initial)
     }
     
