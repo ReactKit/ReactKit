@@ -31,8 +31,9 @@ public extension NSObject
     /// creates new KVO Signal (initial + new value)
     public func startingSignal(#keyPath: String, nilValue: AnyObject? = nil) -> Signal<AnyObject?>
     {
-        let initial: AnyObject? = self.valueForKeyPath(keyPath)
-        return self.signal(keyPath: keyPath, nilValue: nilValue).startWith((initial is NSNull) ? nilValue : initial)
+        var initial: AnyObject? = self.valueForKeyPath(keyPath)
+        initial = (initial is NSNull) ? nilValue : initial
+        return self.signal(keyPath: keyPath, nilValue: nilValue).startWith(initial)
     }
     
     ///
