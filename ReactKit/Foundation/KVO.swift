@@ -28,6 +28,12 @@ public extension NSObject
         }.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
     }
     
+    /// creates new KVO Signal (initial + new value)
+    public func startingSignal(#keyPath: String) -> Signal<AnyObject?>
+    {
+        return self.signal(keyPath: keyPath).startWith(self.valueForKeyPath(keyPath))
+    }
+    
     ///
     /// creates new KVO Signal (new value, keyValueChange, indexSet),
     /// useful for array model with combination of `mutableArrayValueForKey()`.
@@ -59,11 +65,19 @@ public extension NSObject
 /// KVO helper
 public struct KVO
 {
+    /// creates new KVO Signal (new value only)
     public static func signal(object: NSObject, _ keyPath: String) -> Signal<AnyObject?>
     {
         return object.signal(keyPath: keyPath)
     }
+    
+    /// creates new KVO Signal (initial + new value)
+    public static func startingSignal(object: NSObject, _ keyPath: String) -> Signal<AnyObject?>
+    {
+        return object.startingSignal(keyPath: keyPath)
+    }
 
+    /// creates new KVO Signal (new value, keyValueChange, indexSet)
     public static func detailedSignal(object: NSObject, _ keyPath: String) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
     {
         return object.detailedSignal(keyPath: keyPath)
