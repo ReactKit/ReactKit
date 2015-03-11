@@ -17,3 +17,4 @@ DerivedData
 *.xcuserstate
 
 Carthage/Build
+.DS_Store
