@@ -11,13 +11,13 @@ import Foundation
 public extension NSObject
 {
     /// creates new KVO Signal (new value only)
-    public func signal(#keyPath: String) -> Signal<AnyObject?>
+    public func signal(#keyPath: String, nilValue: AnyObject? = nil) -> Signal<AnyObject?>
     {
         return Signal { [weak self] progress, fulfill, reject, configure in
             
             if let self_ = self {
                 let observer = _KVOProxy(target: self_, keyPath: keyPath) { value, change, indexSet in
-                    progress(value)
+                    progress((value is NSNull) ? nilValue : value)
                 }
                 
                 configure.pause = { observer.stop() }
@@ -29,9 +29,14 @@ public extension NSObject
     }
     
     /// creates new KVO Signal (initial + new value)
-    public func startingSignal(#keyPath: String) -> Signal<AnyObject?>
+    public func startingSignal(#keyPath: String, nilValue: AnyObject? = nil) -> Signal<AnyObject?>
     {
-        return self.signal(keyPath: keyPath).startWith(self.valueForKeyPath(keyPath))
+        var initial: AnyObject? = self.valueForKeyPath(keyPath)
+        if initial is NSNull {
+            initial = nil
+        }
+        initial = initial ?? nilValue
+        return self.signal(keyPath: keyPath, nilValue: nilValue).startWith(initial)
     }
     
     ///
@@ -44,13 +49,13 @@ public extension NSObject
     /// let itemsProxy = model.mutableArrayValueForKey("items")
     /// itemsProxy.insertObject(newItem, atIndex: 0) // itemsSignal will send **both** `newItem` and `index`
     ///
-    public func detailedSignal(#keyPath: String) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
+    public func detailedSignal(#keyPath: String, nilValue: AnyObject? = nil) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
     {
         return Signal { [weak self] progress, fulfill, reject, configure in
             
             if let self_ = self {
                 let observer = _KVOProxy(target: self_, keyPath: keyPath) { value, change, indexSet in
-                    progress(value, change, indexSet)
+                    progress((value is NSNull) ? nilValue : value, change, indexSet)
                 }
                 
                 configure.pause = { observer.stop() }
@@ -66,21 +71,21 @@ public extension NSObject
 public struct KVO
 {
     /// creates new KVO Signal (new value only)
-    public static func signal(object: NSObject, _ keyPath: String) -> Signal<AnyObject?>
+    public static func signal(object: NSObject, _ keyPath: String, _ nilValue: AnyObject? = nil) -> Signal<AnyObject?>
     {
-        return object.signal(keyPath: keyPath)
+        return object.signal(keyPath: keyPath, nilValue: nilValue)
     }
     
     /// creates new KVO Signal (initial + new value)
-    public static func startingSignal(object: NSObject, _ keyPath: String) -> Signal<AnyObject?>
+    public static func startingSignal(object: NSObject, _ keyPath: String, _ nilValue: AnyObject? = nil) -> Signal<AnyObject?>
     {
-        return object.startingSignal(keyPath: keyPath)
+        return object.startingSignal(keyPath: keyPath, nilValue: nilValue)
     }
 
     /// creates new KVO Signal (new value, keyValueChange, indexSet)
-    public static func detailedSignal(object: NSObject, _ keyPath: String) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
+    public static func detailedSignal(object: NSObject, _ keyPath: String, _ nilValue: AnyObject? = nil) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
     {
-        return object.detailedSignal(keyPath: keyPath)
+        return object.detailedSignal(keyPath: keyPath, nilValue: nilValue)
     }
 }
 
