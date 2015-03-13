@@ -58,6 +58,78 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_nil()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let signal = KVO.signal(obj1, "optionalValue")
+        (obj2, "optionalValue") <~ signal   // REACT
+        
+        println("*** Start ***")
+        
+        XCTAssertNil(obj1.optionalValue)
+        XCTAssertNil(obj2.optionalValue)
+        
+        self.perform {
+            
+            obj1.optionalValue = "hoge"
+            
+            XCTAssertEqual(obj1.optionalValue!, "hoge")
+            XCTAssertEqual(obj2.optionalValue!, "hoge")
+            
+            obj1.optionalValue = nil
+            
+            XCTAssertNil(obj1.optionalValue)
+            XCTAssertNil(obj2.optionalValue, "nil should be set instead of NSNull.")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+
+    func testKVO_startingSignal()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        obj2.optionalValue = "initial"  // set initial optionalValue
+
+        XCTAssertNil(obj1.optionalValue)
+        XCTAssertEqual(obj2.optionalValue!, "initial")
+        
+        let startingSignal = KVO.startingSignal(obj1, "optionalValue")
+        (obj2, "optionalValue") <~ startingSignal   // REACT
+
+        println("*** Start ***")
+        
+        XCTAssertNil(obj1.optionalValue)
+        XCTAssertNil(obj2.optionalValue, "`KVO.startingSignal()` sets initial `obj1.optionalValue` (nil) to `obj2.optionalValue` on `<~` binding.")
+        
+        self.perform {
+            
+            obj1.optionalValue = "hoge"
+            
+            XCTAssertEqual(obj1.optionalValue!, "hoge")
+            XCTAssertEqual(obj2.optionalValue!, "hoge")
+            
+            obj1.optionalValue = nil
+            
+            XCTAssertNil(obj1.optionalValue)
+            XCTAssertNil(obj2.optionalValue)
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     /// e.g. (obj2, "value") <~ (obj1, "value")
     func testKVO_shortLivingSyntax()
     {

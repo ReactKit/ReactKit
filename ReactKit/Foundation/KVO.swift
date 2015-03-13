@@ -8,30 +8,30 @@
 
 import Foundation
 
+// NSNull-to-nil converter for KVO which returns NSNull when nil is set
+// https://github.com/ReactKit/ReactKit/pull/18
+internal func _nullToNil(value: AnyObject?) -> AnyObject?
+{
+    return (value is NSNull) ? nil : value
+}
+
 public extension NSObject
 {
     /// creates new KVO Signal (new value only)
     public func signal(#keyPath: String) -> Signal<AnyObject?>
     {
-        return Signal { [weak self] progress, fulfill, reject, configure in
-            
-            if let self_ = self {
-                let observer = _KVOProxy(target: self_, keyPath: keyPath) { value, change, indexSet in
-                    progress(value)
-                }
-                
-                configure.pause = { observer.stop() }
-                configure.resume = { observer.start() }
-                configure.cancel = { observer.stop() }
-            }
-            
-        }.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
+        return self.detailedSignal(keyPath: keyPath)
+            .map { value, _, _ -> AnyObject? in value }
+            .name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
     }
     
     /// creates new KVO Signal (initial + new value)
     public func startingSignal(#keyPath: String) -> Signal<AnyObject?>
     {
-        return self.signal(keyPath: keyPath).startWith(self.valueForKeyPath(keyPath))
+        var initial: AnyObject? = self.valueForKeyPath(keyPath)
+        return self.signal(keyPath: keyPath)
+            .startWith(_nullToNil(initial))
+            .name("KVO(starting)-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
     }
     
     ///
@@ -50,7 +50,7 @@ public extension NSObject
             
             if let self_ = self {
                 let observer = _KVOProxy(target: self_, keyPath: keyPath) { value, change, indexSet in
-                    progress(value, change, indexSet)
+                    progress(_nullToNil(value), change, indexSet)
                 }
                 
                 configure.pause = { observer.stop() }
