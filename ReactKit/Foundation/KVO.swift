@@ -8,35 +8,30 @@
 
 import Foundation
 
+// NSNull-to-nil converter for KVO which returns NSNull when nil is set
+// https://github.com/ReactKit/ReactKit/pull/18
+internal func _nullToNil(value: AnyObject?) -> AnyObject?
+{
+    return (value is NSNull) ? nil : value
+}
+
 public extension NSObject
 {
     /// creates new KVO Signal (new value only)
-    public func signal(#keyPath: String, nilValue: AnyObject? = nil) -> Signal<AnyObject?>
+    public func signal(#keyPath: String) -> Signal<AnyObject?>
     {
-        return Signal { [weak self] progress, fulfill, reject, configure in
-            
-            if let self_ = self {
-                let observer = _KVOProxy(target: self_, keyPath: keyPath) { value, change, indexSet in
-                    progress((value is NSNull) ? nilValue : value)
-                }
-                
-                configure.pause = { observer.stop() }
-                configure.resume = { observer.start() }
-                configure.cancel = { observer.stop() }
-            }
-            
-        }.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
+        return self.detailedSignal(keyPath: keyPath)
+            .map { value, _, _ -> AnyObject? in value }
+            .name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
     }
     
     /// creates new KVO Signal (initial + new value)
-    public func startingSignal(#keyPath: String, nilValue: AnyObject? = nil) -> Signal<AnyObject?>
+    public func startingSignal(#keyPath: String) -> Signal<AnyObject?>
     {
         var initial: AnyObject? = self.valueForKeyPath(keyPath)
-        if initial is NSNull {
-            initial = nil
-        }
-        initial = initial ?? nilValue
-        return self.signal(keyPath: keyPath, nilValue: nilValue).startWith(initial)
+        return self.signal(keyPath: keyPath)
+            .startWith(_nullToNil(initial))
+            .name("KVO(starting)-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
     }
     
     ///
@@ -49,13 +44,13 @@ public extension NSObject
     /// let itemsProxy = model.mutableArrayValueForKey("items")
     /// itemsProxy.insertObject(newItem, atIndex: 0) // itemsSignal will send **both** `newItem` and `index`
     ///
-    public func detailedSignal(#keyPath: String, nilValue: AnyObject? = nil) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
+    public func detailedSignal(#keyPath: String) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
     {
         return Signal { [weak self] progress, fulfill, reject, configure in
             
             if let self_ = self {
                 let observer = _KVOProxy(target: self_, keyPath: keyPath) { value, change, indexSet in
-                    progress((value is NSNull) ? nilValue : value, change, indexSet)
+                    progress(_nullToNil(value), change, indexSet)
                 }
                 
                 configure.pause = { observer.stop() }
@@ -71,21 +66,21 @@ public extension NSObject
 public struct KVO
 {
     /// creates new KVO Signal (new value only)
-    public static func signal(object: NSObject, _ keyPath: String, _ nilValue: AnyObject? = nil) -> Signal<AnyObject?>
+    public static func signal(object: NSObject, _ keyPath: String) -> Signal<AnyObject?>
     {
-        return object.signal(keyPath: keyPath, nilValue: nilValue)
+        return object.signal(keyPath: keyPath)
     }
     
     /// creates new KVO Signal (initial + new value)
-    public static func startingSignal(object: NSObject, _ keyPath: String, _ nilValue: AnyObject? = nil) -> Signal<AnyObject?>
+    public static func startingSignal(object: NSObject, _ keyPath: String) -> Signal<AnyObject?>
     {
-        return object.startingSignal(keyPath: keyPath, nilValue: nilValue)
+        return object.startingSignal(keyPath: keyPath)
     }
 
     /// creates new KVO Signal (new value, keyValueChange, indexSet)
-    public static func detailedSignal(object: NSObject, _ keyPath: String, _ nilValue: AnyObject? = nil) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
+    public static func detailedSignal(object: NSObject, _ keyPath: String) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
     {
-        return object.detailedSignal(keyPath: keyPath, nilValue: nilValue)
+        return object.detailedSignal(keyPath: keyPath)
     }
 }
 
