@@ -58,6 +58,42 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_nil()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let signal = KVO.signal(obj1, "optionalValue")
+        
+        // REACT: obj1.optionalValue ~> obj2.optionalValue
+        (obj2, "optionalValue") <~ signal
+        
+        println("*** Start ***")
+        
+        XCTAssertNil(obj1.optionalValue)
+        XCTAssertNil(obj2.optionalValue)
+        
+        self.perform {
+            
+            obj1.optionalValue = "hoge"
+            
+            XCTAssertEqual(obj1.optionalValue!, "hoge")
+            XCTAssertEqual(obj2.optionalValue!, "hoge")
+            
+            obj1.optionalValue = nil
+            
+            XCTAssertNil(obj1.optionalValue)
+            XCTAssertNil(obj2.optionalValue)
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     /// e.g. (obj2, "value") <~ (obj1, "value")
     func testKVO_shortLivingSyntax()
     {
