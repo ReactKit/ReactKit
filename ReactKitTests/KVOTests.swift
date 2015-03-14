@@ -457,6 +457,68 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_groupBy()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        
+        // group by `key = countElement(value)`
+        let signal: Signal<(Int, Signal<AnyObject?>)> = KVO.signal(obj1, "value").groupBy { countElements($0! as String) }
+        
+        var lastKey: Int?
+        var lastValue: String?
+        
+        // REACT
+        signal ~> { (key: Int, groupedSignal: Signal<AnyObject?>) in
+            lastKey = key
+            
+            // REACT
+            groupedSignal ~> { value in
+                lastValue = value as? String
+                return
+            }
+        }
+        
+        println("*** Start ***")
+        
+        XCTAssertNil(lastKey)
+        XCTAssertNil(lastValue)
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(lastKey!, 4)
+            XCTAssertEqual(lastValue!, "hoge")
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(lastKey!, 4)
+            XCTAssertEqual(lastValue!, "fuga")
+            
+            obj1.value = "foo"
+            
+            XCTAssertEqual(lastKey!, 3)
+            XCTAssertEqual(lastValue!, "foo")
+            
+            obj1.value = "&"
+            
+            XCTAssertEqual(lastKey!, 1)
+            XCTAssertEqual(lastValue!, "&")
+            
+            obj1.value = "bar"
+            
+            XCTAssertEqual(lastKey!, 1, "`groupedSignal` with key=3 is already emitted, so `lastKey` will not be updated.")
+            XCTAssertEqual(lastValue!, "bar")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     // MARK: filtering
     
     func testKVO_filter()

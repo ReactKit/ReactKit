@@ -381,6 +381,37 @@ public extension Signal
         }.name("\(self.name)-bufferBy")
     }
     
+    public func groupBy<Key: Hashable>(groupingClosure: T -> Key) -> Signal<(Key, Signal<T>)>
+    {
+        return Signal<(Key, Signal<T>)> { progress, fulfill, reject, configure in
+            
+            var buffer: [Key : (signal: Signal<T>, progressHandler: Signal<T>.ProgressHandler)] = [:]
+            
+            self.progress { (_, progressValue: T) in
+                let key = groupingClosure(progressValue)
+                
+                if buffer[key] == nil {
+                    var progressHandler: Signal<T>.ProgressHandler?
+                    let innerSignal = Signal { p, _, _, _ in
+                        progressHandler = p;    // steal progressHandler
+                        return
+                    }
+                    innerSignal.resume()    // resume to steal `progressHandler` immediately
+                    
+                    buffer[key] = (innerSignal, progressHandler!) // set innerSignal
+                    
+                    progress((key, buffer[key]!.signal) as (Key, Signal<T>))
+                }
+                
+                buffer[key]!.progressHandler(progressValue) // push value to innerSignal
+                
+            }
+            
+            _bindToUpstreamSignal(self, fulfill, reject, configure)
+            
+        }.name("\(self.name)-groupBy")
+    }
+    
     //--------------------------------------------------
     // MARK: filtering
     //--------------------------------------------------
