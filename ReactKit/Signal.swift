@@ -250,33 +250,9 @@ public extension Signal
         }
     }
     
-    /// filter using newValue only
-    public func filter(filterClosure: T -> Bool) -> Signal<T>
-    {
-        return Signal<T> { progress, fulfill, reject, configure in
-            
-            self.progress { (_, progressValue: T) in
-                if filterClosure(progressValue) {
-                    progress(progressValue)
-                }
-            }
-        
-            _bindToUpstreamSignal(self, fulfill, reject, configure)
-            
-        }.name("\(self.name)-filter")
-    }
-
-    /// filter using (oldValue, newValue)
-    public func filter2(filterClosure2: (oldValue: T?, newValue: T) -> Bool) -> Signal<T>
-    {
-        var oldValue: T?
-        
-        return self.filter { (newValue: T) -> Bool in
-            let flag = filterClosure2(oldValue: oldValue, newValue: newValue)
-            oldValue = newValue
-            return flag
-        }.name("\(self.name)-filter2")
-    }
+    //--------------------------------------------------
+    // MARK: transforming
+    //--------------------------------------------------
     
     /// map using newValue only
     public func map<U>(transform: T -> U) -> Signal<U>
@@ -349,6 +325,92 @@ public extension Signal
             _bindToUpstreamSignal(self, nil, reject, configure)
             
         }.name("\(self.name)-mapAccumulate")
+    }
+
+    public func buffer(bufferCount: Int) -> Signal<[T]>
+    {
+        precondition(bufferCount > 0)
+        
+        return Signal<[T]> { progress, fulfill, reject, configure in
+            
+            var buffer: [T] = []
+            
+            self.progress { (_, progressValue: T) in
+                buffer += [progressValue]
+                if buffer.count >= bufferCount {
+                    progress(buffer)
+                    buffer = []
+                }
+            }.success { _ -> Void in
+                progress(buffer)
+                fulfill()
+            }
+            
+            _bindToUpstreamSignal(self, nil, reject, configure)
+            
+        }.name("\(self.name)-buffer")
+    }
+    
+    public func bufferBy<U>(triggerSignal: Signal<U>) -> Signal<[T]>
+    {
+        return Signal<[T]> { [weak triggerSignal] progress, fulfill, reject, configure in
+            
+            var buffer: [T] = []
+            
+            self.progress { (_, progressValue: T) in
+                buffer += [progressValue]
+            }.success { _ -> Void in
+                progress(buffer)
+                fulfill()
+            }
+            
+            triggerSignal?.progress { [weak self] _ in
+                if let self_ = self {
+                    progress(buffer)
+                    buffer = []
+                }
+            }.then { [weak self] _ -> Void in
+                if let self_ = self {
+                    progress(buffer)
+                    buffer = []
+                }
+            }
+            
+            _bindToUpstreamSignal(self, nil, reject, configure)
+            
+        }.name("\(self.name)-bufferBy")
+    }
+    
+    //--------------------------------------------------
+    // MARK: filtering
+    //--------------------------------------------------
+    
+    /// filter using newValue only
+    public func filter(filterClosure: T -> Bool) -> Signal<T>
+    {
+        return Signal<T> { progress, fulfill, reject, configure in
+            
+            self.progress { (_, progressValue: T) in
+                if filterClosure(progressValue) {
+                    progress(progressValue)
+                }
+            }
+            
+            _bindToUpstreamSignal(self, fulfill, reject, configure)
+            
+        }.name("\(self.name)-filter")
+    }
+    
+    /// filter using (oldValue, newValue)
+    public func filter2(filterClosure2: (oldValue: T?, newValue: T) -> Bool) -> Signal<T>
+    {
+        var oldValue: T?
+        
+        return self.filter { (newValue: T) -> Bool in
+            let flag = filterClosure2(oldValue: oldValue, newValue: newValue)
+            oldValue = newValue
+            return flag
+        }.name("\(self.name)-filter2")
     }
     
     public func take(maxCount: Int) -> Signal
@@ -453,6 +515,10 @@ public extension Signal
         }.name("\(self.name)-skipUntil")
     }
     
+    //--------------------------------------------------
+    // MARK: combining
+    //--------------------------------------------------
+    
     public func merge(signal: Signal<T>) -> Signal<T>
     {
         return self.merge([signal])
@@ -493,59 +559,9 @@ public extension Signal
             .name("\(self.name)-zip")
     }
     
-    public func buffer(bufferCount: Int) -> Signal<[T]>
-    {
-        precondition(bufferCount > 0)
-        
-        return Signal<[T]> { progress, fulfill, reject, configure in
-            
-            var buffer: [T] = []
-            
-            self.progress { (_, progressValue: T) in
-                buffer += [progressValue]
-                if buffer.count >= bufferCount {
-                    progress(buffer)
-                    buffer = []
-                }
-            }.success { _ -> Void in
-                progress(buffer)
-                fulfill()
-            }
-            
-            _bindToUpstreamSignal(self, nil, reject, configure)
-            
-        }.name("\(self.name)-buffer")
-    }
-    
-    public func bufferBy<U>(triggerSignal: Signal<U>) -> Signal<[T]>
-    {
-        return Signal<[T]> { [weak triggerSignal] progress, fulfill, reject, configure in
-            
-            var buffer: [T] = []
-            
-            self.progress { (_, progressValue: T) in
-                buffer += [progressValue]
-            }.success { _ -> Void in
-                progress(buffer)
-                fulfill()
-            }
-            
-            triggerSignal?.progress { [weak self] _ in
-                if let self_ = self {
-                    progress(buffer)
-                    buffer = []
-                }
-            }.then { [weak self] _ -> Void in
-                if let self_ = self {
-                    progress(buffer)
-                    buffer = []
-                }
-            }
-            
-            _bindToUpstreamSignal(self, nil, reject, configure)
-            
-        }.name("\(self.name)-bufferBy")
-    }
+    //--------------------------------------------------
+    // MARK: timing
+    //--------------------------------------------------
     
     /// delay `progress` and `fulfill` for `timerInterval` seconds
     public func delay(timeInterval: NSTimeInterval) -> Signal<T>
