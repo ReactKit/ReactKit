@@ -817,6 +817,60 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_sample()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        let sampler = MyObject()
+        
+        let samplingSignal = KVO.signal(sampler, "value")
+        let signal = KVO.signal(obj1, "value").sample(samplingSignal)
+
+        var reactCount = 0
+        
+        // REACT
+        (obj2, "value") <~ signal
+        signal ~> { _ in reactCount++; return }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        XCTAssertEqual(obj2.value, "initial")
+        
+        self.perform {
+            
+            sampler.value = "DUMMY"  // fire samplingSignal
+            XCTAssertEqual(obj2.value, "initial", "`obj2.value` should not be updated because `obj1.value` has not sent yet.")
+            XCTAssertEqual(reactCount, 0)
+            
+            obj1.value = "hoge"
+            XCTAssertEqual(obj2.value, "initial", "`obj2.value` should not be updated because although `obj1` has changed, `samplingSignal` has not triggered yet.")
+            XCTAssertEqual(reactCount, 0)
+            
+            sampler.value = "DUMMY"
+            XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should be updated, triggered by `samplingSignal` using latest `obj1.value`.")
+            XCTAssertEqual(reactCount, 1)
+
+            sampler.value = "DUMMY"
+            XCTAssertEqual(obj2.value, "hoge")
+            XCTAssertEqual(reactCount, 2)
+            
+            obj1.value = "fuga"
+            obj1.value = "piyo"
+            
+            sampler.value = "** check ** "
+            XCTAssertEqual(obj2.value, "piyo")
+            XCTAssertEqual(reactCount, 3)
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     // MARK: timing
     
     func testKVO_throttle()

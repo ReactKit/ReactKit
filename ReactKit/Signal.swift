@@ -546,6 +546,29 @@ public extension Signal
         }.name("\(self.name)-skipUntil")
     }
     
+    public func sample<U>(triggerSignal: Signal<U>) -> Signal<T>
+    {
+        return Signal<T> { [weak triggerSignal] progress, fulfill, reject, configure in
+            
+            var lastProgressValue: T?
+            
+            self.progress { (_, progressValue: T) in
+                lastProgressValue = progressValue
+            }
+            
+            if let triggerSignal = triggerSignal {
+                triggerSignal.progress { _ in
+                    if let lastProgressValue = lastProgressValue {
+                        progress(lastProgressValue)
+                    }
+                }
+            }
+            
+            _bindToUpstreamSignal(self, fulfill, reject, configure)
+            
+        }
+    }
+    
     //--------------------------------------------------
     // MARK: combining
     //--------------------------------------------------
