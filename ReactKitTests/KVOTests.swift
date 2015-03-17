@@ -189,9 +189,6 @@ class KVOTests: _TestCase
         // REACT
         (obj2, "value") <~ signal
         
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
-        
         println("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
@@ -234,9 +231,6 @@ class KVOTests: _TestCase
         
         // REACT
         (obj2, "value") <~ signal
-        
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -369,9 +363,6 @@ class KVOTests: _TestCase
             result = "-".join(buffer_)
         }
         
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
-        
         println("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
@@ -422,9 +413,6 @@ class KVOTests: _TestCase
             let buffer_: [String] = buffer.map { $0 as NSString }
             result = "-".join(buffer_)
         }
-        
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -535,9 +523,6 @@ class KVOTests: _TestCase
         // REACT
         (obj2, "value") <~ signal
         
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
-        
         println("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
@@ -598,7 +583,6 @@ class KVOTests: _TestCase
             
             obj1.value = "fuga" // same value as before
             
-            println(count)
             XCTAssertEqual(count, 2, "`count` should NOT be incremented because previous value was same (should be distinct)")
             
             obj1.value = "hoge"
@@ -620,13 +604,9 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         let signal = KVO.signal(obj1, "value").take(1)  // only take 1 event
-        weak var weakSignal = signal
         
-        // REACT: obj1.value ~> obj2.value
+        // REACT
         (obj2, "value") <~ signal
-        
-        // REACT: obj1.value ~> println
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -634,8 +614,6 @@ class KVOTests: _TestCase
         XCTAssertEqual(obj2.value, "initial")
         
         self.perform {
-            
-            XCTAssertNotNil(weakSignal)
             
             obj1.value = "hoge"
             
@@ -734,13 +712,8 @@ class KVOTests: _TestCase
         let stoppingSignal = KVO.signal(stopper, "value")    // store stoppingSignal to live until end of runloop
         let signal = KVO.signal(obj1, "value").takeUntil(stoppingSignal)
         
-        weak var weakSignal = signal
-        
         // REACT
         (obj2, "value") <~ signal
-        
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -776,13 +749,9 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         let signal = KVO.signal(obj1, "value").skip(1)  // skip 1 event
-        weak var weakSignal = signal
         
-        // REACT: obj1.value ~> obj2.value
+        // REACT
         (obj2, "value") <~ signal
-        
-        // REACT: obj1.value ~> println
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -790,8 +759,6 @@ class KVOTests: _TestCase
         XCTAssertEqual(obj2.value, "initial")
         
         self.perform {
-            
-            XCTAssertNotNil(weakSignal)
             
             obj1.value = "hoge"
             
@@ -818,16 +785,11 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         let stopper = MyObject()
         
-        let startingSignal = KVO.signal(stopper, "value")    // store startingSignal to live until end of runloop
+        let startingSignal = KVO.signal(stopper, "value")
         let signal = KVO.signal(obj1, "value").skipUntil(startingSignal)
-        
-        weak var weakSignal = signal
         
         // REACT
         (obj2, "value") <~ signal
-        
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -867,9 +829,8 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         let signal = KVO.signal(obj1, "value").throttle(timeInterval)
-        weak var weakSignal = signal
         
-        // REACT: obj1.value ~> obj2.value
+        // REACT
         (obj2, "value") <~ signal
         
         println("*** Start ***")
@@ -878,8 +839,6 @@ class KVOTests: _TestCase
         XCTAssertEqual(obj2.value, "initial")
         
         self.perform {
-            
-            XCTAssertNotNil(weakSignal)
             
             obj1.value = "hoge"
             
@@ -916,9 +875,8 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         let signal = KVO.signal(obj1, "value").debounce(timeInterval)
-        weak var weakSignal = signal
         
-        // REACT: obj1.value ~> obj2.value
+        // REACT
         (obj2, "value") <~ signal
         
         println("*** Start ***")
@@ -927,8 +885,6 @@ class KVOTests: _TestCase
         XCTAssertEqual(obj2.value, "initial")
         
         self.perform {
-            
-            XCTAssertNotNil(weakSignal)
             
             obj1.value = "hoge"
             

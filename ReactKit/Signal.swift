@@ -125,7 +125,7 @@ public class Signal<T>: Task<T, Void, NSError>
     
     /// Easy strong referencing by owner e.g. UIViewController holding its UI component's signal
     /// without explicitly defining signal as property.
-    public func ownedBy(owner: NSObject) -> Signal
+    public func ownedBy(owner: NSObject) -> Signal<T>
     {
         var owninigSignals = owner._owninigSignals
         owninigSignals.append(self)
@@ -444,7 +444,7 @@ public extension Signal
         }.name("\(self.name)-filter2")
     }
     
-    public func take(maxCount: Int) -> Signal
+    public func take(maxCount: Int) -> Signal<T>
     {
         return Signal<T> { progress, fulfill, reject, configure in
             
@@ -468,7 +468,7 @@ public extension Signal
         }.name("\(self.name)-take(\(maxCount))")
     }
     
-    public func takeUntil<U>(triggerSignal: Signal<U>) -> Signal
+    public func takeUntil<U>(triggerSignal: Signal<U>) -> Signal<T>
     {
         return Signal<T> { [weak triggerSignal] progress, fulfill, reject, configure in
             
@@ -500,7 +500,7 @@ public extension Signal
         }.name("\(self.name)-takeUntil")
     }
     
-    public func skip(skipCount: Int) -> Signal
+    public func skip(skipCount: Int) -> Signal<T>
     {
         return Signal<T> { progress, fulfill, reject, configure in
             
@@ -518,7 +518,7 @@ public extension Signal
         }.name("\(self.name)-skip(\(skipCount))")
     }
     
-    public func skipUntil<U>(triggerSignal: Signal<U>) -> Signal
+    public func skipUntil<U>(triggerSignal: Signal<U>) -> Signal<T>
     {
         return Signal<T> { [weak triggerSignal] progress, fulfill, reject, configure in
             
