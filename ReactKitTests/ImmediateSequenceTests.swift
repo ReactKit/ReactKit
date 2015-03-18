@@ -1,5 +1,5 @@
 //
-//  InfiniteSequenceTests.swift
+//  ImmediateSequenceTests.swift
 //  ReactKitTests
 //
 //  Created by Yasuhiro Inami on 2014/09/11.
@@ -9,7 +9,7 @@
 import ReactKit
 import XCTest
 
-class InfiniteSequenceTests: _TestCase
+class ImmediateSequenceTests: _TestCase
 {
     func testTake()
     {
@@ -48,7 +48,7 @@ class InfiniteSequenceTests: _TestCase
     }
 }
 
-class AsyncInfiniteSequenceTests: InfiniteSequenceTests
+class AsyncImmediateSequenceTests: ImmediateSequenceTests
 {
     override var isAsync: Bool { return true }
 }
