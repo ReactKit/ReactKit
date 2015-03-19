@@ -25,6 +25,8 @@
 		1F822EF419D319FF00A3CA23 /* _MyObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F822EF219D319FF00A3CA23 /* _MyObject.swift */; };
 		1F8C3AAB1A2D8614000D9CF8 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F8C3AAA1A2D8614000D9CF8 /* Error.swift */; };
 		1F8C3AAC1A2D8614000D9CF8 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F8C3AAA1A2D8614000D9CF8 /* Error.swift */; };
+		1FC50FF31AB9DA5400F363CD /* ImmediateSequenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC50FF21AB9DA5400F363CD /* ImmediateSequenceTests.swift */; };
+		1FC50FF41AB9DA5400F363CD /* ImmediateSequenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC50FF21AB9DA5400F363CD /* ImmediateSequenceTests.swift */; };
 		1FED88FE19C1EB120065658B /* ReactKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 1FED88FD19C1EB120065658B /* ReactKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1FED896119C1EBD60065658B /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED895C19C1EBD60065658B /* Signal.swift */; };
 		1FED896219C1EBD60065658B /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED895C19C1EBD60065658B /* Signal.swift */; };
@@ -61,6 +63,7 @@
 		1F822EE619D319E000A3CA23 /* CustomOperatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomOperatorTests.swift; sourceTree = "<group>"; };
 		1F822EF219D319FF00A3CA23 /* _MyObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _MyObject.swift; sourceTree = "<group>"; };
 		1F8C3AAA1A2D8614000D9CF8 /* Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
+		1FC50FF21AB9DA5400F363CD /* ImmediateSequenceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImmediateSequenceTests.swift; sourceTree = "<group>"; };
 		1FED88F819C1EB120065658B /* ReactKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ReactKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FED88FC19C1EB120065658B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1FED88FD19C1EB120065658B /* ReactKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReactKit.h; sourceTree = "<group>"; };
@@ -189,6 +192,7 @@
 				1F14EC4319C1FC040090C3D8 /* NotificationTests.swift */,
 				1F822EE619D319E000A3CA23 /* CustomOperatorTests.swift */,
 				1F563DF119D701F100034EA6 /* DeinitSignalTests.swift */,
+				1FC50FF21AB9DA5400F363CD /* ImmediateSequenceTests.swift */,
 				1FED890819C1EB120065658B /* Supporting Files */,
 			);
 			path = ReactKitTests;
@@ -420,6 +424,7 @@
 			files = (
 				1F2BEB601AAAB3A500256A58 /* ArrayKVOTests.swift in Sources */,
 				1F626D9019D8799600D3ABCE /* CustomOperatorTests.swift in Sources */,
+				1FC50FF31AB9DA5400F363CD /* ImmediateSequenceTests.swift in Sources */,
 				1F822EF319D319FF00A3CA23 /* _MyObject.swift in Sources */,
 				1FED8AAA19C1ECD30065658B /* _TestCase.swift in Sources */,
 				484553991A4CF97C007770CA /* Async.swift in Sources */,
@@ -456,6 +461,7 @@
 			files = (
 				1F2BEB611AAAB3A500256A58 /* ArrayKVOTests.swift in Sources */,
 				1F626D9419D8799900D3ABCE /* CustomOperatorTests.swift in Sources */,
+				1FC50FF41AB9DA5400F363CD /* ImmediateSequenceTests.swift in Sources */,
 				1F822EF419D319FF00A3CA23 /* _MyObject.swift in Sources */,
 				1FED8AAB19C1ECD30065658B /* _TestCase.swift in Sources */,
 				4845539A1A4CF97C007770CA /* Async.swift in Sources */,

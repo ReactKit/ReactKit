@@ -693,6 +693,8 @@ class KVOTests: _TestCase
         
         }
         
+        takeSignal.resume() // NOTE: resume manually
+        
         self.perform { [weak sourceSignal] in
             sourceSignal?.cancel()
             return
