@@ -42,6 +42,9 @@ XCTAssertEqual(obj1.value, "Done")
 XCTAssertEqual(obj2.value, "REACT")
 ```
 
+If you want to observe changes in `Swift.Array` or `NSMutableArray`, 
+use `DynamicArray` feature in [Pull Request #23](https://github.com/ReactKit/ReactKit/pull/23).
+
 ### NSNotification
 
 ```swift
