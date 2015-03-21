@@ -125,6 +125,7 @@ class ArrayKVOTests: _TestCase
             
             // addObject
             obj1ArrayProxy.addObject(1)
+            XCTAssertTrue(obj1.array.isEqualToArray([1]))
             XCTAssertEqual(lastValue!, [1])
             XCTAssertTrue(lastChange! == .Insertion)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(index: 0)))
@@ -133,6 +134,7 @@ class ArrayKVOTests: _TestCase
             
             // addObject (once more)
             obj1ArrayProxy.addObject(2)
+            XCTAssertTrue(obj1.array.isEqualToArray([1, 2]))
             XCTAssertEqual(lastValue!, [2])
             XCTAssertTrue(lastChange! == .Insertion)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(index: 1)))
@@ -140,98 +142,77 @@ class ArrayKVOTests: _TestCase
             
             // addObjectsFromArray
             obj1ArrayProxy.addObjectsFromArray([3, 4])
+            XCTAssertTrue(obj1.array.isEqualToArray([1, 2, 3, 4]))
             XCTAssertEqual(lastValue!, [4], "Only last added value `4` should be set.")
             XCTAssertTrue(lastChange! == .Insertion)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(index: 3)))
             XCTAssertEqual(reactedCount, 4, "`mutableArrayValueForKey().addObjectsFromArray()` will send `3` then `4` **separately** to signal, so `reactedCount` should be incremented as +2.")
             
-            // check array
-            XCTAssertTrue(obj1.array.isEqualToArray([1, 2, 3, 4]))
-            
             // insertObject
             obj1ArrayProxy.insertObject(0, atIndex: 0)
+            XCTAssertTrue(obj1.array.isEqualToArray([0, 1, 2, 3, 4]))
             XCTAssertEqual(lastValue!, [0])
             XCTAssertTrue(lastChange! == .Insertion)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(index: 0)))
             XCTAssertEqual(reactedCount, 5)
             
-            // prepare indexSet = [1, 3]
-            indexSet = NSMutableIndexSet(index: 1)
-            indexSet.addIndex(3)
-            
             // insertObjects
-            obj1ArrayProxy.insertObjects([0.5, 1.5], atIndexes: indexSet)
+            obj1ArrayProxy.insertObjects([0.5, 1.5], atIndexes: NSMutableIndexSet(indexes: [1, 3]))
+            XCTAssertTrue(obj1.array.isEqualToArray([0, 0.5, 1, 1.5, 2, 3, 4]))
             XCTAssertEqual(lastValue!, [0.5, 1.5])
             XCTAssertTrue(lastChange! == .Insertion)
-            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(indexSet))
+            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSMutableIndexSet(indexes: [1, 3])))
             XCTAssertEqual(reactedCount, 6, "`mutableArrayValueForKey().insertObjects()` will send `0.5` & `1.5` **together** to signal, so `reactedCount` should be incremented as +1.")
-            
-            // check array
-            XCTAssertTrue(obj1.array.isEqualToArray([0, 0.5, 1, 1.5, 2, 3, 4]))
             
             // replaceObjectAtIndex
             obj1ArrayProxy.replaceObjectAtIndex(4, withObject: 2.5)
+            XCTAssertTrue(obj1.array.isEqualToArray([0, 0.5, 1, 1.5, 2.5, 3, 4]))
             XCTAssertEqual(lastValue!, [2.5])
             XCTAssertTrue(lastChange! == .Replacement)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(index: 4)))
             XCTAssertEqual(reactedCount, 7)
             
-            // prepare indexSet = [5, 6]
-            indexSet = NSMutableIndexSet(index: 5)
-            indexSet.addIndex(6)
-            
             // replaceObjectsAtIndexes
-            obj1ArrayProxy.replaceObjectsAtIndexes(indexSet, withObjects: [3.5, 4.5])
+            obj1ArrayProxy.replaceObjectsAtIndexes(NSMutableIndexSet(indexes: [5, 6]), withObjects: [3.5, 4.5])
+            XCTAssertTrue(obj1.array.isEqualToArray([0, 0.5, 1, 1.5, 2.5, 3.5, 4.5]))
             XCTAssertEqual(lastValue!, [3.5, 4.5])
             XCTAssertTrue(lastChange! == .Replacement)
-            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(indexSet))
+            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSMutableIndexSet(indexes: [5,6])))
             XCTAssertEqual(reactedCount, 8)
-            
-            // check array
-            XCTAssertTrue(obj1.array.isEqualToArray([0, 0.5, 1, 1.5, 2.5, 3.5, 4.5]))
             
             // removeObjectAtIndex
             obj1ArrayProxy.removeObjectAtIndex(6)
+            XCTAssertTrue(obj1.array.isEqualToArray([0, 0.5, 1, 1.5, 2.5, 3.5]))
             XCTAssertNil(lastValue, "lastValue should be nil (deleting element `4.5`).")
             XCTAssertTrue(lastChange! == .Removal)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(index: 6)))
             XCTAssertEqual(reactedCount, 9)
             
-            // prepare indexSet = [0, 2]
-            indexSet = NSMutableIndexSet(index: 0)
-            indexSet.addIndex(2)
-            
             // removeObjectsAtIndexes
-            obj1ArrayProxy.removeObjectsAtIndexes(indexSet)
+            obj1ArrayProxy.removeObjectsAtIndexes(NSMutableIndexSet(indexes: [0, 2]))
+            XCTAssertTrue(obj1.array.isEqualToArray([0.5, 1.5, 2.5, 3.5]))
             XCTAssertNil(lastValue, "lastValue should be nil (deleting element `0` & `1`).")
             XCTAssertTrue(lastChange! == .Removal)
-            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(indexSet))
+            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSMutableIndexSet(indexes: [0, 2])))
             XCTAssertEqual(reactedCount, 10)
-            
-            // check array
-            XCTAssertTrue(obj1.array.isEqualToArray([0.5, 1.5, 2.5, 3.5]))
             
             // exchangeObjectAtIndex
             obj1ArrayProxy.exchangeObjectAtIndex(1, withObjectAtIndex: 2)   // replaces `index = 1` then `index = 2`
+            XCTAssertTrue(obj1.array.isEqualToArray([0.5, 2.5, 1.5, 3.5]))
             XCTAssertEqual(lastValue!, [1.5], "Only last replaced value `1.5` should be set.")
             XCTAssertTrue(lastChange! == .Replacement)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(index: 2)))
             XCTAssertEqual(reactedCount, 12, "`mutableArrayValueForKey().exchangeObjectAtIndex()` will send `2.5` (replacing at index=1) then `1.5` (replacing at index=2) **separately** to signal, so `reactedCount` should be incremented as +2.")
             
-            // check array
-            XCTAssertTrue(obj1.array.isEqualToArray([0.5, 2.5, 1.5, 3.5]))
-            
             // sortUsingComparator
             obj1ArrayProxy.sortUsingComparator { (element1, element2) -> NSComparisonResult in
                 return (element2 as NSNumber).compare(element1 as NSNumber)
             }
+            XCTAssertTrue(obj1.array.isEqualToArray([3.5, 2.5, 1.5, 0.5]))
             XCTAssertEqual(lastValue!, [0.5], "Only last replaced value `0.5` should be set.")
             XCTAssertTrue(lastChange! == .Replacement)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(index: 3)))
             XCTAssertEqual(reactedCount, 16, "`mutableArrayValueForKey().sortUsingComparator()` will send all sorted values **separately** to signal, so `reactedCount` should be incremented as number of elements i.e. +4.")
-            
-            // check array
-            XCTAssertTrue(obj1.array.isEqualToArray([3.5, 2.5, 1.5, 0.5]))
             
             expect.fulfill()
             
@@ -240,6 +221,152 @@ class ArrayKVOTests: _TestCase
         self.wait()
     }
     
+    func testDynamicArray()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let array = [Int]()
+        let dynamicArray = DynamicArray(array)
+        
+        var buffer: [DynamicArray.ChangedTuple] = []
+        
+        // REACT
+        dynamicArray.signal ~> { (context: DynamicArray.ChangedTuple) in
+            buffer.append(context)
+        }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(dynamicArray.proxy.count, 0)
+        
+        self.perform {
+            
+            dynamicArray.proxy.addObject(1)
+            
+            XCTAssertEqual(dynamicArray.proxy, [1])
+            XCTAssertEqual(array, [], "`array` will not be synced with `dynamicArray` (use ForwardingDynamicArray instead).")
+            XCTAssertEqual(buffer.count, 1)
+            XCTAssertEqual(buffer[0].0! as [NSObject], [1])
+            XCTAssertEqual(buffer[0].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[0].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
+            
+            dynamicArray.proxy.addObjectsFromArray([2, 3])
+            
+            XCTAssertEqual(dynamicArray.proxy, [1, 2, 3])
+            XCTAssertEqual(buffer.count, 3, "`[2, 3]` will be separately inserted, so `buffer.count` should increment by 2.")
+            XCTAssertEqual(buffer[1].0! as [NSObject], [2])
+            XCTAssertEqual(buffer[1].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[1].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 1)))
+            XCTAssertEqual(buffer[2].0! as [NSObject], [3])
+            XCTAssertEqual(buffer[2].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[2].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
+            
+            dynamicArray.proxy.insertObject(0, atIndex: 0)
+            
+            XCTAssertEqual(dynamicArray.proxy, [0, 1, 2, 3])
+            XCTAssertEqual(buffer.count, 4)
+            XCTAssertEqual(buffer[3].0! as [NSObject], [0])
+            XCTAssertEqual(buffer[3].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[3].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
+            
+            dynamicArray.proxy.replaceObjectAtIndex(2, withObject: 2.5)
+            
+            XCTAssertEqual(dynamicArray.proxy, [0, 1, 2.5, 3])
+            XCTAssertEqual(buffer.count, 5)
+            XCTAssertEqual(buffer[4].0! as [NSObject], [2.5])
+            XCTAssertEqual(buffer[4].1 as NSKeyValueChange, NSKeyValueChange.Replacement)
+            XCTAssertTrue((buffer[4].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
+            
+            dynamicArray.proxy.removeObjectAtIndex(2)
+            
+            XCTAssertEqual(dynamicArray.proxy, [0, 1, 3])
+            XCTAssertEqual(buffer.count, 6)
+            XCTAssertNil(buffer[5].0, "Deletion will send nil as changed value.")
+            XCTAssertEqual(buffer[5].1 as NSKeyValueChange, NSKeyValueChange.Removal)
+            XCTAssertTrue((buffer[5].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
+    func testForwardingDynamicArray()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        
+        let dynamicArray = ForwardingDynamicArray(original: obj1.mutableArrayValueForKey("array"))
+        
+        var buffer: [DynamicArray.ChangedTuple] = []
+        
+        // REACT
+        dynamicArray.signal ~> { (context: DynamicArray.ChangedTuple) in
+            buffer.append(context)
+        }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(dynamicArray.proxy.count, 0)
+        
+        self.perform {
+            
+            dynamicArray.proxy.addObject(1)
+            
+            XCTAssertEqual(dynamicArray.proxy, [1])
+            XCTAssertEqual(obj1.array, dynamicArray.proxy, "`obj1.array` will sync with `dynamicArray.proxy`.")
+            XCTAssertEqual(buffer.count, 1)
+            XCTAssertEqual(buffer[0].0! as [NSObject], [1])
+            XCTAssertEqual(buffer[0].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[0].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
+            
+            dynamicArray.proxy.addObjectsFromArray([2, 3])
+            
+            XCTAssertEqual(dynamicArray.proxy, [1, 2, 3])
+            XCTAssertEqual(obj1.array, dynamicArray.proxy)
+            XCTAssertEqual(buffer.count, 3, "`[2, 3]` will be separately inserted, so `buffer.count` should increment by 2.")
+            XCTAssertEqual(buffer[1].0! as [NSObject], [2])
+            XCTAssertEqual(buffer[1].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[1].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 1)))
+            XCTAssertEqual(buffer[2].0! as [NSObject], [3])
+            XCTAssertEqual(buffer[2].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[2].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
+            
+            dynamicArray.proxy.insertObject(0, atIndex: 0)
+            
+            XCTAssertEqual(dynamicArray.proxy, [0, 1, 2, 3])
+            XCTAssertEqual(obj1.array, dynamicArray.proxy)
+            XCTAssertEqual(buffer.count, 4)
+            XCTAssertEqual(buffer[3].0! as [NSObject], [0])
+            XCTAssertEqual(buffer[3].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[3].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
+            
+            dynamicArray.proxy.replaceObjectAtIndex(2, withObject: 2.5)
+            
+            XCTAssertEqual(dynamicArray.proxy, [0, 1, 2.5, 3])
+            XCTAssertEqual(obj1.array, dynamicArray.proxy)
+            XCTAssertEqual(buffer.count, 5)
+            XCTAssertEqual(buffer[4].0! as [NSObject], [2.5])
+            XCTAssertEqual(buffer[4].1 as NSKeyValueChange, NSKeyValueChange.Replacement)
+            XCTAssertTrue((buffer[4].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
+            
+            dynamicArray.proxy.removeObjectAtIndex(2)
+            
+            XCTAssertEqual(dynamicArray.proxy, [0, 1, 3])
+            XCTAssertEqual(obj1.array, dynamicArray.proxy)
+            XCTAssertEqual(buffer.count, 6)
+            XCTAssertNil(buffer[5].0, "Deletion will send nil as changed value.")
+            XCTAssertEqual(buffer[5].1 as NSKeyValueChange, NSKeyValueChange.Removal)
+            XCTAssertTrue((buffer[5].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
 }
 
 class AsyncArrayKVOTests: KVOTests
