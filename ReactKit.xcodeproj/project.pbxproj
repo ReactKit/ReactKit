@@ -19,6 +19,8 @@
 		1F626D9319D8799900D3ABCE /* NotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F14EC4319C1FC040090C3D8 /* NotificationTests.swift */; };
 		1F626D9419D8799900D3ABCE /* CustomOperatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F822EE619D319E000A3CA23 /* CustomOperatorTests.swift */; };
 		1F626D9519D8799900D3ABCE /* DeinitSignalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F563DF119D701F100034EA6 /* DeinitSignalTests.swift */; };
+		1F72332B1ABDB34C00A0C8CF /* NSMutableIndexSet+Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F72332A1ABDB34C00A0C8CF /* NSMutableIndexSet+Helper.swift */; };
+		1F72332C1ABDB34C00A0C8CF /* NSMutableIndexSet+Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F72332A1ABDB34C00A0C8CF /* NSMutableIndexSet+Helper.swift */; };
 		1F79711019E4150A0067A4C4 /* NSTimer+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F79710F19E4150A0067A4C4 /* NSTimer+Signal.swift */; };
 		1F79711119E4150A0067A4C4 /* NSTimer+Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F79710F19E4150A0067A4C4 /* NSTimer+Signal.swift */; };
 		1F822EF319D319FF00A3CA23 /* _MyObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F822EF219D319FF00A3CA23 /* _MyObject.swift */; };
@@ -32,6 +34,8 @@
 		1FED896219C1EBD60065658B /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED895C19C1EBD60065658B /* Signal.swift */; };
 		1FED8AAA19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
 		1FED8AAB19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
+		480E83EB1ABB9B7400AF8346 /* DynamicArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480E83EA1ABB9B7400AF8346 /* DynamicArray.swift */; };
+		480E83EC1ABB9B7400AF8346 /* DynamicArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480E83EA1ABB9B7400AF8346 /* DynamicArray.swift */; };
 		484553991A4CF97C007770CA /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484552D11A4CF97B007770CA /* Async.swift */; };
 		4845539A1A4CF97C007770CA /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484552D11A4CF97B007770CA /* Async.swift */; };
 		484554ED1A4CF9CD007770CA /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 484554EC1A4CF9CD007770CA /* SwiftTask.framework */; };
@@ -59,6 +63,7 @@
 		1F14EC4319C1FC040090C3D8 /* NotificationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationTests.swift; sourceTree = "<group>"; };
 		1F2BEB5F1AAAB3A500256A58 /* ArrayKVOTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayKVOTests.swift; sourceTree = "<group>"; };
 		1F563DF119D701F100034EA6 /* DeinitSignalTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeinitSignalTests.swift; sourceTree = "<group>"; };
+		1F72332A1ABDB34C00A0C8CF /* NSMutableIndexSet+Helper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSMutableIndexSet+Helper.swift"; sourceTree = "<group>"; };
 		1F79710F19E4150A0067A4C4 /* NSTimer+Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSTimer+Signal.swift"; sourceTree = "<group>"; };
 		1F822EE619D319E000A3CA23 /* CustomOperatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomOperatorTests.swift; sourceTree = "<group>"; };
 		1F822EF219D319FF00A3CA23 /* _MyObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _MyObject.swift; sourceTree = "<group>"; };
@@ -74,6 +79,7 @@
 		1FED894B19C1EB7D0065658B /* ReactKit-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ReactKit-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FED895C19C1EBD60065658B /* Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Signal.swift; sourceTree = "<group>"; };
 		1FED8AA919C1ECD30065658B /* _TestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _TestCase.swift; sourceTree = "<group>"; };
+		480E83EA1ABB9B7400AF8346 /* DynamicArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DynamicArray.swift; sourceTree = "<group>"; };
 		484552D11A4CF97B007770CA /* Async.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
 		484554EC1A4CF9CD007770CA /* SwiftTask.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftTask.framework; path = ../Carthage/Checkouts/SwiftTask/build/Debug/SwiftTask.framework; sourceTree = "<group>"; };
 		4875885119E4D94800828AD0 /* KVO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KVO.swift; sourceTree = "<group>"; };
@@ -125,10 +131,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1F7233291ABDB33F00A0C8CF /* Helper */ = {
+			isa = PBXGroup;
+			children = (
+				1F72332A1ABDB34C00A0C8CF /* NSMutableIndexSet+Helper.swift */,
+			);
+			path = Helper;
+			sourceTree = "<group>";
+		};
 		1F79710E19E414F70067A4C4 /* Foundation */ = {
 			isa = PBXGroup;
 			children = (
+				1F7233291ABDB33F00A0C8CF /* Helper */,
 				4875885119E4D94800828AD0 /* KVO.swift */,
+				480E83EA1ABB9B7400AF8346 /* DynamicArray.swift */,
 				4875885219E4D94800828AD0 /* Notification.swift */,
 				4875885419E4D94800828AD0 /* TargetAction.swift */,
 				4875885319E4D94800828AD0 /* NSObject+Deinit.swift */,
@@ -415,6 +431,8 @@
 				48DDE7721A0C41A300125F36 /* NSObject+Own.swift in Sources */,
 				4875885519E4D94800828AD0 /* KVO.swift in Sources */,
 				4890AA901A5B70650028586C /* Signal+Conversion.swift in Sources */,
+				480E83EB1ABB9B7400AF8346 /* DynamicArray.swift in Sources */,
+				1F72332B1ABDB34C00A0C8CF /* NSMutableIndexSet+Helper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -438,6 +456,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1F72332C1ABDB34C00A0C8CF /* NSMutableIndexSet+Helper.swift in Sources */,
 				4875885A19E4D94800828AD0 /* NSObject+Deinit.swift in Sources */,
 				4875886319E4D95A00828AD0 /* UIControl+Signal.swift in Sources */,
 				1FED896219C1EBD60065658B /* Signal.swift in Sources */,
@@ -447,6 +466,7 @@
 				4875885619E4D94800828AD0 /* KVO.swift in Sources */,
 				48DDE7731A0C41A300125F36 /* NSObject+Own.swift in Sources */,
 				48FD5B3C19E51E7100913946 /* UIBarButtonItem+Signal.swift in Sources */,
+				480E83EC1ABB9B7400AF8346 /* DynamicArray.swift in Sources */,
 				4875886219E4D95A00828AD0 /* UIButton+Signal.swift in Sources */,
 				4875886419E4D95A00828AD0 /* UIGestureRecognizer+Signal.swift in Sources */,
 				4875885819E4D94800828AD0 /* Notification.swift in Sources */,
