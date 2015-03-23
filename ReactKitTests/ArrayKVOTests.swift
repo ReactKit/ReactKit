@@ -157,11 +157,11 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(reactedCount, 5)
             
             // insertObjects
-            obj1ArrayProxy.insertObjects([0.5, 1.5], atIndexes: NSMutableIndexSet(indexes: [1, 3]))
+            obj1ArrayProxy.insertObjects([0.5, 1.5], atIndexes: NSIndexSet(indexes: [1, 3]))
             XCTAssertTrue(obj1.array.isEqualToArray([0, 0.5, 1, 1.5, 2, 3, 4]))
             XCTAssertEqual(lastValue!, [0.5, 1.5])
             XCTAssertTrue(lastChange! == .Insertion)
-            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSMutableIndexSet(indexes: [1, 3])))
+            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(indexes: [1, 3])))
             XCTAssertEqual(reactedCount, 6, "`mutableArrayValueForKey().insertObjects()` will send `0.5` & `1.5` **together** to signal, so `reactedCount` should be incremented as +1.")
             
             // replaceObjectAtIndex
@@ -173,11 +173,11 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(reactedCount, 7)
             
             // replaceObjectsAtIndexes
-            obj1ArrayProxy.replaceObjectsAtIndexes(NSMutableIndexSet(indexes: [5, 6]), withObjects: [3.5, 4.5])
+            obj1ArrayProxy.replaceObjectsAtIndexes(NSIndexSet(indexes: [5, 6]), withObjects: [3.5, 4.5])
             XCTAssertTrue(obj1.array.isEqualToArray([0, 0.5, 1, 1.5, 2.5, 3.5, 4.5]))
             XCTAssertEqual(lastValue!, [3.5, 4.5])
             XCTAssertTrue(lastChange! == .Replacement)
-            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSMutableIndexSet(indexes: [5,6])))
+            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(indexes: [5,6])))
             XCTAssertEqual(reactedCount, 8)
             
             // removeObjectAtIndex
@@ -189,11 +189,11 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(reactedCount, 9)
             
             // removeObjectsAtIndexes
-            obj1ArrayProxy.removeObjectsAtIndexes(NSMutableIndexSet(indexes: [0, 2]))
+            obj1ArrayProxy.removeObjectsAtIndexes(NSIndexSet(indexes: [0, 2]))
             XCTAssertTrue(obj1.array.isEqualToArray([0.5, 1.5, 2.5, 3.5]))
             XCTAssertNil(lastValue, "lastValue should be nil (deleting element `0` & `1`).")
             XCTAssertTrue(lastChange! == .Removal)
-            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSMutableIndexSet(indexes: [0, 2])))
+            XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(indexes: [0, 2])))
             XCTAssertEqual(reactedCount, 10)
             
             // exchangeObjectAtIndex
