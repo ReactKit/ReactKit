@@ -227,11 +227,12 @@ class ArrayKVOTests: _TestCase
         
         let array = [Int]()
         let dynamicArray = DynamicArray(array)
+        let dynamicArraySignal = dynamicArray.signal()
         
         var buffer: [DynamicArray.ChangedTuple] = []
         
         // REACT
-        dynamicArray.signal ~> { (context: DynamicArray.ChangedTuple) in
+        dynamicArraySignal ~> { (context: DynamicArray.ChangedTuple) in
             buffer.append(context)
         }
         
@@ -292,18 +293,20 @@ class ArrayKVOTests: _TestCase
         self.wait()
     }
     
-    func testForwardingDynamicArray()
+    /// ForwardingDynamicArray + KVC-compliant model's array
+    func testForwardingDynamicArray_model()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
         let obj1 = MyObject()
         
-        let dynamicArray = ForwardingDynamicArray(original: obj1.mutableArrayValueForKey("array"))
+        let dynamicArray = ForwardingDynamicArray(object: obj1, keyPath: "array")
+        let dynamicArraySignal = dynamicArray.signal()
         
         var buffer: [DynamicArray.ChangedTuple] = []
         
         // REACT
-        dynamicArray.signal ~> { (context: DynamicArray.ChangedTuple) in
+        dynamicArraySignal ~> { (context: DynamicArray.ChangedTuple) in
             buffer.append(context)
         }
         
@@ -367,9 +370,88 @@ class ArrayKVOTests: _TestCase
         
         self.wait()
     }
+    
+    /// ForwardingDynamicArray + raw NSMutableArray
+    func testForwardingDynamicArray_mutableArray()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let array = NSMutableArray()
+        
+        let dynamicArray = ForwardingDynamicArray(original: array)
+        let dynamicArraySignal = dynamicArray.signal()
+        
+        var buffer: [DynamicArray.ChangedTuple] = []
+        
+        // REACT
+        dynamicArraySignal ~> { (context: DynamicArray.ChangedTuple) in
+            buffer.append(context)
+        }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(dynamicArray.proxy.count, 0)
+        
+        self.perform {
+            
+            dynamicArray.proxy.addObject(1)
+            
+            XCTAssertEqual(dynamicArray.proxy, [1])
+            XCTAssertEqual(array, dynamicArray.proxy, "`obj1.array` will sync with `dynamicArray.proxy`.")
+            XCTAssertEqual(buffer.count, 1)
+            XCTAssertEqual(buffer[0].0! as [NSObject], [1])
+            XCTAssertEqual(buffer[0].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[0].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
+            
+            dynamicArray.proxy.addObjectsFromArray([2, 3])
+            
+            XCTAssertEqual(dynamicArray.proxy, [1, 2, 3])
+            XCTAssertEqual(array, dynamicArray.proxy)
+            XCTAssertEqual(buffer.count, 3, "`[2, 3]` will be separately inserted, so `buffer.count` should increment by 2.")
+            XCTAssertEqual(buffer[1].0! as [NSObject], [2])
+            XCTAssertEqual(buffer[1].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[1].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 1)))
+            XCTAssertEqual(buffer[2].0! as [NSObject], [3])
+            XCTAssertEqual(buffer[2].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[2].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
+            
+            dynamicArray.proxy.insertObject(0, atIndex: 0)
+            
+            XCTAssertEqual(dynamicArray.proxy, [0, 1, 2, 3])
+            XCTAssertEqual(array, dynamicArray.proxy)
+            XCTAssertEqual(buffer.count, 4)
+            XCTAssertEqual(buffer[3].0! as [NSObject], [0])
+            XCTAssertEqual(buffer[3].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
+            XCTAssertTrue((buffer[3].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
+            
+            dynamicArray.proxy.replaceObjectAtIndex(2, withObject: 2.5)
+            
+            XCTAssertEqual(dynamicArray.proxy, [0, 1, 2.5, 3])
+            XCTAssertEqual(array, dynamicArray.proxy)
+            XCTAssertEqual(buffer.count, 5)
+            XCTAssertEqual(buffer[4].0! as [NSObject], [2.5])
+            XCTAssertEqual(buffer[4].1 as NSKeyValueChange, NSKeyValueChange.Replacement)
+            XCTAssertTrue((buffer[4].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
+            
+            dynamicArray.proxy.removeObjectAtIndex(2)
+            
+            XCTAssertEqual(dynamicArray.proxy, [0, 1, 3])
+            XCTAssertEqual(array, dynamicArray.proxy)
+            XCTAssertEqual(buffer.count, 6)
+            XCTAssertNil(buffer[5].0, "Deletion will send nil as changed value.")
+            XCTAssertEqual(buffer[5].1 as NSKeyValueChange, NSKeyValueChange.Removal)
+            XCTAssertTrue((buffer[5].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+
 }
 
-class AsyncArrayKVOTests: KVOTests
+class AsyncArrayKVOTests: ArrayKVOTests
 {
     override var isAsync: Bool { return true }
 }

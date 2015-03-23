@@ -36,8 +36,12 @@ public class DynamicArray: NSObject
         return self.mutableArrayValueForKey(self._key)
     }
     
-    /// sends `(changedValues, changedType, indexSet)` via `self.proxy`
-    public private(set) var signal: Signal<ChangedTuple>!
+    /// creates new signal which sends `(changedValues, changedType, indexSet)` 
+    /// via changes in `self.proxy` NSMutableArray
+    public func signal() -> Signal<ChangedTuple>
+    {
+        return KVO.detailedSignal(self, self._key).map { ($0 as? [Element], $1, $2!) }
+    }
     
     public init(_ array: [Element] = [])
     {
@@ -46,20 +50,22 @@ public class DynamicArray: NSObject
         
         super.init()
         
-        // NOTE: using `KVO.detailedSignal()` allows to also deliver NSKeyValueChange and NSIndexSet
-        // NOTE: `KVO.detailedSignal(self, self.key)` returns `value = nil` when `change = .Removal`
-        self.signal = KVO.detailedSignal(self, self._key).map { ($0 as? [Element], $1, $2!) }
+//        println("[init] \(self)")
+    }
+    
+    deinit
+    {
+//        println("[deinit] \(self)")
     }
 }
 
 ///
-/// Forwards changes in ForwardingDynamicArray to original NSMutableArray
-/// (useful when original NSMutableArray is also using `mutableArrayValueForKey`)
+/// DynamicArray + forwarding changes to original array (either "KVC-compliant model's array" or "raw NSMutableArray")
 ///
 /// e.g.
 ///
 /// ```
-/// let dynamicArray = ForwardingDynamicArray(myObj.mutableArrayValueForKey("array"))
+/// let dynamicArray = ForwardingDynamicArray(object: myObj, keyPath: "array")
 /// dynamicArray.proxy.addObject(newItem)
 /// ```
 ///
@@ -67,22 +73,59 @@ public class DynamicArray: NSObject
 ///
 public class ForwardingDynamicArray: DynamicArray
 {
-    public init(original originalMutableArray: NSMutableArray)
+    ///
+    /// Initializer for forwarding changes to KVC-compliant model's array (accessible via `object.valueForKeyPath(keyPath)`).
+    ///
+    /// :param: object Model object to call `mutableArrayValueForKeyPath()` as its receiver.
+    /// :param: keyPath Argument for `mutableArrayValueForKeyPath()`.
+    ///
+    public convenience init(object: NSObject, keyPath: String)
+    {
+        let originalMutableArray = object.mutableArrayValueForKeyPath(keyPath)
+        
+        //
+        // NOTE:
+        // `originalMutableArray` via `mutableArrayValueForKeyPath()` can't be used as `forwardingSignalOwner`
+        // because it doesn't get deinited for some reason (see https://gist.github.com/inamiy/577ae4b222dd38429aa2 ),
+        // thus `ForwardingDynamicArray` won't get deinited too since retaining-flow will be like this:
+        //
+        //     originalMutableArray (owner) -> forwardingSignal -> KVOProxy -> ForwardingDynamicArray
+        //
+        // To avoid this issue, use model `object` as owner instead.
+        //
+        self.init(original: originalMutableArray, forwardingSignalOwner: object)
+    }
+    
+    ///
+    /// Initializer for forwarding changes directly to raw NSMutableArray.
+    ///
+    /// :param: original Original NSMutableArray. (DO NOT SET NSMutableArray which is created via **mutableArrayValueForKey()**).
+    ///
+    public convenience init(original originalMutableArray: NSMutableArray)
+    {
+        self.init(original: originalMutableArray, forwardingSignalOwner: originalMutableArray)
+    }
+    
+    internal init(original originalMutableArray: NSMutableArray, forwardingSignalOwner: NSObject)
     {
         super.init(originalMutableArray)
         
+        let forwardingSignal = self.signal().ownedBy(forwardingSignalOwner)
+        
         // REACT: forward changes to `originalMutableArray`
-        self.signal ~> { values, change, indexSet in
+        forwardingSignal ~> { [weak originalMutableArray] values, change, indexSet in
+            
             switch change {
                 case .Insertion:
-                    originalMutableArray.insertObjects(values!, atIndexes: indexSet)
+                    originalMutableArray?.insertObjects(values!, atIndexes: indexSet)
                 case .Replacement:
-                    originalMutableArray.replaceObjectsAtIndexes(indexSet, withObjects: values!)
+                    originalMutableArray?.replaceObjectsAtIndexes(indexSet, withObjects: values!)
                 case .Removal:
-                    originalMutableArray.removeObjectsAtIndexes(indexSet)
+                    originalMutableArray?.removeObjectsAtIndexes(indexSet)
                 default:
                     break
             }
         }
+        
     }
 }
