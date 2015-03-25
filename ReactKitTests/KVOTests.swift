@@ -109,7 +109,7 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         let signal = KVO.signal(obj1, "value").filter { (value: AnyObject?) -> Bool in
-            return value as! String == "fuga"
+            return value as String == "fuga"
         }
         
         // REACT
@@ -154,7 +154,7 @@ class KVOTests: _TestCase
             // don't filter for first value
             if oldValue == nil { return true }
             
-            return (oldValue as! String) != (newValue as! String)
+            return oldValue as String != newValue as String
         }
         
         var count = 0
@@ -200,7 +200,7 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         let signal = KVO.signal(obj1, "value").map { (value: AnyObject?) -> NSString? in
-            return (value as! String).uppercaseString
+            return (value as String).uppercaseString
         }
         
         // REACT
@@ -301,7 +301,7 @@ class KVOTests: _TestCase
         
         let signal = KVO.signal(obj1, "value").map2 { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
             let oldString = (oldValue as? NSString) ?? "empty"
-            return "\(oldString) -> \(newValue as! String)"
+            return "\(oldString) -> \(newValue as String)"
         }
         
         // REACT
@@ -339,7 +339,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         
         let signal = KVO.signal(obj1, "value").mapAccumulate([]) { accumulatedValue, newValue -> [String] in
-            return accumulatedValue + [newValue as! String]
+            return accumulatedValue + [newValue as String]
         }
         
         var result: [String]?
@@ -625,7 +625,7 @@ class KVOTests: _TestCase
         
         // REACT
         signal ~> { (buffer: [AnyObject?]) in
-            let buffer_: [String] = buffer.map { $0 as! String }
+            let buffer_: [String] = buffer.map { $0 as NSString }
             result = "-".join(buffer_)
         }
         
@@ -679,7 +679,7 @@ class KVOTests: _TestCase
         
         // REACT
         signal ~> { (buffer: [AnyObject?]) in
-            let buffer_: [String] = buffer.map { $0 as! String }
+            let buffer_: [String] = buffer.map { $0 as NSString }
             result = "-".join(buffer_)
         }
         
