@@ -247,7 +247,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(dynamicArray.proxy, [1])
             XCTAssertEqual(array, [], "`array` will not be synced with `dynamicArray` (use ForwardingDynamicArray instead).")
             XCTAssertEqual(buffer.count, 1)
-            XCTAssertEqual(buffer[0].0! as [NSObject], [1])
+            XCTAssertEqual(buffer[0].0! as! [NSObject], [1])
             XCTAssertEqual(buffer[0].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[0].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
             
@@ -255,10 +255,10 @@ class ArrayKVOTests: _TestCase
             
             XCTAssertEqual(dynamicArray.proxy, [1, 2, 3])
             XCTAssertEqual(buffer.count, 3, "`[2, 3]` will be separately inserted, so `buffer.count` should increment by 2.")
-            XCTAssertEqual(buffer[1].0! as [NSObject], [2])
+            XCTAssertEqual(buffer[1].0! as! [NSObject], [2])
             XCTAssertEqual(buffer[1].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[1].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 1)))
-            XCTAssertEqual(buffer[2].0! as [NSObject], [3])
+            XCTAssertEqual(buffer[2].0! as! [NSObject], [3])
             XCTAssertEqual(buffer[2].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[2].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
             
@@ -266,7 +266,7 @@ class ArrayKVOTests: _TestCase
             
             XCTAssertEqual(dynamicArray.proxy, [0, 1, 2, 3])
             XCTAssertEqual(buffer.count, 4)
-            XCTAssertEqual(buffer[3].0! as [NSObject], [0])
+            XCTAssertEqual(buffer[3].0! as! [NSObject], [0])
             XCTAssertEqual(buffer[3].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[3].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
             
@@ -274,7 +274,7 @@ class ArrayKVOTests: _TestCase
             
             XCTAssertEqual(dynamicArray.proxy, [0, 1, 2.5, 3])
             XCTAssertEqual(buffer.count, 5)
-            XCTAssertEqual(buffer[4].0! as [NSObject], [2.5])
+            XCTAssertEqual(buffer[4].0! as! [NSObject], [2.5])
             XCTAssertEqual(buffer[4].1 as NSKeyValueChange, NSKeyValueChange.Replacement)
             XCTAssertTrue((buffer[4].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
             
@@ -321,7 +321,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(dynamicArray.proxy, [1])
             XCTAssertEqual(obj1.array, dynamicArray.proxy, "`obj1.array` will sync with `dynamicArray.proxy`.")
             XCTAssertEqual(buffer.count, 1)
-            XCTAssertEqual(buffer[0].0! as [NSObject], [1])
+            XCTAssertEqual(buffer[0].0! as! [NSObject], [1])
             XCTAssertEqual(buffer[0].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[0].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
             
@@ -330,10 +330,10 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(dynamicArray.proxy, [1, 2, 3])
             XCTAssertEqual(obj1.array, dynamicArray.proxy)
             XCTAssertEqual(buffer.count, 3, "`[2, 3]` will be separately inserted, so `buffer.count` should increment by 2.")
-            XCTAssertEqual(buffer[1].0! as [NSObject], [2])
+            XCTAssertEqual(buffer[1].0! as! [NSObject], [2])
             XCTAssertEqual(buffer[1].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[1].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 1)))
-            XCTAssertEqual(buffer[2].0! as [NSObject], [3])
+            XCTAssertEqual(buffer[2].0! as! [NSObject], [3])
             XCTAssertEqual(buffer[2].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[2].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
             
@@ -342,7 +342,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(dynamicArray.proxy, [0, 1, 2, 3])
             XCTAssertEqual(obj1.array, dynamicArray.proxy)
             XCTAssertEqual(buffer.count, 4)
-            XCTAssertEqual(buffer[3].0! as [NSObject], [0])
+            XCTAssertEqual(buffer[3].0! as! [NSObject], [0])
             XCTAssertEqual(buffer[3].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[3].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
             
@@ -351,7 +351,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(dynamicArray.proxy, [0, 1, 2.5, 3])
             XCTAssertEqual(obj1.array, dynamicArray.proxy)
             XCTAssertEqual(buffer.count, 5)
-            XCTAssertEqual(buffer[4].0! as [NSObject], [2.5])
+            XCTAssertEqual(buffer[4].0! as! [NSObject], [2.5])
             XCTAssertEqual(buffer[4].1 as NSKeyValueChange, NSKeyValueChange.Replacement)
             XCTAssertTrue((buffer[4].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
             
@@ -399,7 +399,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(dynamicArray.proxy, [1])
             XCTAssertEqual(array, dynamicArray.proxy, "`obj1.array` will sync with `dynamicArray.proxy`.")
             XCTAssertEqual(buffer.count, 1)
-            XCTAssertEqual(buffer[0].0! as [NSObject], [1])
+            XCTAssertEqual(buffer[0].0! as! [NSObject], [1])
             XCTAssertEqual(buffer[0].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[0].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
             
@@ -408,10 +408,10 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(dynamicArray.proxy, [1, 2, 3])
             XCTAssertEqual(array, dynamicArray.proxy)
             XCTAssertEqual(buffer.count, 3, "`[2, 3]` will be separately inserted, so `buffer.count` should increment by 2.")
-            XCTAssertEqual(buffer[1].0! as [NSObject], [2])
+            XCTAssertEqual(buffer[1].0! as! [NSObject], [2])
             XCTAssertEqual(buffer[1].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[1].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 1)))
-            XCTAssertEqual(buffer[2].0! as [NSObject], [3])
+            XCTAssertEqual(buffer[2].0! as! [NSObject], [3])
             XCTAssertEqual(buffer[2].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[2].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
             
@@ -420,7 +420,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(dynamicArray.proxy, [0, 1, 2, 3])
             XCTAssertEqual(array, dynamicArray.proxy)
             XCTAssertEqual(buffer.count, 4)
-            XCTAssertEqual(buffer[3].0! as [NSObject], [0])
+            XCTAssertEqual(buffer[3].0! as! [NSObject], [0])
             XCTAssertEqual(buffer[3].1 as NSKeyValueChange, NSKeyValueChange.Insertion)
             XCTAssertTrue((buffer[3].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 0)))
             
@@ -429,7 +429,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(dynamicArray.proxy, [0, 1, 2.5, 3])
             XCTAssertEqual(array, dynamicArray.proxy)
             XCTAssertEqual(buffer.count, 5)
-            XCTAssertEqual(buffer[4].0! as [NSObject], [2.5])
+            XCTAssertEqual(buffer[4].0! as! [NSObject], [2.5])
             XCTAssertEqual(buffer[4].1 as NSKeyValueChange, NSKeyValueChange.Replacement)
             XCTAssertTrue((buffer[4].2 as NSIndexSet).isEqualToIndexSet(NSIndexSet(index: 2)))
             
