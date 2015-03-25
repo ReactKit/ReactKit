@@ -27,7 +27,7 @@ public extension Signal
     ///
     public func asSignal<U>(type: U.Type) -> Signal<U>
     {
-        return self.map { $0 as U }
+        return self.map { $0 as! U }
     }
     
     //--------------------------------------------------

@@ -58,6 +58,78 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_nil()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let signal = KVO.signal(obj1, "optionalValue")
+        (obj2, "optionalValue") <~ signal   // REACT
+        
+        println("*** Start ***")
+        
+        XCTAssertNil(obj1.optionalValue)
+        XCTAssertNil(obj2.optionalValue)
+        
+        self.perform {
+            
+            obj1.optionalValue = "hoge"
+            
+            XCTAssertEqual(obj1.optionalValue!, "hoge")
+            XCTAssertEqual(obj2.optionalValue!, "hoge")
+            
+            obj1.optionalValue = nil
+            
+            XCTAssertNil(obj1.optionalValue)
+            XCTAssertNil(obj2.optionalValue, "nil should be set instead of NSNull.")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+
+    func testKVO_startingSignal()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        obj2.optionalValue = "initial"  // set initial optionalValue
+
+        XCTAssertNil(obj1.optionalValue)
+        XCTAssertEqual(obj2.optionalValue!, "initial")
+        
+        let startingSignal = KVO.startingSignal(obj1, "optionalValue")
+        (obj2, "optionalValue") <~ startingSignal   // REACT
+
+        println("*** Start ***")
+        
+        XCTAssertNil(obj1.optionalValue)
+        XCTAssertNil(obj2.optionalValue, "`KVO.startingSignal()` sets initial `obj1.optionalValue` (nil) to `obj2.optionalValue` on `<~` binding.")
+        
+        self.perform {
+            
+            obj1.optionalValue = "hoge"
+            
+            XCTAssertEqual(obj1.optionalValue!, "hoge")
+            XCTAssertEqual(obj2.optionalValue!, "hoge")
+            
+            obj1.optionalValue = nil
+            
+            XCTAssertNil(obj1.optionalValue)
+            XCTAssertNil(obj2.optionalValue)
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     /// e.g. (obj2, "value") <~ (obj1, "value")
     func testKVO_shortLivingSyntax()
     {
@@ -101,96 +173,7 @@ class KVOTests: _TestCase
     
     // MARK: Single Signal Operations
     
-    func testKVO_filter()
-    {
-        let expect = self.expectationWithDescription(__FUNCTION__)
-        
-        let obj1 = MyObject()
-        let obj2 = MyObject()
-        
-        let signal = KVO.signal(obj1, "value").filter { (value: AnyObject?) -> Bool in
-            return value as String == "fuga"
-        }
-        
-        // REACT
-        (obj2, "value") <~ signal
-        
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
-        
-        println("*** Start ***")
-        
-        XCTAssertEqual(obj1.value, "initial")
-        XCTAssertEqual(obj2.value, "initial")
-        
-        self.perform {
-            
-            obj1.value = "hoge"
-            
-            XCTAssertEqual(obj1.value, "hoge")
-            XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because signal is not sent via filter().")
-            
-            obj1.value = "fuga"
-            
-            XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(obj2.value, "fuga")
-            
-            expect.fulfill()
-            
-        }
-        
-        self.wait()
-    }
-    
-    func testKVO_filter2()
-    {
-        let expect = self.expectationWithDescription(__FUNCTION__)
-        
-        let obj1 = MyObject()
-        
-        // NOTE: this is distinct signal
-        let signal = KVO.signal(obj1, "value").filter2 { (oldValue: AnyObject??, newValue: AnyObject?) -> Bool in
-            
-            // don't filter for first value
-            if oldValue == nil { return true }
-            
-            return oldValue as String != newValue as String
-        }
-        
-        var count = 0
-        
-        // REACT
-        signal ~> { _ in count++; return }
-        
-        println("*** Start ***")
-        
-        XCTAssertEqual(obj1.value, "initial")
-        
-        self.perform {
-            
-            obj1.value = "hoge"
-            
-            XCTAssertEqual(count, 1)
-            
-            obj1.value = "fuga"
-            
-            XCTAssertEqual(count, 2)
-            
-            obj1.value = "fuga" // same value as before
-            
-            println(count)
-            XCTAssertEqual(count, 2, "`count` should NOT be incremented because previous value was same (should be distinct)")
-            
-            obj1.value = "hoge"
-            
-            XCTAssertEqual(count, 3, "`count` should be incremented.")
-            
-            expect.fulfill()
-            
-        }
-        
-        self.wait()
-    }
+    // MARK: transforming
     
     func testKVO_map()
     {
@@ -200,14 +183,11 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         let signal = KVO.signal(obj1, "value").map { (value: AnyObject?) -> NSString? in
-            return (value as String).uppercaseString
+            return (value as! String).uppercaseString
         }
         
         // REACT
         (obj2, "value") <~ signal
-        
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -251,9 +231,6 @@ class KVOTests: _TestCase
         
         // REACT
         (obj2, "value") <~ signal
-        
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -301,7 +278,7 @@ class KVOTests: _TestCase
         
         let signal = KVO.signal(obj1, "value").map2 { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
             let oldString = (oldValue as? NSString) ?? "empty"
-            return "\(oldString) -> \(newValue as String)"
+            return "\(oldString) -> \(newValue as! String)"
         }
         
         // REACT
@@ -339,7 +316,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         
         let signal = KVO.signal(obj1, "value").mapAccumulate([]) { accumulatedValue, newValue -> [String] in
-            return accumulatedValue + [newValue as String]
+            return accumulatedValue + [newValue as! String]
         }
         
         var result: [String]?
@@ -370,21 +347,181 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testKVO_take()
+    func testKVO_buffer()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        
+        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value").buffer(3)
+        
+        var result: String? = "no result"
+        
+        // REACT
+        signal ~> { (buffer: [AnyObject?]) in
+            let buffer_: [String] = buffer.map { $0 as! String }
+            result = "-".join(buffer_)
+        }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(obj1.value, "hoge")
+            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered.")
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(obj1.value, "fuga")
+            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered.")
+            
+            obj1.value = "piyo"
+            
+            XCTAssertEqual(obj1.value, "piyo")
+            XCTAssertEqual(result!, "hoge-fuga-piyo", "`result` should be updated with buffered values because buffer reached maximum count.")
+            
+            obj1.value = "foo"
+            
+            XCTAssertEqual(obj1.value, "foo")
+            XCTAssertEqual(result!, "hoge-fuga-piyo", "`result` should NOT be updated because `signal`'s newValue is buffered.")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
+    func testKVO_bufferBy()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let trigger = MyObject()
+        
+        let triggerSignal = KVO.signal(trigger, "value")
+        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value").bufferBy(triggerSignal)
+        
+        var result: String? = "no result"
+        
+        // REACT
+        signal ~> { (buffer: [AnyObject?]) in
+            let buffer_: [String] = buffer.map { $0 as! String }
+            result = "-".join(buffer_)
+        }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(obj1.value, "hoge")
+            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered but `triggerSignal` is not triggered yet.")
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(obj1.value, "fuga")
+            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered but `triggerSignal` is not triggered yet.")
+            
+            trigger.value = "DUMMY" // fire triggerSignal
+            
+            XCTAssertEqual(result!, "hoge-fuga", "`result` should be updated with buffered values.")
+            
+            trigger.value = "DUMMY2" // fire triggerSignal
+            
+            XCTAssertEqual(result!, "", "`result` should be updated with NO buffered values.")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
+    func testKVO_groupBy()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        
+        // group by `key = countElement(value)`
+        let signal: Signal<(Int, Signal<AnyObject?>)> = KVO.signal(obj1, "value").groupBy { count($0! as! String) }
+        
+        var lastKey: Int?
+        var lastValue: String?
+        
+        // REACT
+        signal ~> { (key: Int, groupedSignal: Signal<AnyObject?>) in
+            lastKey = key
+            
+            // REACT
+            groupedSignal ~> { value in
+                lastValue = value as? String
+                return
+            }
+        }
+        
+        println("*** Start ***")
+        
+        XCTAssertNil(lastKey)
+        XCTAssertNil(lastValue)
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(lastKey!, 4)
+            XCTAssertEqual(lastValue!, "hoge")
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(lastKey!, 4)
+            XCTAssertEqual(lastValue!, "fuga")
+            
+            obj1.value = "foo"
+            
+            XCTAssertEqual(lastKey!, 3)
+            XCTAssertEqual(lastValue!, "foo")
+            
+            obj1.value = "&"
+            
+            XCTAssertEqual(lastKey!, 1)
+            XCTAssertEqual(lastValue!, "&")
+            
+            obj1.value = "bar"
+            
+            XCTAssertEqual(lastKey!, 1, "`groupedSignal` with key=3 is already emitted, so `lastKey` will not be updated.")
+            XCTAssertEqual(lastValue!, "bar")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
+    // MARK: filtering
+    
+    func testKVO_filter()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").take(1)  // only take 1 event
-        weak var weakSignal = signal
+        let signal = KVO.signal(obj1, "value").filter { (value: AnyObject?) -> Bool in
+            return value as! String == "fuga"
+        }
         
-        // REACT: obj1.value ~> obj2.value
+        // REACT
         (obj2, "value") <~ signal
-        
-        // REACT: obj1.value ~> println
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -393,7 +530,90 @@ class KVOTests: _TestCase
         
         self.perform {
             
-            XCTAssertNotNil(weakSignal)
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(obj1.value, "hoge")
+            XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because signal is not sent via filter().")
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(obj1.value, "fuga")
+            XCTAssertEqual(obj2.value, "fuga")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
+    func testKVO_filter2()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        
+        // NOTE: this is distinct signal
+        let signal = KVO.signal(obj1, "value").filter2 { (oldValue: AnyObject??, newValue: AnyObject?) -> Bool in
+            
+            // don't filter for first value
+            if oldValue == nil { return true }
+            
+            return oldValue as! String != newValue as! String
+        }
+        
+        var count = 0
+        
+        // REACT
+        signal ~> { _ in count++; return }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(count, 1)
+            
+            obj1.value = "fuga"
+            
+            XCTAssertEqual(count, 2)
+            
+            obj1.value = "fuga" // same value as before
+            
+            XCTAssertEqual(count, 2, "`count` should NOT be incremented because previous value was same (should be distinct)")
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(count, 3, "`count` should be incremented.")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
+    func testKVO_take()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let signal = KVO.signal(obj1, "value").take(1)  // only take 1 event
+        
+        // REACT
+        (obj2, "value") <~ signal
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        XCTAssertEqual(obj2.value, "initial")
+        
+        self.perform {
             
             obj1.value = "hoge"
             
@@ -473,6 +693,8 @@ class KVOTests: _TestCase
         
         }
         
+        takeSignal.resume() // NOTE: resume manually
+        
         self.perform { [weak sourceSignal] in
             sourceSignal?.cancel()
             return
@@ -492,13 +714,8 @@ class KVOTests: _TestCase
         let stoppingSignal = KVO.signal(stopper, "value")    // store stoppingSignal to live until end of runloop
         let signal = KVO.signal(obj1, "value").takeUntil(stoppingSignal)
         
-        weak var weakSignal = signal
-        
         // REACT
         (obj2, "value") <~ signal
-        
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -534,13 +751,9 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         let signal = KVO.signal(obj1, "value").skip(1)  // skip 1 event
-        weak var weakSignal = signal
         
-        // REACT: obj1.value ~> obj2.value
+        // REACT
         (obj2, "value") <~ signal
-        
-        // REACT: obj1.value ~> println
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -548,8 +761,6 @@ class KVOTests: _TestCase
         XCTAssertEqual(obj2.value, "initial")
         
         self.perform {
-            
-            XCTAssertNotNil(weakSignal)
             
             obj1.value = "hoge"
             
@@ -576,16 +787,11 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         let stopper = MyObject()
         
-        let startingSignal = KVO.signal(stopper, "value")    // store startingSignal to live until end of runloop
+        let startingSignal = KVO.signal(stopper, "value")
         let signal = KVO.signal(obj1, "value").skipUntil(startingSignal)
-        
-        weak var weakSignal = signal
         
         // REACT
         (obj2, "value") <~ signal
-        
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
         
         println("*** Start ***")
         
@@ -613,50 +819,52 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testKVO_buffer()
+    func testKVO_sample()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
         let obj1 = MyObject()
+        let obj2 = MyObject()
+        let sampler = MyObject()
         
-        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value").buffer(3)
-        
-        var result: String? = "no result"
-        
-        // REACT
-        signal ~> { (buffer: [AnyObject?]) in
-            let buffer_: [String] = buffer.map { $0 as NSString }
-            result = "-".join(buffer_)
-        }
+        let samplingSignal = KVO.signal(sampler, "value")
+        let signal = KVO.signal(obj1, "value").sample(samplingSignal)
+
+        var reactCount = 0
         
         // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
+        (obj2, "value") <~ signal
+        signal ~> { _ in reactCount++; return }
         
         println("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
+        XCTAssertEqual(obj2.value, "initial")
         
         self.perform {
             
-            obj1.value = "hoge"
+            sampler.value = "DUMMY"  // fire samplingSignal
+            XCTAssertEqual(obj2.value, "initial", "`obj2.value` should not be updated because `obj1.value` has not sent yet.")
+            XCTAssertEqual(reactCount, 0)
             
-            XCTAssertEqual(obj1.value, "hoge")
-            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered.")
+            obj1.value = "hoge"
+            XCTAssertEqual(obj2.value, "initial", "`obj2.value` should not be updated because although `obj1` has changed, `samplingSignal` has not triggered yet.")
+            XCTAssertEqual(reactCount, 0)
+            
+            sampler.value = "DUMMY"
+            XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should be updated, triggered by `samplingSignal` using latest `obj1.value`.")
+            XCTAssertEqual(reactCount, 1)
+
+            sampler.value = "DUMMY"
+            XCTAssertEqual(obj2.value, "hoge")
+            XCTAssertEqual(reactCount, 2)
             
             obj1.value = "fuga"
-            
-            XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered.")
-            
             obj1.value = "piyo"
             
-            XCTAssertEqual(obj1.value, "piyo")
-            XCTAssertEqual(result!, "hoge-fuga-piyo", "`result` should be updated with buffered values because buffer reached maximum count.")
-            
-            obj1.value = "foo"
-            
-            XCTAssertEqual(obj1.value, "foo")
-            XCTAssertEqual(result!, "hoge-fuga-piyo", "`result` should NOT be updated because `signal`'s newValue is buffered.")
+            sampler.value = "** check ** "
+            XCTAssertEqual(obj2.value, "piyo")
+            XCTAssertEqual(reactCount, 3)
             
             expect.fulfill()
             
@@ -665,57 +873,7 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    func testKVO_bufferBy()
-    {
-        let expect = self.expectationWithDescription(__FUNCTION__)
-        
-        let obj1 = MyObject()
-        let trigger = MyObject()
-        
-        let triggerSignal = KVO.signal(trigger, "value")
-        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value").bufferBy(triggerSignal)
-        
-        var result: String? = "no result"
-        
-        // REACT
-        signal ~> { (buffer: [AnyObject?]) in
-            let buffer_: [String] = buffer.map { $0 as NSString }
-            result = "-".join(buffer_)
-        }
-        
-        // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
-        
-        println("*** Start ***")
-        
-        XCTAssertEqual(obj1.value, "initial")
-        
-        self.perform {
-            
-            obj1.value = "hoge"
-            
-            XCTAssertEqual(obj1.value, "hoge")
-            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered but `triggerSignal` is not triggered yet.")
-            
-            obj1.value = "fuga"
-            
-            XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered but `triggerSignal` is not triggered yet.")
-            
-            trigger.value = "DUMMY" // fire triggerSignal
-            
-            XCTAssertEqual(result!, "hoge-fuga", "`result` should be updated with buffered values.")
-            
-            trigger.value = "DUMMY2" // fire triggerSignal
-            
-            XCTAssertEqual(result!, "", "`result` should be updated with NO buffered values.")
-            
-            expect.fulfill()
-            
-        }
-        
-        self.wait()
-    }
+    // MARK: timing
     
     func testKVO_throttle()
     {
@@ -727,9 +885,8 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         let signal = KVO.signal(obj1, "value").throttle(timeInterval)
-        weak var weakSignal = signal
         
-        // REACT: obj1.value ~> obj2.value
+        // REACT
         (obj2, "value") <~ signal
         
         println("*** Start ***")
@@ -738,8 +895,6 @@ class KVOTests: _TestCase
         XCTAssertEqual(obj2.value, "initial")
         
         self.perform {
-            
-            XCTAssertNotNil(weakSignal)
             
             obj1.value = "hoge"
             
@@ -776,9 +931,8 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         let signal = KVO.signal(obj1, "value").debounce(timeInterval)
-        weak var weakSignal = signal
         
-        // REACT: obj1.value ~> obj2.value
+        // REACT
         (obj2, "value") <~ signal
         
         println("*** Start ***")
@@ -787,8 +941,6 @@ class KVOTests: _TestCase
         XCTAssertEqual(obj2.value, "initial")
         
         self.perform {
-            
-            XCTAssertNotNil(weakSignal)
             
             obj1.value = "hoge"
             

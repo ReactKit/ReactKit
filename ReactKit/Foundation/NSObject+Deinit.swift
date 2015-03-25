@@ -31,11 +31,11 @@ public extension NSObject
                 // do nothing
             }.name("\(NSStringFromClass(self.dynamicType))-deinitSignal")
             
-            #if DEBUG
-                signal?.then { value, errorInfo -> Void in
-                    println("[internal] deinitSignal finished")
-                }
-            #endif
+//            #if DEBUG
+//                signal?.then { value, errorInfo -> Void in
+//                    println("[internal] deinitSignal finished")
+//                }
+//            #endif
             
             self._deinitSignal = signal
         }

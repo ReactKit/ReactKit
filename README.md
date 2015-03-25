@@ -31,7 +31,7 @@ XCTAssertEqual(obj1.value, "REACT")
 XCTAssertEqual(obj2.value, "REACT")
 ```
 
-To remove signal-bindings, just release `signal` itself.
+To remove signal-bindings, just release `signal` itself (or call `signal.cancel()`).
 
 ```swift
 self.obj1Signal = nil   // release signal & its bindings
@@ -41,6 +41,9 @@ obj1.value = "Done"
 XCTAssertEqual(obj1.value, "Done")
 XCTAssertEqual(obj2.value, "REACT")
 ```
+
+If you want to observe changes in `Swift.Array` or `NSMutableArray`, 
+use `DynamicArray` feature in [Pull Request #23](https://github.com/ReactKit/ReactKit/pull/23).
 
 ### NSNotification
 
@@ -83,10 +86,10 @@ let emailTextSignal = self.emailTextField.textChangedSignal()
 let passwordTextSignal = self.passwordTextField.textChangedSignal()
 let password2TextSignal = self.password2TextField.textChangedSignal()
 
-let anyTextSignal = Signal.any([usernameTextSignal, emailTextSignal, passwordTextSignal, password2TextSignal])
+let combinedTextSignal = Signal<NSString?>.merge2([usernameTextSignal, emailTextSignal, passwordTextSignal, password2TextSignal])
 
 // create button-enabling signal via any textField change
-self.buttonEnablingSignal = anyTextSignal.map { (values, changedValue) -> NSNumber? in
+self.buttonEnablingSignal = combinedTextSignal.map { (values, changedValue) -> NSNumber? in
 
     let username: NSString? = values[0]?
     let email: NSString? = values[1]?
@@ -109,11 +112,9 @@ For more examples, please see XCTestCases.
 
 ## How it works
 
-ReactKit is based on powerful [SwiftTask](https://github.com/ReactKit/SwiftTask) (JavaScript Promise-like) library, allowing to deliver multiple events (KVO, NSNotification, Target-Action, etc) continuously over time using its `progress` feature (`<~` operator in ReactKit).
+ReactKit is based on powerful [SwiftTask](https://github.com/ReactKit/SwiftTask) (JavaScript Promise-like) library, allowing to start & deliver multiple events (KVO, NSNotification, Target-Action, etc) continuously over time using its **resume & progress** feature (`<~` operator in ReactKit).
 
-Unlike many Reactive Extensions (Rx) libraries including [ReactiveCocoa](https://github.com/ReactiveCocoa/ReactiveCocoa) which has a basic concept of "hot" and "cold" signals, ReactKit gracefully integrated them into one **hot + paused (lazy) signal** `Signal<T>` class as well as **not adopting the concept of Disposable** but using `signal.cancel()` feature instead.
-
-Also in ReactKit, Rx's `signal.subscribe(onNext, onError, onComplete)` method is interpreted as `signal.progress()` (`<~`) and `signal.then()`/`success()`/`failure()` separately. When they are called on needs, they will start lazy evaluation.
+Unlike many Reactive Extensions (Rx) libraries including [ReactiveCocoa](https://github.com/ReactiveCocoa/ReactiveCocoa) which has a basic concept of "hot" and "cold" signals, ReactKit gracefully integrated them into one **hot + paused (lazy) signal** `Signal<T>` class. Also, Rx's `signal.subscribe(onNext, onError, onComplete)` method is interpreted as `signal.react()` (`<~`) and `signal.then()`/`success()`/`failure()` separately. Note that **lazy signals can be auto-resumed via `<~` operator**.
 
 
 ## Methods
@@ -121,40 +122,52 @@ Also in ReactKit, Rx's `signal.subscribe(onNext, onError, onComplete)` method is
 ### Signal Operations
 
 - Instance Methods
-  - `filter(f: T -> Bool)`
-  - `filter2(f: (old: T?, new: T) -> Bool)`
-  - `map(f: T -> U)`
-  - `flatMap(f: T -> Signal<U>)`
-  - `map2(f: (old: T?, new: T) -> U)`
-  - `mapAccumulate(initialValue, accumulator)` (alias: `scan`)
-  - `take(count)`
-  - `takeUntil(signal)`
-  - `skip(count)`
-  - `skipUntil(signal)`
-  - `merge(signal)`
-  - `concat(signal)`
-  - `startWith(initialValue)`
-  - `zip(signal)`
-  - `buffer(count)`
-  - `bufferBy(signal)`
-  - `delay(timeInterval)`
-  - `throttle(timeInterval)`
-  - `debounce(timeInterval)`
+  - Transforming
+    - `map(f: T -> U)`
+    - `flatMap(f: T -> Signal<U>)`
+    - `map2(f: (old: T?, new: T) -> U)`
+    - `mapAccumulate(initialValue, accumulator)` (alias: `scan`)
+    - `buffer(count)`
+    - `bufferBy(signal)`
+    - `groupBy(classifier: T -> Key)`
+    - `customize(...)`
+  - Filtering
+    - `filter(f: T -> Bool)`
+    - `filter2(f: (old: T?, new: T) -> Bool)`
+    - `take(count)`
+    - `takeUntil(signal)`
+    - `skip(count)`
+    - `skipUntil(signal)`
+    - `sample(signal)`
+  - Combining
+    - `merge(signal)`
+    - `concat(signal)`
+    - `startWith(initialValue)`
+    - `zip(signal)`
+  - Timing
+    - `delay(timeInterval)`
+    - `throttle(timeInterval)`
+    - `debounce(timeInterval)`
 - Class Methods
-  - `merge(signals)`
-  - `merge2(signals)` (generalized method for `merge` & `combineLatest`)
-  - `combineLatest(signals)`
-  - `concat(signals)`
-  - `zip(signals)`
+  - Combining
+    - `merge(signals)`
+    - `merge2(signals)` (generalized method for `merge` & `combineLatest`)
+    - `combineLatest(signals)`
+    - `concat(signals)`
+    - `zip(signals)`
 
 ### Helpers
 
-- `asSignal(ValueType)` (WARNING: currently works for non-Optional only)
-- `Signal.once(value)` (alias: `just`)
-- `Signal.never()`
-- `Signal.fulfilled()` (alias: `empty`)
-- `Signal.rejected()` (alias: `error`)
-- `Signal(values:)` (a.k.a Rx.fromArray)
+- Creating
+  - `asSignal(ValueType)` (WARNING: currently works for non-Optional only)
+  - `Signal.once(value)` (alias: `just`)
+  - `Signal.never()`
+  - `Signal.fulfilled()` (alias: `empty`)
+  - `Signal.rejected()` (alias: `error`)
+  - `Signal(values:)` (a.k.a Rx.fromArray)
+- Utility
+  - `peek(f: T -> Void)` (for injecting side effects e.g. debug-logging)
+  - `ownedBy(owner: NSObject)` (easy strong referencing to keep signals alive)
 
 
 ## Dependencies
