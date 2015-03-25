@@ -163,7 +163,7 @@ internal class _KVOProxy: NSObject
 //            #endif
             
             let newValue: AnyObject? = change[NSKeyValueChangeNewKey]
-            let keyValueChange: NSKeyValueChange = NSKeyValueChange(rawValue: (change[NSKeyValueChangeKindKey] as NSNumber).unsignedLongValue)!
+            let keyValueChange: NSKeyValueChange = NSKeyValueChange(rawValue: (change[NSKeyValueChangeKindKey] as! NSNumber).unsignedLongValue)!
             let indexSet: NSIndexSet? = change[NSKeyValueChangeIndexesKey] as? NSIndexSet
             
             self._handler(value: newValue, change: keyValueChange, indexSet: indexSet)

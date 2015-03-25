@@ -108,7 +108,7 @@ public class ForwardingDynamicArray: DynamicArray
     
     internal init(original originalMutableArray: NSMutableArray, forwardingSignalOwner: NSObject)
     {
-        super.init(originalMutableArray)
+        super.init(originalMutableArray as [Element])
         
         let forwardingSignal = self.signal().ownedBy(forwardingSignalOwner)
         

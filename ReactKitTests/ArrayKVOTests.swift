@@ -206,7 +206,7 @@ class ArrayKVOTests: _TestCase
             
             // sortUsingComparator
             obj1ArrayProxy.sortUsingComparator { (element1, element2) -> NSComparisonResult in
-                return (element2 as NSNumber).compare(element1 as NSNumber)
+                return (element2 as! NSNumber).compare(element1 as! NSNumber)
             }
             XCTAssertTrue(obj1.array.isEqualToArray([3.5, 2.5, 1.5, 0.5]))
             XCTAssertEqual(lastValue!, [0.5], "Only last replaced value `0.5` should be set.")
