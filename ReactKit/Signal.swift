@@ -672,7 +672,7 @@ public extension Signal
             
             for signal in signals {
                 signal.react { value in
-                    progress(value as T)
+                    progress(value as! T)
                 }.then { value, errorInfo -> Void in
                     if value != nil {
                         fulfill()
@@ -724,7 +724,7 @@ public extension Signal
                 
                 signal.react { value in
                     states[i] = value
-                    progress((states.map { $0 as? T }, value as T))
+                    progress((states.map { $0 as? T }, value as! T))
                 }.then { value, errorInfo -> Void in
                     if value != nil {
                         fulfill()
@@ -782,7 +782,7 @@ public extension Signal
                 if let signal = signals.first {
                     
                     signal.react { value in
-                        progress(value as T)
+                        progress(value as! T)
                     }.success {
                         concatRecursively(Array(signals[1..<signals.count]))
                     }.failure { errorInfo -> Void in
@@ -833,7 +833,7 @@ public extension Signal
                 
                 signals[i].react { value in
                     
-                    storedValuesArray[i] += [value as T]
+                    storedValuesArray[i] += [value as! T]
                     
                     var canProgress: Bool = true
                     for storedValues in storedValuesArray {
