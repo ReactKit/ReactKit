@@ -873,6 +873,58 @@ class KVOTests: _TestCase
         self.wait()
     }
     
+    func testKVO_distinct()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let signal = KVO.signal(obj1, "value")
+            |> map { (($0 as? NSString) ?? "") }    // create signal with Hashable value-type for `distinct()`
+            |> distinct
+            |> map { $0 as NSString? }  // convert: Signal<NSString> -> Signal<NSString?>
+        
+        var reactCount = 0
+        
+        // REACT
+        (obj2, "value") <~ signal
+        signal ~> { _ in reactCount++; return }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        XCTAssertEqual(obj2.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            XCTAssertEqual(obj2.value, "hoge")
+            XCTAssertEqual(reactCount, 1)
+            
+            obj1.value = "fuga"
+            XCTAssertEqual(obj2.value, "fuga")
+            XCTAssertEqual(reactCount, 2)
+
+            obj1.value = "hoge"
+            XCTAssertEqual(obj2.value, "fuga")
+            XCTAssertEqual(reactCount, 2, "`reactCount` should not be incremented because `hoge` is already sent thus filtered by `distinct()` method.")
+            
+            obj1.value = "fuga"
+            XCTAssertEqual(obj2.value, "fuga")
+            XCTAssertEqual(reactCount, 2, "`reactCount` should not be incremented because `fuga` is already sent thus filtered by `distinct()` method.")
+
+            obj1.value = "piyo"
+            XCTAssertEqual(obj2.value, "piyo")
+            XCTAssertEqual(reactCount, 3)
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
+    
     // MARK: timing
     
     func testKVO_throttle()

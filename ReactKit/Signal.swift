@@ -542,6 +542,24 @@ public func sample<T, U>(triggerSignal: Signal<U>)(upstream: Signal<T>) -> Signa
     }
 }
 
+public func distinct<H: Hashable>(upstream: Signal<H>) -> Signal<H>
+{
+    return Signal<H> { progress, fulfill, reject, configure in
+        
+        _bindToUpstreamSignal(upstream, fulfill, reject, configure)
+        
+        var usedValueHashes = Set<H>()
+        
+        upstream.react { value in
+            if !usedValueHashes.contains(value) {
+                usedValueHashes.insert(value)
+                progress(value)
+            }
+        }
+        
+    }
+}
+
 // MARK: combining
 
 public func merge<T>(signal: Signal<T>)(upstream: Signal<T>) -> Signal<T>
