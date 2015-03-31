@@ -40,7 +40,8 @@ public class DynamicArray: NSObject
     /// via changes in `self.proxy` NSMutableArray
     public func signal() -> Signal<ChangedTuple>
     {
-        return KVO.detailedSignal(self, self._key).map { ($0 as? [Element], $1, $2!) }
+        return KVO.detailedSignal(self, self._key)
+            |> map { ($0 as? [Element], $1, $2!) }
     }
     
     public init(_ array: [Element] = [])

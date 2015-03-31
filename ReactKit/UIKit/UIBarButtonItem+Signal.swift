@@ -12,7 +12,7 @@ public extension UIBarButtonItem
 {
     public func signal<T>(map: UIBarButtonItem? -> T) -> Signal<T>
     {
-        return Signal { [weak self] progress, fulfill, reject, configure in
+        return Signal<T> { [weak self] progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 progress(map(self_ as? UIBarButtonItem))
@@ -42,7 +42,7 @@ public extension UIBarButtonItem
                 removeTargetAction()
             }
             
-        }.name("\(NSStringFromClass(self.dynamicType))").takeUntil(self.deinitSignal)
+        }.name("\(NSStringFromClass(self.dynamicType))") |> takeUntil(self.deinitSignal)
     }
     
     public func signal<T>(mappedValue: T) -> Signal<T>

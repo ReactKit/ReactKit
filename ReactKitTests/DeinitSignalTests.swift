@@ -22,7 +22,7 @@ class DeinitSignalTests: _TestCase
         // always use `weak` for deinitSignal to avoid it being captured by current execution context
         weak var deinitSignal: Signal<AnyObject?>? = shortLivedObject!.deinitSignal
         
-        let obj1Signal = KVO.signal(obj1, "value").takeUntil(deinitSignal!)
+        let obj1Signal = KVO.signal(obj1, "value") |> takeUntil(deinitSignal!)
         
         // REACT
         (obj2, "value") <~ obj1Signal
@@ -62,7 +62,7 @@ class DeinitSignalTests: _TestCase
         // NOTE: `weak` is not used for this test
         var deinitSignal: Signal<AnyObject?>? = shortLivedObject!.deinitSignal
         
-        let obj1Signal = KVO.signal(obj1, "value").takeUntil(deinitSignal!)
+        let obj1Signal = KVO.signal(obj1, "value") |> takeUntil(deinitSignal!)
         
         // REACT
         (obj2, "value") <~ obj1Signal

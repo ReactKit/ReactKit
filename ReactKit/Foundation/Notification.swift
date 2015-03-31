@@ -43,7 +43,7 @@ public extension NSNotificationCenter
                 }
             }
             
-        }.name("NSNotification-\(notificationName)").takeUntil(self.deinitSignal)
+        }.name("NSNotification-\(notificationName)") |> takeUntil(self.deinitSignal)
     }
 }
 

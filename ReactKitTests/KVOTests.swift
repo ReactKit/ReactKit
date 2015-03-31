@@ -182,7 +182,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").map { (value: AnyObject?) -> NSString? in
+        let signal = KVO.signal(obj1, "value") |> map { (value: AnyObject?) -> NSString? in
             return (value as! String).uppercaseString
         }
         
@@ -224,7 +224,7 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         
         // NOTE: `mapClosure` is returning Signal
-        let signal = KVO.signal(obj1, "value").flatMap { (value: AnyObject?) -> Signal<AnyObject?> in
+        let signal = KVO.signal(obj1, "value") |> flatMap { (value: AnyObject?) -> Signal<AnyObject?> in
             // delay sending value for 0.01 sec
             return NSTimer.signal(timeInterval: 0.01, repeats: false) { _ in value }
         }
@@ -276,7 +276,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").map2 { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
+        let signal = KVO.signal(obj1, "value") |> map2 { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
             let oldString = (oldValue as? NSString) ?? "empty"
             return "\(oldString) -> \(newValue as! String)"
         }
@@ -315,7 +315,7 @@ class KVOTests: _TestCase
         
         let obj1 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").mapAccumulate([]) { accumulatedValue, newValue -> [String] in
+        let signal = KVO.signal(obj1, "value") |> mapAccumulate([]) { accumulatedValue, newValue -> [String] in
             return accumulatedValue + [newValue as! String]
         }
         
@@ -353,7 +353,7 @@ class KVOTests: _TestCase
         
         let obj1 = MyObject()
         
-        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value").buffer(3)
+        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value") |> buffer(3)
         
         var result: String? = "no result"
         
@@ -404,7 +404,7 @@ class KVOTests: _TestCase
         let trigger = MyObject()
         
         let triggerSignal = KVO.signal(trigger, "value")
-        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value").bufferBy(triggerSignal)
+        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value") |> bufferBy(triggerSignal)
         
         var result: String? = "no result"
         
@@ -452,7 +452,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         
         // group by `key = countElement(value)`
-        let signal: Signal<(Int, Signal<AnyObject?>)> = KVO.signal(obj1, "value").groupBy { count($0! as! String) }
+        let signal: Signal<(Int, Signal<AnyObject?>)> = KVO.signal(obj1, "value") |> groupBy { count($0! as! String) }
         
         var lastKey: Int?
         var lastValue: String?
@@ -516,7 +516,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").filter { (value: AnyObject?) -> Bool in
+        let signal = KVO.signal(obj1, "value") |> filter { (value: AnyObject?) -> Bool in
             return value as! String == "fuga"
         }
         
@@ -554,7 +554,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         
         // NOTE: this is distinct signal
-        let signal = KVO.signal(obj1, "value").filter2 { (oldValue: AnyObject??, newValue: AnyObject?) -> Bool in
+        let signal = KVO.signal(obj1, "value") |> filter2 { (oldValue: AnyObject??, newValue: AnyObject?) -> Bool in
             
             // don't filter for first value
             if oldValue == nil { return true }
@@ -603,7 +603,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").take(1)  // only take 1 event
+        let signal = KVO.signal(obj1, "value") |> take(1)  // only take 1 event
         
         // REACT
         (obj2, "value") <~ signal
@@ -641,7 +641,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         
         let sourceSignal = KVO.signal(obj1, "value")
-        let takeSignal = sourceSignal.take(1)  // only take 1 event
+        let takeSignal = sourceSignal |> take(1)  // only take 1 event
         
         // REACT 
         ^{ _ in progressCount++; return } <~ takeSignal
@@ -679,7 +679,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         
         let sourceSignal = KVO.signal(obj1, "value")
-        let takeSignal = sourceSignal.take(1)   // only take 1 event
+        let takeSignal = sourceSignal |> take(1)   // only take 1 event
         
         // failure
         takeSignal.failure { errorInfo -> Void in
@@ -712,7 +712,7 @@ class KVOTests: _TestCase
         let stopper = MyObject()
         
         let stoppingSignal = KVO.signal(stopper, "value")    // store stoppingSignal to live until end of runloop
-        let signal = KVO.signal(obj1, "value").takeUntil(stoppingSignal)
+        let signal = KVO.signal(obj1, "value") |> takeUntil(stoppingSignal)
         
         // REACT
         (obj2, "value") <~ signal
@@ -750,7 +750,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").skip(1)  // skip 1 event
+        let signal = KVO.signal(obj1, "value") |> skip(1)  // skip 1 event
         
         // REACT
         (obj2, "value") <~ signal
@@ -788,7 +788,7 @@ class KVOTests: _TestCase
         let stopper = MyObject()
         
         let startingSignal = KVO.signal(stopper, "value")
-        let signal = KVO.signal(obj1, "value").skipUntil(startingSignal)
+        let signal = KVO.signal(obj1, "value") |> skipUntil(startingSignal)
         
         // REACT
         (obj2, "value") <~ signal
@@ -828,7 +828,7 @@ class KVOTests: _TestCase
         let sampler = MyObject()
         
         let samplingSignal = KVO.signal(sampler, "value")
-        let signal = KVO.signal(obj1, "value").sample(samplingSignal)
+        let signal = KVO.signal(obj1, "value") |> sample(samplingSignal)
 
         var reactCount = 0
         
@@ -884,7 +884,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").throttle(timeInterval)
+        let signal = KVO.signal(obj1, "value") |> throttle(timeInterval)
         
         // REACT
         (obj2, "value") <~ signal
@@ -930,7 +930,7 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").debounce(timeInterval)
+        let signal = KVO.signal(obj1, "value") |> debounce(timeInterval)
         
         // REACT
         (obj2, "value") <~ signal
@@ -974,7 +974,7 @@ class KVOTests: _TestCase
         let signal1 = KVO.signal(obj1, "value")
         let signal2 = KVO.signal(obj2, "number")
         
-        var bundledSignal = Signal<AnyObject?>.merge([signal1, signal2]).map { (value: AnyObject?) -> NSString? in
+        var bundledSignal = [signal1, signal2] |> mergeAll |> map { (value: AnyObject?) -> NSString? in
             let valueString: AnyObject = value ?? "nil"
             return "\(valueString)"
         }
@@ -1021,7 +1021,7 @@ class KVOTests: _TestCase
         let signal1 = KVO.signal(obj1, "value")
         let signal2 = KVO.signal(obj2, "number")
         
-        let bundledSignal = Signal<AnyObject?>.merge2([signal1, signal2]).map { (values: [AnyObject??], _) -> NSString? in
+        let bundledSignal = [signal1, signal2] |> merge2All |> map { (values: [AnyObject??], _) -> NSString? in
             let value0: AnyObject = (values[0] ?? "notYet") ?? "nil"
             let value1: AnyObject = (values[1] ?? "notYet") ?? "nil"
             return "\(value0)-\(value1)"
@@ -1064,7 +1064,7 @@ class KVOTests: _TestCase
         let signal1 = KVO.signal(obj1, "value")
         let signal2 = KVO.signal(obj2, "number")
         
-        let combinedSignal = Signal<AnyObject?>.combineLatest([signal1, signal2]).map { (values: [AnyObject?]) -> NSString? in
+        let combinedSignal = [signal1, signal2] |> combineLatestAll |> map { (values: [AnyObject?]) -> NSString? in
             let value0: AnyObject = (values[0] ?? "nil")
             let value1: AnyObject = (values[1] ?? "nil")
             return "\(value0)-\(value1)"
@@ -1108,7 +1108,7 @@ class KVOTests: _TestCase
         let signal1: Signal<AnyObject?> = NSTimer.signal(timeInterval: 0.1, userInfo: nil, repeats: false) { _ in "Next" }
         let signal2: Signal<AnyObject?> = NSTimer.signal(timeInterval: 0.3, userInfo: nil, repeats: false) { _ in 123 }
         
-        var concatSignal = Signal<AnyObject?>.concat([signal1, signal2]).map { (value: AnyObject?) -> NSString? in
+        var concatSignal = [signal1, signal2] |> concatAll |> map { (value: AnyObject?) -> NSString? in
             let valueString: AnyObject = value ?? "nil"
             return "\(valueString)"
         }
@@ -1143,7 +1143,7 @@ class KVOTests: _TestCase
         
         let signal1 = KVO.signal(obj1, "value")
         
-        var bundledSignal = signal1.startWith("start!")
+        var bundledSignal = signal1 |> startWith("start!")
         
         // REACT
         (obj2, "value") <~ bundledSignal
@@ -1169,10 +1169,13 @@ class KVOTests: _TestCase
         
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let signal1: Signal<Any> = Signal(values: [0, 1, 2, 3, 4]).concat(Signal.fulfilled().delay(01.1))
-        let signal2: Signal<Any> = Signal(values: ["A", "B", "C"]).concat(Signal.fulfilled().delay(02.2))
+        // create signals which will never be fulfilled/rejected
+        let signal1: Signal<Any> = Signal(values: [0, 1, 2, 3, 4])
+            |> concat(Signal.never())
+        let signal2: Signal<Any> = Signal(values: ["A", "B", "C"])
+            |> concat(Signal.never())
         
-        var bundledSignal = signal1.zip(signal2).map { (values: [Any]) -> String in
+        var bundledSignal = signal1 |> zip(signal2) |> map { (values: [Any]) -> String in
             let valueStrings = values.map { "\($0)" }
             return "-".join(valueStrings)
         }
@@ -1199,8 +1202,14 @@ class KVOTests: _TestCase
             }
         }
         
-        bundledSignal.then { _ in
+        bundledSignal.then { _ -> Void in
+            XCTAssertEqual(reactCount, 3)
             expect.fulfill()
+        }
+        
+        // force-cancel after zip-test complete
+        Async.main(after: 0.1) {
+            bundledSignal.cancel()
         }
         
         self.wait()
@@ -1218,7 +1227,7 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         let obj3 = MyObject()
         
-        let signal = KVO.signal(obj1, "value").map { (value: AnyObject?) -> [NSString?] in
+        let signal = KVO.signal(obj1, "value") |> map { (value: AnyObject?) -> [NSString?] in
             if let str = value as? NSString? {
                 if let str = str {
                     return [ "\(str)-2" as NSString?, "\(str)-3" as NSString? ]

@@ -24,11 +24,11 @@ class ArrayKVOTests: _TestCase
         // NOTE: by using `mutableArrayValueForKey()`, this signal will send each changed values **separately**
         let obj1ArrayChangedSignal = KVO.signal(obj1, "array")
         
-        let obj1ArraySignal = obj1ArrayChangedSignal.map { _ -> AnyObject? in obj1.array }
+        let obj1ArraySignal = obj1ArrayChangedSignal |> map { _ -> AnyObject? in obj1.array }
         
         let obj1ArrayChangedCountSignal = obj1ArrayChangedSignal
-            .mapAccumulate(0, { c, _ in c + 1 })    // count up
-            .map { $0 as NSNumber? }    // .asSignal(NSNumber?)
+            |> mapAccumulate(0, { c, _ in c + 1 })    // count up
+            |> map { $0 as NSNumber? }    // .asSignal(NSNumber?)
         
         // REACT: obj1.array ~> obj2.array (only sends changed values in `obj1.array`)
         (obj2, "array") <~ obj1ArrayChangedSignal

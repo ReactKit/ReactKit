@@ -20,18 +20,25 @@ public extension NSObject
     /// creates new KVO Signal (new value only)
     public func signal(#keyPath: String) -> Signal<AnyObject?>
     {
-        return self.detailedSignal(keyPath: keyPath)
-            .map { value, _, _ -> AnyObject? in value }
-            .name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
+        let signal = self.detailedSignal(keyPath: keyPath)
+            |> map { value, _, _ -> AnyObject? in value }
+        
+        signal.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)")
+        
+        return signal
     }
     
     /// creates new KVO Signal (initial + new value)
     public func startingSignal(#keyPath: String) -> Signal<AnyObject?>
     {
         var initial: AnyObject? = self.valueForKeyPath(keyPath)
-        return self.signal(keyPath: keyPath)
-            .startWith(_nullToNil(initial))
-            .name("KVO(starting)-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
+        
+        let signal = self.signal(keyPath: keyPath)
+            |> startWith(_nullToNil(initial))
+        
+        signal.name("KVO(starting)-\(NSStringFromClass(self.dynamicType))-\(keyPath)")
+        
+        return signal
     }
     
     ///
@@ -58,7 +65,7 @@ public extension NSObject
                 configure.cancel = { observer.stop() }
             }
             
-        }.name("KVO(detailed)-\(NSStringFromClass(self.dynamicType))-\(keyPath)").takeUntil(self.deinitSignal)
+        }.name("KVO(detailed)-\(NSStringFromClass(self.dynamicType))-\(keyPath)") |> takeUntil(self.deinitSignal)
     }
 }
 
@@ -86,6 +93,7 @@ public struct KVO
 
 private var ReactKitKVOContext = 0
 
+// NOTE: KVO won't work if generics is used in this class
 internal class _KVOProxy: NSObject
 {
     internal typealias _Handler = (value: AnyObject?, change: NSKeyValueChange, indexSet: NSIndexSet?) -> Void

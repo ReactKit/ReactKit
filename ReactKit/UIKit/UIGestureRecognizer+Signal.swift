@@ -13,7 +13,7 @@ public extension UIGestureRecognizer
 {
     public func signal<T>(map: UIGestureRecognizer? -> T) -> Signal<T>
     {
-        return Signal { [weak self] progress, fulfill, reject, configure in
+        return Signal<T> { [weak self] progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 progress(map(self_ as? UIGestureRecognizer))
@@ -35,6 +35,6 @@ public extension UIGestureRecognizer
                 }
             }
             
-        }.name("\(NSStringFromClass(self.dynamicType))").takeUntil(self.deinitSignal)
+        }.name("\(NSStringFromClass(self.dynamicType))") |> takeUntil(self.deinitSignal)
     }
 }

@@ -12,7 +12,7 @@ public extension UIControl
 {
     public func signal<T>(#controlEvents: UIControlEvents, map: UIControl? -> T) -> Signal<T>
     {
-        return Signal { [weak self] progress, fulfill, reject, configure in
+        return Signal<T> { [weak self] progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 
@@ -52,6 +52,6 @@ public extension UIControl
                 }
             }
             
-        }.name("\(NSStringFromClass(self.dynamicType))-\(controlEvents)").takeUntil(self.deinitSignal)
+        }.name("\(NSStringFromClass(self.dynamicType))-\(controlEvents)") |> takeUntil(self.deinitSignal)
     }
 }
