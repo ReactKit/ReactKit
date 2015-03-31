@@ -1016,7 +1016,7 @@ prefix operator ^ {}
 
 /// Objective-C like 'block operator' to let Swift compiler know closure-type at start of the line
 /// e.g. ^{ println($0) } <~ signal
-public prefix func ^ <T>(closure: T -> Void) -> (T -> Void)
+public prefix func ^ <T, U>(closure: T -> U) -> (T -> U)
 {
     return closure
 }
