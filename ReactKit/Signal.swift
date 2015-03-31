@@ -962,22 +962,35 @@ public extension Signal
 
 infix operator |> { associativity left precedence 95}
 
-/// signal-pipelining operator
+/// single-signal pipelining operator
 public func |> <T, U>(signal: Signal<T>, transform: Signal<T> -> U) -> U
 {
     return transform(signal)
 }
 
-/// signal-pipelining operator
+/// array-signals pipelining operator
 public func |> <T, U, S: SequenceType where S.Generator.Element == Signal<T>>(signals: S, transform: S -> U) -> U
 {
     return transform(signals)
 }
 
-/// signal-pipelining operator
+/// nested-signals pipelining operator
 public func |> <T, U, S: SequenceType where S.Generator.Element == Signal<T>>(signals: S, transform: Signal<Signal<T>> -> U) -> U
 {
     return transform(Signal(values: signals))
+}
+
+infix operator |>> { associativity left precedence 95}
+
+/// signalProducer pipelining operator
+public func |>> <T, U>(signalProducer: Void -> Signal<T>, transform: Signal<T> -> U) -> Void -> U
+{
+    return { transform(signalProducer()) }
+}
+
+public func |>> <T, U>(@autoclosure(escaping) signalProducer: Void -> Signal<T>, transform: Signal<T> -> U) -> Void -> U
+{
+    return { transform(signalProducer()) }
 }
 
 // NOTE: set precedence=255 to avoid "Operator is not a known binary operator" error
