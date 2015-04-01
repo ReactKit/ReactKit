@@ -280,22 +280,25 @@ public func map2<T, U>(transform2: (oldValue: T?, newValue: T) -> U)(upstream: S
     return stream
 }
 
+// NOTE: Avoid using curried function. See comments in `startWith()`.
 /// map using (accumulatedValue, newValue)
 /// a.k.a `Rx.scan()`
-public func mapAccumulate<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
+public func mapAccumulate<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> (upstream: Stream<T>) -> Stream<U>
 {
-    return Stream<U> { progress, fulfill, reject, configure in
-        
-        _bindToUpstream(upstream, fulfill, reject, configure)
-        
-        var accumulatedValue: U = initialValue
-        
-        upstream.react { value in
-            accumulatedValue = accumulateClosure(accumulatedValue: accumulatedValue, newValue: value)
-            progress(accumulatedValue)
-        }
-        
-    }.name("\(upstream.name)-mapAccumulate")
+    return { (upstream: Stream<T>) -> Stream<U> in
+        return Stream<U> { progress, fulfill, reject, configure in
+            
+            _bindToUpstream(upstream, fulfill, reject, configure)
+            
+            var accumulatedValue: U = initialValue
+            
+            upstream.react { value in
+                accumulatedValue = accumulateClosure(accumulatedValue: accumulatedValue, newValue: value)
+                progress(accumulatedValue)
+            }
+            
+        }.name("\(upstream.name)-mapAccumulate")
+    }
 }
 
 public func buffer<T>(bufferCount: Int)(upstream: Stream<T>) -> Stream<[T]>
