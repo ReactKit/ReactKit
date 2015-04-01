@@ -21,14 +21,14 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value")   // = obj1.signal(keyPath: "value")
-        weak var weakSignal = signal
+        let stream = KVO.stream(obj1, "value")   // = obj1.stream(keyPath: "value")
+        weak var weakStream = stream
         
         // REACT: obj1.value ~> obj2.value
-        (obj2, "value") <~ signal
+        (obj2, "value") <~ stream
         
         // REACT: obj1.value ~> println
-        ^{ println("[REACT] new value = \($0)") } <~ signal
+        ^{ println("[REACT] new value = \($0)") } <~ stream
         
         println("*** Start ***")
         
@@ -37,19 +37,19 @@ class KVOTests: _TestCase
         
         self.perform {
             
-            XCTAssertNotNil(weakSignal)
+            XCTAssertNotNil(weakStream)
             
             obj1.value = "hoge"
             
             XCTAssertEqual(obj1.value, "hoge")
             XCTAssertEqual(obj2.value, "hoge")
             
-            weakSignal?.cancel()
+            weakStream?.cancel()
             
             obj1.value = "fuga"
             
             XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because signal is already cancelled.")
+            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because stream is already cancelled.")
             
             expect.fulfill()
             
@@ -65,8 +65,8 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "optionalValue")
-        (obj2, "optionalValue") <~ signal   // REACT
+        let stream = KVO.stream(obj1, "optionalValue")
+        (obj2, "optionalValue") <~ stream   // REACT
         
         println("*** Start ***")
         
@@ -92,7 +92,7 @@ class KVOTests: _TestCase
         self.wait()
     }
 
-    func testKVO_startingSignal()
+    func testKVO_startingStream()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -103,13 +103,13 @@ class KVOTests: _TestCase
         XCTAssertNil(obj1.optionalValue)
         XCTAssertEqual(obj2.optionalValue!, "initial")
         
-        let startingSignal = KVO.startingSignal(obj1, "optionalValue")
-        (obj2, "optionalValue") <~ startingSignal   // REACT
+        let startingStream = KVO.startingStream(obj1, "optionalValue")
+        (obj2, "optionalValue") <~ startingStream   // REACT
 
         println("*** Start ***")
         
         XCTAssertNil(obj1.optionalValue)
-        XCTAssertNil(obj2.optionalValue, "`KVO.startingSignal()` sets initial `obj1.optionalValue` (nil) to `obj2.optionalValue` on `<~` binding.")
+        XCTAssertNil(obj2.optionalValue, "`KVO.startingStream()` sets initial `obj1.optionalValue` (nil) to `obj2.optionalValue` on `<~` binding.")
         
         self.perform {
             
@@ -148,15 +148,15 @@ class KVOTests: _TestCase
         
         self.perform {
             
-            // comment-out: no weakSignal in this test
-            // XCTAssertNotNil(weakSignal)
+            // comment-out: no weakStream in this test
+            // XCTAssertNotNil(weakStream)
             
             obj1.value = "hoge"
             
             XCTAssertEqual(obj1.value, "hoge")
             
             if self.isAsync {
-                XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because signal is already deinited.")
+                XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because stream is already deinited.")
             }
             else {
                 XCTAssertEqual(obj2.value, "hoge", "obj2.value should be updated.")
@@ -166,12 +166,12 @@ class KVOTests: _TestCase
             
         }
         
-        // NOTE: (obj1, "value") signal is still retained at this point, thanks to dispatch_queue
+        // NOTE: (obj1, "value") stream is still retained at this point, thanks to dispatch_queue
         
         self.wait()
     }
     
-    // MARK: Single Signal Operations
+    // MARK: Single Stream Operations
     
     // MARK: transforming
     
@@ -182,12 +182,12 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value") |> map { (value: AnyObject?) -> NSString? in
+        let stream = KVO.stream(obj1, "value") |> map { (value: AnyObject?) -> NSString? in
             return (value as! String).uppercaseString
         }
         
         // REACT
-        (obj2, "value") <~ signal
+        (obj2, "value") <~ stream
         
         println("*** Start ***")
         
@@ -223,14 +223,14 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        // NOTE: `mapClosure` is returning Signal
-        let signal = KVO.signal(obj1, "value") |> flatMap { (value: AnyObject?) -> Signal<AnyObject?> in
+        // NOTE: `mapClosure` is returning Stream
+        let stream = KVO.stream(obj1, "value") |> flatMap { (value: AnyObject?) -> Stream<AnyObject?> in
             // delay sending value for 0.01 sec
-            return NSTimer.signal(timeInterval: 0.01, repeats: false) { _ in value }
+            return NSTimer.stream(timeInterval: 0.01, repeats: false) { _ in value }
         }
         
         // REACT
-        (obj2, "value") <~ signal
+        (obj2, "value") <~ stream
         
         println("*** Start ***")
         
@@ -242,25 +242,25 @@ class KVOTests: _TestCase
             obj1.value = "hoge"
             
             XCTAssertEqual(obj1.value, "hoge")
-            XCTAssertEqual(obj2.value, "initial", "`obj2.value` should NOT be updated because `signal` is delayed.")
+            XCTAssertEqual(obj2.value, "initial", "`obj2.value` should NOT be updated because `stream` is delayed.")
             
             // wait for "hoge" to arrive...
             Async.main(after: 0.1) {
                 
                 XCTAssertEqual(obj1.value, "hoge")
-                XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should be updated because delayed `signal` message arrived.")
+                XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should be updated because delayed `stream` message arrived.")
                 
                 obj1.value = "fuga"
                 
                 XCTAssertEqual(obj1.value, "fuga")
-                XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should NOT be updated because `signal` is delayed.")
+                XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should NOT be updated because `stream` is delayed.")
             }
             
             // wait for "fuga" to arrive...
             Async.main(after: 0.2 + SAFE_DELAY) {
                 
                 XCTAssertEqual(obj1.value, "fuga")
-                XCTAssertEqual(obj2.value, "fuga", "`obj2.value` should be updated because delayed `signal` message arrived.")
+                XCTAssertEqual(obj2.value, "fuga", "`obj2.value` should be updated because delayed `stream` message arrived.")
                 
                 expect.fulfill()
             }
@@ -276,13 +276,13 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value") |> map2 { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
+        let stream = KVO.stream(obj1, "value") |> map2 { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
             let oldString = (oldValue as? NSString) ?? "empty"
             return "\(oldString) -> \(newValue as! String)"
         }
         
         // REACT
-        (obj2, "value") <~ signal
+        (obj2, "value") <~ stream
         
         println("*** Start ***")
         
@@ -315,14 +315,14 @@ class KVOTests: _TestCase
         
         let obj1 = MyObject()
         
-        let signal = KVO.signal(obj1, "value") |> mapAccumulate([]) { accumulatedValue, newValue -> [String] in
+        let stream = KVO.stream(obj1, "value") |> mapAccumulate([]) { accumulatedValue, newValue -> [String] in
             return accumulatedValue + [newValue as! String]
         }
         
         var result: [String]?
         
         // REACT
-        signal ~> { result = $0 }
+        stream ~> { result = $0 }
         
         println("*** Start ***")
         
@@ -353,12 +353,12 @@ class KVOTests: _TestCase
         
         let obj1 = MyObject()
         
-        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value") |> buffer(3)
+        let stream: Stream<[AnyObject?]> = KVO.stream(obj1, "value") |> buffer(3)
         
         var result: String? = "no result"
         
         // REACT
-        signal ~> { (buffer: [AnyObject?]) in
+        stream ~> { (buffer: [AnyObject?]) in
             let buffer_: [String] = buffer.map { $0 as! String }
             result = "-".join(buffer_)
         }
@@ -372,12 +372,12 @@ class KVOTests: _TestCase
             obj1.value = "hoge"
             
             XCTAssertEqual(obj1.value, "hoge")
-            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered.")
+            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `stream`'s newValue is buffered.")
             
             obj1.value = "fuga"
             
             XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered.")
+            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `stream`'s newValue is buffered.")
             
             obj1.value = "piyo"
             
@@ -387,7 +387,7 @@ class KVOTests: _TestCase
             obj1.value = "foo"
             
             XCTAssertEqual(obj1.value, "foo")
-            XCTAssertEqual(result!, "hoge-fuga-piyo", "`result` should NOT be updated because `signal`'s newValue is buffered.")
+            XCTAssertEqual(result!, "hoge-fuga-piyo", "`result` should NOT be updated because `stream`'s newValue is buffered.")
             
             expect.fulfill()
             
@@ -403,13 +403,13 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let trigger = MyObject()
         
-        let triggerSignal = KVO.signal(trigger, "value")
-        let signal: Signal<[AnyObject?]> = KVO.signal(obj1, "value") |> bufferBy(triggerSignal)
+        let triggerStream = KVO.stream(trigger, "value")
+        let stream: Stream<[AnyObject?]> = KVO.stream(obj1, "value") |> bufferBy(triggerStream)
         
         var result: String? = "no result"
         
         // REACT
-        signal ~> { (buffer: [AnyObject?]) in
+        stream ~> { (buffer: [AnyObject?]) in
             let buffer_: [String] = buffer.map { $0 as! String }
             result = "-".join(buffer_)
         }
@@ -423,18 +423,18 @@ class KVOTests: _TestCase
             obj1.value = "hoge"
             
             XCTAssertEqual(obj1.value, "hoge")
-            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered but `triggerSignal` is not triggered yet.")
+            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `stream`'s newValue is buffered but `triggerStream` is not triggered yet.")
             
             obj1.value = "fuga"
             
             XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `signal`'s newValue is buffered but `triggerSignal` is not triggered yet.")
+            XCTAssertEqual(result!, "no result", "`result` should NOT be updated because `stream`'s newValue is buffered but `triggerStream` is not triggered yet.")
             
-            trigger.value = "DUMMY" // fire triggerSignal
+            trigger.value = "DUMMY" // fire triggerStream
             
             XCTAssertEqual(result!, "hoge-fuga", "`result` should be updated with buffered values.")
             
-            trigger.value = "DUMMY2" // fire triggerSignal
+            trigger.value = "DUMMY2" // fire triggerStream
             
             XCTAssertEqual(result!, "", "`result` should be updated with NO buffered values.")
             
@@ -452,17 +452,17 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         
         // group by `key = countElement(value)`
-        let signal: Signal<(Int, Signal<AnyObject?>)> = KVO.signal(obj1, "value") |> groupBy { count($0! as! String) }
+        let stream: Stream<(Int, Stream<AnyObject?>)> = KVO.stream(obj1, "value") |> groupBy { count($0! as! String) }
         
         var lastKey: Int?
         var lastValue: String?
         
         // REACT
-        signal ~> { (key: Int, groupedSignal: Signal<AnyObject?>) in
+        stream ~> { (key: Int, groupedStream: Stream<AnyObject?>) in
             lastKey = key
             
             // REACT
-            groupedSignal ~> { value in
+            groupedStream ~> { value in
                 lastValue = value as? String
                 return
             }
@@ -497,7 +497,7 @@ class KVOTests: _TestCase
             
             obj1.value = "bar"
             
-            XCTAssertEqual(lastKey!, 1, "`groupedSignal` with key=3 is already emitted, so `lastKey` will not be updated.")
+            XCTAssertEqual(lastKey!, 1, "`groupedStream` with key=3 is already emitted, so `lastKey` will not be updated.")
             XCTAssertEqual(lastValue!, "bar")
             
             expect.fulfill()
@@ -516,12 +516,12 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value") |> filter { (value: AnyObject?) -> Bool in
+        let stream = KVO.stream(obj1, "value") |> filter { (value: AnyObject?) -> Bool in
             return value as! String == "fuga"
         }
         
         // REACT
-        (obj2, "value") <~ signal
+        (obj2, "value") <~ stream
         
         println("*** Start ***")
         
@@ -533,7 +533,7 @@ class KVOTests: _TestCase
             obj1.value = "hoge"
             
             XCTAssertEqual(obj1.value, "hoge")
-            XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because signal is not sent via filter().")
+            XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because stream is not sent via filter().")
             
             obj1.value = "fuga"
             
@@ -553,8 +553,8 @@ class KVOTests: _TestCase
         
         let obj1 = MyObject()
         
-        // NOTE: this is distinct signal
-        let signal = KVO.signal(obj1, "value") |> filter2 { (oldValue: AnyObject??, newValue: AnyObject?) -> Bool in
+        // NOTE: this is distinct stream
+        let stream = KVO.stream(obj1, "value") |> filter2 { (oldValue: AnyObject??, newValue: AnyObject?) -> Bool in
             
             // don't filter for first value
             if oldValue == nil { return true }
@@ -565,7 +565,7 @@ class KVOTests: _TestCase
         var count = 0
         
         // REACT
-        signal ~> { _ in count++; return }
+        stream ~> { _ in count++; return }
         
         println("*** Start ***")
         
@@ -603,10 +603,10 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value") |> take(1)  // only take 1 event
+        let stream = KVO.stream(obj1, "value") |> take(1)  // only take 1 event
         
         // REACT
-        (obj2, "value") <~ signal
+        (obj2, "value") <~ stream
         
         println("*** Start ***")
         
@@ -623,7 +623,7 @@ class KVOTests: _TestCase
             obj1.value = "fuga"
             
             XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because signal is finished via take().")
+            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because stream is finished via take().")
             
             expect.fulfill()
             
@@ -640,14 +640,14 @@ class KVOTests: _TestCase
         
         let obj1 = MyObject()
         
-        let sourceSignal = KVO.signal(obj1, "value")
-        let takeSignal = sourceSignal |> take(1)  // only take 1 event
+        let sourceStream = KVO.stream(obj1, "value")
+        let takeStream = sourceStream |> take(1)  // only take 1 event
         
         // REACT 
-        ^{ _ in progressCount++; return } <~ takeSignal
+        ^{ _ in progressCount++; return } <~ takeStream
         
         // success
-        takeSignal.success {
+        takeStream.success {
             successCount++
         }
         
@@ -678,25 +678,25 @@ class KVOTests: _TestCase
         
         let obj1 = MyObject()
         
-        let sourceSignal = KVO.signal(obj1, "value")
-        let takeSignal = sourceSignal |> take(1)   // only take 1 event
+        let sourceStream = KVO.stream(obj1, "value")
+        let takeStream = sourceStream |> take(1)   // only take 1 event
         
         // failure
-        takeSignal.failure { errorInfo -> Void in
+        takeStream.failure { errorInfo -> Void in
             
-            XCTAssertEqual(errorInfo.error!.domain, ReactKitError.Domain, "`sourceSignal` is cancelled before any progress, so `takeSignal` should fail.")
+            XCTAssertEqual(errorInfo.error!.domain, ReactKitError.Domain, "`sourceStream` is cancelled before any progress, so `takeStream` should fail.")
             XCTAssertEqual(errorInfo.error!.code, ReactKitError.CancelledByUpstream.rawValue)
             
-            XCTAssertFalse(errorInfo.isCancelled, "Though `sourceSignal` is cancelled, `takeSignal` is rejected rather than cancelled.")
+            XCTAssertFalse(errorInfo.isCancelled, "Though `sourceStream` is cancelled, `takeStream` is rejected rather than cancelled.")
             
             expect.fulfill()
         
         }
         
-        takeSignal.resume() // NOTE: resume manually
+        takeStream.resume() // NOTE: resume manually
         
-        self.perform { [weak sourceSignal] in
-            sourceSignal?.cancel()
+        self.perform { [weak sourceStream] in
+            sourceStream?.cancel()
             return
         }
         
@@ -711,11 +711,11 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         let stopper = MyObject()
         
-        let stoppingSignal = KVO.signal(stopper, "value")    // store stoppingSignal to live until end of runloop
-        let signal = KVO.signal(obj1, "value") |> takeUntil(stoppingSignal)
+        let stoppingStream = KVO.stream(stopper, "value")    // store stoppingStream to live until end of runloop
+        let stream = KVO.stream(obj1, "value") |> takeUntil(stoppingStream)
         
         // REACT
-        (obj2, "value") <~ signal
+        (obj2, "value") <~ stream
         
         println("*** Start ***")
         
@@ -729,12 +729,12 @@ class KVOTests: _TestCase
             XCTAssertEqual(obj1.value, "hoge")
             XCTAssertEqual(obj2.value, "hoge")
             
-            stopper.value = "DUMMY" // fire stoppingSignal
+            stopper.value = "DUMMY" // fire stoppingStream
             
             obj1.value = "fuga"
             
             XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because signal is stopped via takeUntil(stoppingSignal).")
+            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because stream is stopped via takeUntil(stoppingStream).")
             
             expect.fulfill()
             
@@ -750,10 +750,10 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value") |> skip(1)  // skip 1 event
+        let stream = KVO.stream(obj1, "value") |> skip(1)  // skip 1 event
         
         // REACT
-        (obj2, "value") <~ signal
+        (obj2, "value") <~ stream
         
         println("*** Start ***")
         
@@ -787,11 +787,11 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         let stopper = MyObject()
         
-        let startingSignal = KVO.signal(stopper, "value")
-        let signal = KVO.signal(obj1, "value") |> skipUntil(startingSignal)
+        let startingStream = KVO.stream(stopper, "value")
+        let stream = KVO.stream(obj1, "value") |> skipUntil(startingStream)
         
         // REACT
-        (obj2, "value") <~ signal
+        (obj2, "value") <~ stream
         
         println("*** Start ***")
         
@@ -805,12 +805,12 @@ class KVOTests: _TestCase
             XCTAssertEqual(obj1.value, "hoge")
             XCTAssertEqual(obj2.value, "initial", "obj2.value should not be changed due to `skipUntil()`.")
             
-            stopper.value = "DUMMY" // fire startingSignal
+            stopper.value = "DUMMY" // fire startingStream
             
             obj1.value = "fuga"
             
             XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(obj2.value, "fuga", "obj2.value should be updated because `startingSignal` is triggered so that `skipUntil(startingSignal)` should no longer skip.")
+            XCTAssertEqual(obj2.value, "fuga", "obj2.value should be updated because `startingStream` is triggered so that `skipUntil(startingStream)` should no longer skip.")
             
             expect.fulfill()
             
@@ -827,14 +827,14 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         let sampler = MyObject()
         
-        let samplingSignal = KVO.signal(sampler, "value")
-        let signal = KVO.signal(obj1, "value") |> sample(samplingSignal)
+        let samplingStream = KVO.stream(sampler, "value")
+        let stream = KVO.stream(obj1, "value") |> sample(samplingStream)
 
         var reactCount = 0
         
         // REACT
-        (obj2, "value") <~ signal
-        signal ~> { _ in reactCount++; return }
+        (obj2, "value") <~ stream
+        stream ~> { _ in reactCount++; return }
         
         println("*** Start ***")
         
@@ -843,16 +843,16 @@ class KVOTests: _TestCase
         
         self.perform {
             
-            sampler.value = "DUMMY"  // fire samplingSignal
+            sampler.value = "DUMMY"  // fire samplingStream
             XCTAssertEqual(obj2.value, "initial", "`obj2.value` should not be updated because `obj1.value` has not sent yet.")
             XCTAssertEqual(reactCount, 0)
             
             obj1.value = "hoge"
-            XCTAssertEqual(obj2.value, "initial", "`obj2.value` should not be updated because although `obj1` has changed, `samplingSignal` has not triggered yet.")
+            XCTAssertEqual(obj2.value, "initial", "`obj2.value` should not be updated because although `obj1` has changed, `samplingStream` has not triggered yet.")
             XCTAssertEqual(reactCount, 0)
             
             sampler.value = "DUMMY"
-            XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should be updated, triggered by `samplingSignal` using latest `obj1.value`.")
+            XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should be updated, triggered by `samplingStream` using latest `obj1.value`.")
             XCTAssertEqual(reactCount, 1)
 
             sampler.value = "DUMMY"
@@ -880,16 +880,16 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value")
-            |> map { (($0 as? NSString) ?? "") }    // create signal with Hashable value-type for `distinct()`
+        let stream = KVO.stream(obj1, "value")
+            |> map { (($0 as? NSString) ?? "") }    // create stream with Hashable value-type for `distinct()`
             |> distinct
-            |> map { $0 as NSString? }  // convert: Signal<NSString> -> Signal<NSString?>
+            |> map { $0 as NSString? }  // convert: Stream<NSString> -> Stream<NSString?>
         
         var reactCount = 0
         
         // REACT
-        (obj2, "value") <~ signal
-        signal ~> { _ in reactCount++; return }
+        (obj2, "value") <~ stream
+        stream ~> { _ in reactCount++; return }
         
         println("*** Start ***")
         
@@ -936,10 +936,10 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value") |> throttle(timeInterval)
+        let stream = KVO.stream(obj1, "value") |> throttle(timeInterval)
         
         // REACT
-        (obj2, "value") <~ signal
+        (obj2, "value") <~ stream
         
         println("*** Start ***")
         
@@ -956,7 +956,7 @@ class KVOTests: _TestCase
             obj1.value = "hoge2"
             
             XCTAssertEqual(obj1.value, "hoge2")
-            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because signal is throttled to \(timeInterval) sec.")
+            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because stream is throttled to \(timeInterval) sec.")
             
             // delay for `timeInterval`*1.05 sec
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1_050_000_000*timeInterval)), dispatch_get_main_queue()) {
@@ -982,10 +982,10 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal = KVO.signal(obj1, "value") |> debounce(timeInterval)
+        let stream = KVO.stream(obj1, "value") |> debounce(timeInterval)
         
         // REACT
-        (obj2, "value") <~ signal
+        (obj2, "value") <~ stream
         
         println("*** Start ***")
         
@@ -1013,7 +1013,7 @@ class KVOTests: _TestCase
         self.wait()
     }
     
-    // MARK: Multiple Signal Operations
+    // MARK: Multiple Stream Operations
     
     func testKVO_merge()
     {
@@ -1023,16 +1023,16 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         let obj3 = MyObject()
         
-        let signal1 = KVO.signal(obj1, "value")
-        let signal2 = KVO.signal(obj2, "number")
+        let stream1 = KVO.stream(obj1, "value")
+        let stream2 = KVO.stream(obj2, "number")
         
-        var bundledSignal = [signal1, signal2] |> mergeAll |> map { (value: AnyObject?) -> NSString? in
+        var bundledStream = [stream1, stream2] |> mergeAll |> map { (value: AnyObject?) -> NSString? in
             let valueString: AnyObject = value ?? "nil"
             return "\(valueString)"
         }
         
         // REACT
-        (obj3, "value") <~ bundledSignal
+        (obj3, "value") <~ bundledStream
         
         println("*** Start ***")
         
@@ -1046,7 +1046,7 @@ class KVOTests: _TestCase
             XCTAssertEqual(obj3.value, "test2")
             
             obj2.value = "test3"
-            XCTAssertEqual(obj3.value, "test2", "`obj3.value` should NOT be updated because `bundledSignal` doesn't react to `obj2.value`.")
+            XCTAssertEqual(obj3.value, "test2", "`obj3.value` should NOT be updated because `bundledStream` doesn't react to `obj2.value`.")
             
             obj2.number = 123
             XCTAssertEqual(obj3.value, "123")
@@ -1070,17 +1070,17 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         let obj3 = MyObject()
         
-        let signal1 = KVO.signal(obj1, "value")
-        let signal2 = KVO.signal(obj2, "number")
+        let stream1 = KVO.stream(obj1, "value")
+        let stream2 = KVO.stream(obj2, "number")
         
-        let bundledSignal = [signal1, signal2] |> merge2All |> map { (values: [AnyObject??], _) -> NSString? in
+        let bundledStream = [stream1, stream2] |> merge2All |> map { (values: [AnyObject??], _) -> NSString? in
             let value0: AnyObject = (values[0] ?? "notYet") ?? "nil"
             let value1: AnyObject = (values[1] ?? "notYet") ?? "nil"
             return "\(value0)-\(value1)"
         }
         
         // REACT
-        (obj3, "value") <~ bundledSignal
+        (obj3, "value") <~ bundledStream
         
         println("*** Start ***")
         
@@ -1094,7 +1094,7 @@ class KVOTests: _TestCase
             XCTAssertEqual(obj3.value, "test2-notYet")
             
             obj2.value = "test3"
-            XCTAssertEqual(obj3.value, "test2-notYet", "`obj3.value` should NOT be updated because `bundledSignal` doesn't react to `obj2.value`.")
+            XCTAssertEqual(obj3.value, "test2-notYet", "`obj3.value` should NOT be updated because `bundledStream` doesn't react to `obj2.value`.")
             
             obj2.number = 123
             XCTAssertEqual(obj3.value, "test2-123")
@@ -1113,17 +1113,17 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         let obj3 = MyObject()
         
-        let signal1 = KVO.signal(obj1, "value")
-        let signal2 = KVO.signal(obj2, "number")
+        let stream1 = KVO.stream(obj1, "value")
+        let stream2 = KVO.stream(obj2, "number")
         
-        let combinedSignal = [signal1, signal2] |> combineLatestAll |> map { (values: [AnyObject?]) -> NSString? in
+        let combinedStream = [stream1, stream2] |> combineLatestAll |> map { (values: [AnyObject?]) -> NSString? in
             let value0: AnyObject = (values[0] ?? "nil")
             let value1: AnyObject = (values[1] ?? "nil")
             return "\(value0)-\(value1)"
         }
         
         // REACT
-        (obj3, "value") <~ combinedSignal
+        (obj3, "value") <~ combinedStream
         
         println("*** Start ***")
         
@@ -1131,10 +1131,10 @@ class KVOTests: _TestCase
             XCTAssertEqual(obj3.value, "initial")
             
             obj1.value = "test1"
-            XCTAssertEqual(obj3.value, "initial", "`combinedSignal` should not send value because only `obj1.value` is changed.")
+            XCTAssertEqual(obj3.value, "initial", "`combinedStream` should not send value because only `obj1.value` is changed.")
             
             obj1.value = "test2"
-            XCTAssertEqual(obj3.value, "initial", "`combinedSignal` should not send value because only `obj1.value` is changed.")
+            XCTAssertEqual(obj3.value, "initial", "`combinedStream` should not send value because only `obj1.value` is changed.")
             
             obj2.number = 123
             XCTAssertEqual(obj3.value, "test2-123", "`obj3.value` should be updated for the first time because both `obj1.value` & `obj2.number` has been changed.")
@@ -1157,16 +1157,16 @@ class KVOTests: _TestCase
         
         let obj1 = MyObject()
         
-        let signal1: Signal<AnyObject?> = NSTimer.signal(timeInterval: 0.1, userInfo: nil, repeats: false) { _ in "Next" }
-        let signal2: Signal<AnyObject?> = NSTimer.signal(timeInterval: 0.3, userInfo: nil, repeats: false) { _ in 123 }
+        let stream1: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.1, userInfo: nil, repeats: false) { _ in "Next" }
+        let stream2: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.3, userInfo: nil, repeats: false) { _ in 123 }
         
-        var concatSignal = [signal1, signal2] |> concatAll |> map { (value: AnyObject?) -> NSString? in
+        var concatStream = [stream1, stream2] |> concatAll |> map { (value: AnyObject?) -> NSString? in
             let valueString: AnyObject = value ?? "nil"
             return "\(valueString)"
         }
         
         // REACT
-        (obj1, "value") <~ concatSignal
+        (obj1, "value") <~ concatStream
         
         println("*** Start ***")
         
@@ -1193,12 +1193,12 @@ class KVOTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let signal1 = KVO.signal(obj1, "value")
+        let stream1 = KVO.stream(obj1, "value")
         
-        var bundledSignal = signal1 |> startWith("start!")
+        var bundledStream = stream1 |> startWith("start!")
         
         // REACT
-        (obj2, "value") <~ bundledSignal
+        (obj2, "value") <~ bundledStream
         
         println("*** Start ***")
         
@@ -1221,13 +1221,13 @@ class KVOTests: _TestCase
         
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        // create signals which will never be fulfilled/rejected
-        let signal1: Signal<Any> = Signal(values: [0, 1, 2, 3, 4])
-            |> concat(Signal.never())
-        let signal2: Signal<Any> = Signal(values: ["A", "B", "C"])
-            |> concat(Signal.never())
+        // create streams which will never be fulfilled/rejected
+        let stream1: Stream<Any> = Stream(values: [0, 1, 2, 3, 4])
+            |> concat(Stream.never())
+        let stream2: Stream<Any> = Stream(values: ["A", "B", "C"])
+            |> concat(Stream.never())
         
-        var bundledSignal = signal1 |> zip(signal2) |> map { (values: [Any]) -> String in
+        var bundledStream = stream1 |> zip(stream2) |> map { (values: [Any]) -> String in
             let valueStrings = values.map { "\($0)" }
             return "-".join(valueStrings)
         }
@@ -1237,7 +1237,7 @@ class KVOTests: _TestCase
         var reactCount = 0
         
         // REACT
-        bundledSignal ~> { value in
+        bundledStream ~> { value in
             reactCount++
             
             println(value)
@@ -1254,14 +1254,14 @@ class KVOTests: _TestCase
             }
         }
         
-        bundledSignal.then { _ -> Void in
+        bundledStream.then { _ -> Void in
             XCTAssertEqual(reactCount, 3)
             expect.fulfill()
         }
         
         // force-cancel after zip-test complete
         Async.main(after: 0.1) {
-            bundledSignal.cancel()
+            bundledStream.cancel()
         }
         
         self.wait()
@@ -1279,7 +1279,7 @@ class KVOTests: _TestCase
         let obj2 = MyObject()
         let obj3 = MyObject()
         
-        let signal = KVO.signal(obj1, "value") |> map { (value: AnyObject?) -> [NSString?] in
+        let stream = KVO.stream(obj1, "value") |> map { (value: AnyObject?) -> [NSString?] in
             if let str = value as? NSString? {
                 if let str = str {
                     return [ "\(str)-2" as NSString?, "\(str)-3" as NSString? ]
@@ -1287,10 +1287,10 @@ class KVOTests: _TestCase
             }
             return []
         }
-        weak var weakSignal = signal
+        weak var weakStream = stream
         
         // REACT
-        [ (obj2, "value"), (obj3, "value") ] <~ signal
+        [ (obj2, "value"), (obj3, "value") ] <~ stream
         
         println("*** Start ***")
         
@@ -1300,7 +1300,7 @@ class KVOTests: _TestCase
         
         self.perform {
             
-            XCTAssertNotNil(weakSignal)
+            XCTAssertNotNil(weakStream)
             
             obj1.value = "hoge"
             
@@ -1308,13 +1308,13 @@ class KVOTests: _TestCase
             XCTAssertEqual(obj2.value, "hoge-2")
             XCTAssertEqual(obj3.value, "hoge-3")
             
-            weakSignal?.cancel()
+            weakStream?.cancel()
             
             obj1.value = "fuga"
             
             XCTAssertEqual(obj1.value, "fuga")
-            XCTAssertEqual(obj2.value, "hoge-2", "obj2.value should not be updated because signal is already cancelled.")
-            XCTAssertEqual(obj3.value, "hoge-3", "obj3.value should not be updated because signal is already cancelled.")
+            XCTAssertEqual(obj2.value, "hoge-2", "obj2.value should not be updated because stream is already cancelled.")
+            XCTAssertEqual(obj3.value, "hoge-3", "obj3.value should not be updated because stream is already cancelled.")
             
             expect.fulfill()
             

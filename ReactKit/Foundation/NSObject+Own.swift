@@ -8,24 +8,24 @@
 
 import Foundation
 
-private var owninigSignalsKey: UInt8 = 0
+private var owninigStreamsKey: UInt8 = 0
 
 internal extension NSObject
 {
-    internal typealias AnySignal = AnyObject // NOTE: can't use Signal<AnyObject?>
+    internal typealias AnyStream = AnyObject // NOTE: can't use Stream<AnyObject?>
     
-    internal var _owninigSignals: [AnySignal]
+    internal var _owninigStreams: [AnyStream]
     {
         get {
-            var owninigSignals = objc_getAssociatedObject(self, &owninigSignalsKey) as? [AnySignal]
-            if owninigSignals == nil {
-                owninigSignals = []
-                self._owninigSignals = owninigSignals!
+            var owninigStreams = objc_getAssociatedObject(self, &owninigStreamsKey) as? [AnyStream]
+            if owninigStreams == nil {
+                owninigStreams = []
+                self._owninigStreams = owninigStreams!
             }
-            return owninigSignals!
+            return owninigStreams!
         }
         set {
-            objc_setAssociatedObject(self, &owninigSignalsKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN_NONATOMIC))
+            objc_setAssociatedObject(self, &owninigStreamsKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN_NONATOMIC))
         }
     }
 }

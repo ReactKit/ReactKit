@@ -18,13 +18,13 @@ class NotificationTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        var signal = Notification.signal("MyNotification", obj1)
+        var stream = Notification.stream("MyNotification", obj1)
         
         // REACT
-        (obj2, "notification") <~ signal
+        (obj2, "notification") <~ stream
         
         // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ signal
+        ^{ println("[REACT] new value = \($0)") } <~ stream
         
         println("*** Start ***")
         
@@ -34,7 +34,7 @@ class NotificationTests: _TestCase
             
             Notification.post("MyNotification", "DUMMY")
             
-            XCTAssertNil(obj2.notification, "obj2.notification should not be updated because only obj1's MyNotification can be signalled.")
+            XCTAssertNil(obj2.notification, "obj2.notification should not be updated because only obj1's MyNotification can be streamled.")
             
             Notification.post("MyNotification", obj1)
             

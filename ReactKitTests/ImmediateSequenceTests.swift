@@ -18,16 +18,16 @@ class ImmediateSequenceTests: _TestCase
         var sourceBuffer = [Int]()
         var takeBuffer = [Int]()
         
-        let sourceSignal = Signal(values: [Int](1...5))
+        let sourceStream = Stream(values: [Int](1...5))
             |> peek { value in
-                println("sourceSignal new value = \(value)")
+                println("sourceStream new value = \(value)")
                 sourceBuffer += [value]
             }
-        let takeSignal = sourceSignal |> take(3)
+        let takeStream = sourceStream |> take(3)
         
         // REACT
-        takeSignal ~> { value in
-            println("[REACT] takeSignal new value = \(value)")
+        takeStream ~> { value in
+            println("[REACT] takeStream new value = \(value)")
             takeBuffer += [value]
         }
         

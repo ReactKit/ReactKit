@@ -17,43 +17,43 @@ internal func _nullToNil(value: AnyObject?) -> AnyObject?
 
 public extension NSObject
 {
-    /// creates new KVO Signal (new value only)
-    public func signal(#keyPath: String) -> Signal<AnyObject?>
+    /// creates new KVO Stream (new value only)
+    public func stream(#keyPath: String) -> Stream<AnyObject?>
     {
-        let signal = self.detailedSignal(keyPath: keyPath)
+        let stream = self.detailedStream(keyPath: keyPath)
             |> map { value, _, _ -> AnyObject? in value }
         
-        signal.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)")
+        stream.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)")
         
-        return signal
+        return stream
     }
     
-    /// creates new KVO Signal (initial + new value)
-    public func startingSignal(#keyPath: String) -> Signal<AnyObject?>
+    /// creates new KVO Stream (initial + new value)
+    public func startingStream(#keyPath: String) -> Stream<AnyObject?>
     {
         var initial: AnyObject? = self.valueForKeyPath(keyPath)
         
-        let signal = self.signal(keyPath: keyPath)
+        let stream = self.stream(keyPath: keyPath)
             |> startWith(_nullToNil(initial))
         
-        signal.name("KVO(starting)-\(NSStringFromClass(self.dynamicType))-\(keyPath)")
+        stream.name("KVO(starting)-\(NSStringFromClass(self.dynamicType))-\(keyPath)")
         
-        return signal
+        return stream
     }
     
     ///
-    /// creates new KVO Signal (new value, keyValueChange, indexSet),
+    /// creates new KVO Stream (new value, keyValueChange, indexSet),
     /// useful for array model with combination of `mutableArrayValueForKey()`.
     ///
     /// e.g.
-    /// let itemsSignal = model.detailedSignal("items")
-    /// itemsSignal ~> { changedItems, change, indexSet in ... /* do something with changed items */}
+    /// let itemsStream = model.detailedStream("items")
+    /// itemsStream ~> { changedItems, change, indexSet in ... /* do something with changed items */}
     /// let itemsProxy = model.mutableArrayValueForKey("items")
-    /// itemsProxy.insertObject(newItem, atIndex: 0) // itemsSignal will send **both** `newItem` and `index`
+    /// itemsProxy.insertObject(newItem, atIndex: 0) // itemsStream will send **both** `newItem` and `index`
     ///
-    public func detailedSignal(#keyPath: String) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
+    public func detailedStream(#keyPath: String) -> Stream<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
     {
-        return Signal { [weak self] progress, fulfill, reject, configure in
+        return Stream { [weak self] progress, fulfill, reject, configure in
             
             if let self_ = self {
                 let observer = _KVOProxy(target: self_, keyPath: keyPath) { value, change, indexSet in
@@ -65,29 +65,29 @@ public extension NSObject
                 configure.cancel = { observer.stop() }
             }
             
-        }.name("KVO(detailed)-\(NSStringFromClass(self.dynamicType))-\(keyPath)") |> takeUntil(self.deinitSignal)
+        }.name("KVO(detailed)-\(NSStringFromClass(self.dynamicType))-\(keyPath)") |> takeUntil(self.deinitStream)
     }
 }
 
 /// KVO helper
 public struct KVO
 {
-    /// creates new KVO Signal (new value only)
-    public static func signal(object: NSObject, _ keyPath: String) -> Signal<AnyObject?>
+    /// creates new KVO Stream (new value only)
+    public static func stream(object: NSObject, _ keyPath: String) -> Stream<AnyObject?>
     {
-        return object.signal(keyPath: keyPath)
+        return object.stream(keyPath: keyPath)
     }
     
-    /// creates new KVO Signal (initial + new value)
-    public static func startingSignal(object: NSObject, _ keyPath: String) -> Signal<AnyObject?>
+    /// creates new KVO Stream (initial + new value)
+    public static func startingStream(object: NSObject, _ keyPath: String) -> Stream<AnyObject?>
     {
-        return object.startingSignal(keyPath: keyPath)
+        return object.startingStream(keyPath: keyPath)
     }
 
-    /// creates new KVO Signal (new value, keyValueChange, indexSet)
-    public static func detailedSignal(object: NSObject, _ keyPath: String) -> Signal<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
+    /// creates new KVO Stream (new value, keyValueChange, indexSet)
+    public static func detailedStream(object: NSObject, _ keyPath: String) -> Stream<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
     {
-        return object.detailedSignal(keyPath: keyPath)
+        return object.detailedStream(keyPath: keyPath)
     }
 }
 
@@ -200,13 +200,13 @@ extension NSKeyValueChange: Printable
 infix operator <~ { associativity right }
 
 /// Key-Value Binding
-/// e.g. (obj2, "value") <~ signal
-public func <~ <T: AnyObject>(tuple: (object: NSObject, keyPath: String), signal: Signal<T?>)
+/// e.g. (obj2, "value") <~ stream
+public func <~ <T: AnyObject>(tuple: (object: NSObject, keyPath: String), stream: Stream<T?>)
 {
     weak var object = tuple.object
     let keyPath = tuple.keyPath
     
-    signal.react { value in
+    stream.react { value in
         if let object = object {
             object.setValue(value, forKeyPath:keyPath)  // NOTE: don't use `tuple` inside closure, or object will be captured
         }
@@ -214,10 +214,10 @@ public func <~ <T: AnyObject>(tuple: (object: NSObject, keyPath: String), signal
 }
 
 /// Multiple Key-Value Binding
-/// e.g. [ (obj1, "value1"), (obj2, "value2") ] <~ signal (sending [value1, value2] array)
-public func <~ <T: AnyObject>(tuples: [(object: NSObject, keyPath: String)], signal: Signal<[T?]>)
+/// e.g. [ (obj1, "value1"), (obj2, "value2") ] <~ stream (sending [value1, value2] array)
+public func <~ <T: AnyObject>(tuples: [(object: NSObject, keyPath: String)], stream: Stream<[T?]>)
 {
-    signal.react { (values: [T?]) in
+    stream.react { (values: [T?]) in
         for i in 0..<tuples.count {
             if i >= values.count { break }
             
@@ -233,11 +233,11 @@ public func <~ <T: AnyObject>(tuples: [(object: NSObject, keyPath: String)], sig
 /// e.g. (obj2, "value") <~ (obj1, "value")
 public func <~ (tuple: (object: NSObject, keyPath: String), tuple2: (object: NSObject, keyPath: String))
 {
-    var signal: Signal<AnyObject?>? = KVO.signal(tuple2.object, tuple2.keyPath)
-    tuple <~ signal!
+    var stream: Stream<AnyObject?>? = KVO.stream(tuple2.object, tuple2.keyPath)
+    tuple <~ stream!
     
-    // let signal be captured by dispatch_queue to guarantee its lifetime until next runloop
+    // let stream be captured by dispatch_queue to guarantee its lifetime until next runloop
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue()) {
-        signal = nil
+        stream = nil
     }
 }

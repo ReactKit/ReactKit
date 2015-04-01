@@ -1,5 +1,5 @@
 //
-//  NSTimer+Signal.swift
+//  NSTimer+Stream.swift
 //  ReactKit
 //
 //  Created by Yasuhiro Inami on 2014/10/07.
@@ -10,9 +10,9 @@ import Foundation
 
 public extension NSTimer
 {
-    public class func signal<T>(#timeInterval: NSTimeInterval, userInfo: AnyObject? = nil, repeats: Bool = true, map: NSTimer? -> T) -> Signal<T>
+    public class func stream<T>(#timeInterval: NSTimeInterval, userInfo: AnyObject? = nil, repeats: Bool = true, map: NSTimer? -> T) -> Stream<T>
     {
-        return Signal { progress, fulfill, reject, configure in
+        return Stream { progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 progress(map(self_ as? NSTimer))

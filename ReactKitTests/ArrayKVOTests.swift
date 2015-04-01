@@ -21,26 +21,26 @@ class ArrayKVOTests: _TestCase
         let obj2 = MyObject()
         let obj3 = MyObject()
         
-        // NOTE: by using `mutableArrayValueForKey()`, this signal will send each changed values **separately**
-        let obj1ArrayChangedSignal = KVO.signal(obj1, "array")
+        // NOTE: by using `mutableArrayValueForKey()`, this stream will send each changed values **separately**
+        let obj1ArrayChangedStream = KVO.stream(obj1, "array")
         
-        let obj1ArraySignal = obj1ArrayChangedSignal |> map { _ -> AnyObject? in obj1.array }
+        let obj1ArrayStream = obj1ArrayChangedStream |> map { _ -> AnyObject? in obj1.array }
         
-        let obj1ArrayChangedCountSignal = obj1ArrayChangedSignal
+        let obj1ArrayChangedCountStream = obj1ArrayChangedStream
             |> mapAccumulate(0, { c, _ in c + 1 })    // count up
-            |> map { $0 as NSNumber? }    // .asSignal(NSNumber?)
+            |> map { $0 as NSNumber? }    // .asStream(NSNumber?)
         
         // REACT: obj1.array ~> obj2.array (only sends changed values in `obj1.array`)
-        (obj2, "array") <~ obj1ArrayChangedSignal
+        (obj2, "array") <~ obj1ArrayChangedStream
         
         // REACT: obj1.array ~> obj3.array (sends whole `obj1.array`)
-        (obj3, "array") <~ obj1ArraySignal
+        (obj3, "array") <~ obj1ArrayStream
         
         // REACT: arrayChangedCount ~> obj3.number (for counting)
-        (obj3, "number") <~ obj1ArrayChangedCountSignal
+        (obj3, "number") <~ obj1ArrayChangedCountStream
         
         // REACT: obj1.array ~> println
-        ^{ println("[REACT] new array = \($0)") } <~ obj1ArrayChangedSignal
+        ^{ println("[REACT] new array = \($0)") } <~ obj1ArrayChangedStream
         
         // NOTE: call `mutableArrayValueForKey()` after `<~` binding (KVO-addObserver) is ready
         let obj1ArrayProxy = obj1.mutableArrayValueForKey("array")
@@ -67,7 +67,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(obj3.number, 2)
             
             // adding multiple values at once
-            // (NOTE: `obj1ArrayChangedSignal` will send each values separately)
+            // (NOTE: `obj1ArrayChangedStream` will send each values separately)
             obj1ArrayProxy.addObjectsFromArray(["c", "d"])
             XCTAssertEqual(obj1.array, ["a", "b", "c", "d"])
             XCTAssertEqual(obj2.array, ["d"], "`obj2.array` will be replaced to `c` then `d`, so it should be replaced to last-changed value `d`.")
@@ -81,7 +81,7 @@ class ArrayKVOTests: _TestCase
         self.wait()
     }
 
-    func testArrayKVO_detailedSignal()
+    func testArrayKVO_detailedStream()
     {
         // NOTE: this is non-async test
         if self.isAsync { return }
@@ -90,7 +90,7 @@ class ArrayKVOTests: _TestCase
         
         let obj1 = MyObject()
         
-        let detailedSignal = KVO.detailedSignal(obj1, "array")  // NOTE: detailedSignal
+        let detailedStream = KVO.detailedStream(obj1, "array")  // NOTE: detailedStream
         
         var lastValue: NSArray?
         var lastChange: NSKeyValueChange?
@@ -98,7 +98,7 @@ class ArrayKVOTests: _TestCase
         var reactedCount = 0
         
         // REACT
-        detailedSignal ~> { (value: AnyObject?, change: NSKeyValueChange, indexSet: NSIndexSet?) in
+        detailedStream ~> { (value: AnyObject?, change: NSKeyValueChange, indexSet: NSIndexSet?) in
             
             // NOTE: change in `mutableArrayValueForKey()` will always send `value` as NSArray
             let array = value as? NSArray
@@ -146,7 +146,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(lastValue!, [4], "Only last added value `4` should be set.")
             XCTAssertTrue(lastChange! == .Insertion)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(index: 3)))
-            XCTAssertEqual(reactedCount, 4, "`mutableArrayValueForKey().addObjectsFromArray()` will send `3` then `4` **separately** to signal, so `reactedCount` should be incremented as +2.")
+            XCTAssertEqual(reactedCount, 4, "`mutableArrayValueForKey().addObjectsFromArray()` will send `3` then `4` **separately** to stream, so `reactedCount` should be incremented as +2.")
             
             // insertObject
             obj1ArrayProxy.insertObject(0, atIndex: 0)
@@ -162,7 +162,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(lastValue!, [0.5, 1.5])
             XCTAssertTrue(lastChange! == .Insertion)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(indexes: [1, 3])))
-            XCTAssertEqual(reactedCount, 6, "`mutableArrayValueForKey().insertObjects()` will send `0.5` & `1.5` **together** to signal, so `reactedCount` should be incremented as +1.")
+            XCTAssertEqual(reactedCount, 6, "`mutableArrayValueForKey().insertObjects()` will send `0.5` & `1.5` **together** to stream, so `reactedCount` should be incremented as +1.")
             
             // replaceObjectAtIndex
             obj1ArrayProxy.replaceObjectAtIndex(4, withObject: 2.5)
@@ -202,7 +202,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(lastValue!, [1.5], "Only last replaced value `1.5` should be set.")
             XCTAssertTrue(lastChange! == .Replacement)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(index: 2)))
-            XCTAssertEqual(reactedCount, 12, "`mutableArrayValueForKey().exchangeObjectAtIndex()` will send `2.5` (replacing at index=1) then `1.5` (replacing at index=2) **separately** to signal, so `reactedCount` should be incremented as +2.")
+            XCTAssertEqual(reactedCount, 12, "`mutableArrayValueForKey().exchangeObjectAtIndex()` will send `2.5` (replacing at index=1) then `1.5` (replacing at index=2) **separately** to stream, so `reactedCount` should be incremented as +2.")
             
             // sortUsingComparator
             obj1ArrayProxy.sortUsingComparator { (element1, element2) -> NSComparisonResult in
@@ -212,7 +212,7 @@ class ArrayKVOTests: _TestCase
             XCTAssertEqual(lastValue!, [0.5], "Only last replaced value `0.5` should be set.")
             XCTAssertTrue(lastChange! == .Replacement)
             XCTAssertTrue(lastIndexSet!.isEqualToIndexSet(NSIndexSet(index: 3)))
-            XCTAssertEqual(reactedCount, 16, "`mutableArrayValueForKey().sortUsingComparator()` will send all sorted values **separately** to signal, so `reactedCount` should be incremented as number of elements i.e. +4.")
+            XCTAssertEqual(reactedCount, 16, "`mutableArrayValueForKey().sortUsingComparator()` will send all sorted values **separately** to stream, so `reactedCount` should be incremented as number of elements i.e. +4.")
             
             expect.fulfill()
             
@@ -227,12 +227,12 @@ class ArrayKVOTests: _TestCase
         
         let array = [Int]()
         let dynamicArray = DynamicArray(array)
-        let dynamicArraySignal = dynamicArray.signal()
+        let dynamicArrayStream = dynamicArray.stream()
         
         var buffer: [DynamicArray.ChangedTuple] = []
         
         // REACT
-        dynamicArraySignal ~> { (context: DynamicArray.ChangedTuple) in
+        dynamicArrayStream ~> { (context: DynamicArray.ChangedTuple) in
             buffer.append(context)
         }
         
@@ -301,12 +301,12 @@ class ArrayKVOTests: _TestCase
         let obj1 = MyObject()
         
         let dynamicArray = ForwardingDynamicArray(object: obj1, keyPath: "array")
-        let dynamicArraySignal = dynamicArray.signal()
+        let dynamicArrayStream = dynamicArray.stream()
         
         var buffer: [DynamicArray.ChangedTuple] = []
         
         // REACT
-        dynamicArraySignal ~> { (context: DynamicArray.ChangedTuple) in
+        dynamicArrayStream ~> { (context: DynamicArray.ChangedTuple) in
             buffer.append(context)
         }
         
@@ -379,12 +379,12 @@ class ArrayKVOTests: _TestCase
         let array = NSMutableArray()
         
         let dynamicArray = ForwardingDynamicArray(original: array)
-        let dynamicArraySignal = dynamicArray.signal()
+        let dynamicArrayStream = dynamicArray.stream()
         
         var buffer: [DynamicArray.ChangedTuple] = []
         
         // REACT
-        dynamicArraySignal ~> { (context: DynamicArray.ChangedTuple) in
+        dynamicArrayStream ~> { (context: DynamicArray.ChangedTuple) in
             buffer.append(context)
         }
         

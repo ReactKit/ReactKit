@@ -1,5 +1,5 @@
 //
-//  DeinitSignalTests.swift
+//  DeinitStreamTests.swift
 //  ReactKitTests
 //
 //  Created by Yasuhiro Inami on 2014/09/11.
@@ -9,9 +9,9 @@
 import ReactKit
 import XCTest
 
-class DeinitSignalTests: _TestCase
+class DeinitStreamTests: _TestCase
 {
-    func testDeinitSignal()
+    func testDeinitStream()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -19,13 +19,13 @@ class DeinitSignalTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        // always use `weak` for deinitSignal to avoid it being captured by current execution context
-        weak var deinitSignal: Signal<AnyObject?>? = shortLivedObject!.deinitSignal
+        // always use `weak` for deinitStream to avoid it being captured by current execution context
+        weak var deinitStream: Stream<AnyObject?>? = shortLivedObject!.deinitStream
         
-        let obj1Signal = KVO.signal(obj1, "value") |> takeUntil(deinitSignal!)
+        let obj1Stream = KVO.stream(obj1, "value") |> takeUntil(deinitStream!)
         
         // REACT
-        (obj2, "value") <~ obj1Signal
+        (obj2, "value") <~ obj1Stream
         
         println("*** Start ***")
         
@@ -41,7 +41,7 @@ class DeinitSignalTests: _TestCase
         self.perform {
             
             obj1.value = "fuga"
-            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because deinitSignal is deinited so that it stops obj1Signal.")
+            XCTAssertEqual(obj2.value, "hoge", "obj2.value should not be updated because deinitStream is deinited so that it stops obj1Stream.")
             
             expect.fulfill()
             
@@ -51,7 +51,7 @@ class DeinitSignalTests: _TestCase
         
     }
     
-    func testDeinitSignal_failed()
+    func testDeinitStream_failed()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -60,12 +60,12 @@ class DeinitSignalTests: _TestCase
         let obj2 = MyObject()
         
         // NOTE: `weak` is not used for this test
-        var deinitSignal: Signal<AnyObject?>? = shortLivedObject!.deinitSignal
+        var deinitStream: Stream<AnyObject?>? = shortLivedObject!.deinitStream
         
-        let obj1Signal = KVO.signal(obj1, "value") |> takeUntil(deinitSignal!)
+        let obj1Stream = KVO.stream(obj1, "value") |> takeUntil(deinitStream!)
         
         // REACT
-        (obj2, "value") <~ obj1Signal
+        (obj2, "value") <~ obj1Stream
         
         println("*** Start ***")
         
@@ -81,7 +81,7 @@ class DeinitSignalTests: _TestCase
         self.perform {
             
             obj1.value = "fuga"
-            XCTAssertEqual(obj2.value, "fuga", "Unfortunately, obj2.value will be updated because deinitSignal is shortly captured by curent execution context so it's still alive and not sending its death signal. You must always use `weak` for deinitSignal.")
+            XCTAssertEqual(obj2.value, "fuga", "Unfortunately, obj2.value will be updated because deinitStream is shortly captured by curent execution context so it's still alive and not sending its death stream. You must always use `weak` for deinitStream.")
             
             expect.fulfill()
             
@@ -93,7 +93,7 @@ class DeinitSignalTests: _TestCase
     
 }
 
-class AsyncDeinitSignalTests: DeinitSignalTests
+class AsyncDeinitStreamTests: DeinitStreamTests
 {
     override var isAsync: Bool { return true }
 }
