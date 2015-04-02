@@ -949,8 +949,8 @@ public prefix func + <T>(signal: Signal<T>) -> Signal<T>
 {
     var holder: Signal<T>? = signal
     
-    // let signal be captured by dispatch_queue to guarantee its lifetime until next runloop
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue()) {    // on main-thread
+    // let signal be captured by runloop to guarantee its lifetime until end of runloop cycle
+    CFRunLoopPerformBlock(CFRunLoopGetCurrent(), kCFRunLoopCommonModes) {
         holder = nil
     }
     
