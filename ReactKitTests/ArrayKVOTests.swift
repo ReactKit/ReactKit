@@ -28,7 +28,7 @@ class ArrayKVOTests: _TestCase
         
         let obj1ArrayChangedCountStream = obj1ArrayChangedStream
             |> mapAccumulate(0, { c, _ in c + 1 })    // count up
-            |> map { $0 as NSNumber? }    // .asStream(NSNumber?)
+            |> asStream(NSNumber?)
         
         // REACT: obj1.array ~> obj2.array (only sends changed values in `obj1.array`)
         (obj2, "array") <~ obj1ArrayChangedStream

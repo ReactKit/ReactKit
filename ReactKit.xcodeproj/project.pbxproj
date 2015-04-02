@@ -58,6 +58,8 @@
 		4890AA911A5B70650028586C /* Stream+Conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4890AA8F1A5B70650028586C /* Stream+Conversion.swift */; };
 		48DDE7721A0C41A300125F36 /* NSObject+Own.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DDE7711A0C41A300125F36 /* NSObject+Own.swift */; };
 		48DDE7731A0C41A300125F36 /* NSObject+Own.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DDE7711A0C41A300125F36 /* NSObject+Own.swift */; };
+		48F5CE3C1ACCCAD800608038 /* TypeCastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48F5CE3B1ACCCAD800608038 /* TypeCastTests.swift */; };
+		48F5CE3D1ACCCAD800608038 /* TypeCastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48F5CE3B1ACCCAD800608038 /* TypeCastTests.swift */; };
 		48FD5B3C19E51E7100913946 /* UIBarButtonItem+Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FD5B3B19E51E7100913946 /* UIBarButtonItem+Stream.swift */; };
 /* End PBXBuildFile section */
 
@@ -95,6 +97,7 @@
 		4875886119E4D95A00828AD0 /* UITextField+Stream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITextField+Stream.swift"; sourceTree = "<group>"; };
 		4890AA8F1A5B70650028586C /* Stream+Conversion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Stream+Conversion.swift"; sourceTree = "<group>"; };
 		48DDE7711A0C41A300125F36 /* NSObject+Own.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+Own.swift"; sourceTree = "<group>"; };
+		48F5CE3B1ACCCAD800608038 /* TypeCastTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeCastTests.swift; sourceTree = "<group>"; };
 		48FD5B3B19E51E7100913946 /* UIBarButtonItem+Stream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIBarButtonItem+Stream.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -213,6 +216,7 @@
 				1F563DF119D701F100034EA6 /* DeinitStreamTests.swift */,
 				1FC50FF21AB9DA5400F363CD /* ImmediateSequenceTests.swift */,
 				1F44E4391ACAD0DF00B8428A /* StreamProducerTests.swift */,
+				48F5CE3B1ACCCAD800608038 /* TypeCastTests.swift */,
 				1FED890819C1EB120065658B /* Supporting Files */,
 			);
 			path = ReactKitTests;
@@ -454,6 +458,7 @@
 				1F626D9119D8799600D3ABCE /* DeinitStreamTests.swift in Sources */,
 				1F626D8E19D8799600D3ABCE /* KVOTests.swift in Sources */,
 				1F44E43A1ACAD0DF00B8428A /* StreamProducerTests.swift in Sources */,
+				48F5CE3C1ACCCAD800608038 /* TypeCastTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -494,6 +499,7 @@
 				1F626D9519D8799900D3ABCE /* DeinitStreamTests.swift in Sources */,
 				1F626D9219D8799900D3ABCE /* KVOTests.swift in Sources */,
 				1F44E43B1ACAD0DF00B8428A /* StreamProducerTests.swift in Sources */,
+				48F5CE3D1ACCCAD800608038 /* TypeCastTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

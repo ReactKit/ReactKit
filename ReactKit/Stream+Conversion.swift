@@ -9,27 +9,24 @@
 import Foundation
 import SwiftTask
 
+/// converts Stream<T> to Stream<U>
+public func asStream<T, U>(type: U.Type)(upstream: Stream<T>) -> Stream<U>
+{
+    let stream = upstream |> map { $0 as! U }
+    stream.name("\(upstream.name)-asStream(\(type))")
+    return stream
+}
+
+/// converts Stream<T> to Stream<U?>
+public func asStream<T, U>(type: U?.Type)(upstream: Stream<T>) -> Stream<U?>
+{
+    let stream = upstream |> map { $0 as? U }
+    stream.name("\(upstream.name)-asStream(\(type))")
+    return stream
+}
+
 public extension Stream
 {
-    ///
-    /// FIXME:
-    /// Currently in Swift 1.1, `stream.asStream(U)` is only available
-    /// when both `T` of `stream: Stream<T>` and `U` are non-Optional.
-    /// Otherwise, "Swift dynamic cast failure" will occur (bug?).
-    ///
-    /// To work around this issue, use `map { $0 as U? }` directly
-    /// to convert from `Stream<T?>` to `Stream<U?>` as follows:
-    ///
-    /// ```
-    /// let stream: Stream<AnyObject?> = ...`
-    /// let convertedStream: Stream<String?> = stream.map { $0 as String? }
-    /// ```
-    ///
-    public func asStream<U>(type: U.Type) -> Stream<U>
-    {
-        return self |> map { $0 as! U }
-    }
-    
     //--------------------------------------------------
     /// MARK: - From SwiftTask
     //--------------------------------------------------
