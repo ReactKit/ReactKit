@@ -17,8 +17,29 @@ class StreamProducerTests: _TestCase
         
         let expect = self.expectationWithDescription(__FUNCTION__)
         
+        //
         // NOTE: `|>>` as streamProducer (stream-returning closure) pipelining operator
-        let streamProducer: Void -> Stream<Int> = Stream.once("DUMMY") |>> delay(0.01) |>> map { _ in random() }
+        //
+        // In the below example, 
+        //
+        //   `let streamProducer = createStream() |>> map { $0 }`
+        //
+        // is equivalent to:
+        //
+        //   `let streamProducer = { createStream() } |>> map { $0 }`   // by @autoclosure
+        //
+        // which is NOT equivalent to:
+        //
+        //   ```
+        //   let stream = createStream()
+        //   let streamProducer = { stream } |>> map { $0 }     // reusing same stream!
+        //   ```
+        //
+        let streamProducer: Void -> Stream<Int>
+        streamProducer = NSTimer.stream(timeInterval: 0.01, repeats: false) { _ in random() }
+            |>> map { $0 }
+        
+        // NOTE: these two streams do not send same values!
         let stream1 = streamProducer()
         let stream2 = streamProducer()
         
@@ -33,20 +54,31 @@ class StreamProducerTests: _TestCase
             int1b = value
             println("[REACT] int1b = \(int1b)")
         }
-        stream2 ~> { value in
-            int2 = value
-            println("[REACT] int2 = \(int2)")
+        
+        // REACT (start after 1st check)
+        Async.main(after: 0.1) {
+            stream2 ~> { value in
+                int2 = value
+                println("[REACT] int2 = \(int2)")
+            }
         }
         
         println("*** Start ***")
         
-        Async.main(after: 0.02) {
+        // 1st check
+        Async.main(after: 0.05) {
             XCTAssertNotNil(int1a)
             XCTAssertNotNil(int1b)
-            XCTAssertNotNil(int2)
-            
             XCTAssertEqual(int1a!, int1b!)
-            XCTAssertNotEqual(int1a!, int2!)
+            
+            XCTAssertNil(int2, "`stream2` is not started yet, so `int2` is not set.")
+        }
+        
+        // 2nd check
+        Async.main(after: 0.15) {
+            XCTAssertNotNil(int2, "`int2` should be set after delay.")
+            
+            XCTAssertNotEqual(int1a!, int2!, "`int2` is set via `stream2` and `int1a` is set via `stream1`, so these values should not be shared (equal).")
             
             expect.fulfill()
         }
