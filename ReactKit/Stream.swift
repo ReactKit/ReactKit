@@ -949,14 +949,13 @@ public extension Stream
     {
         return self.rejected(error)
     }
-    
-    /// alias for `stream.mapAccumulate()`
-    public func scan<U>(initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> Stream<U>
-    {
-        return self |> mapAccumulate(initialValue, accumulateClosure)
-    }
 }
 
+/// alias for `stream.mapAccumulate()`
+public func scan<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
+{
+    return upstream |> mapAccumulate(initialValue, accumulateClosure)
+}
 
 //--------------------------------------------------
 // MARK: - Custom Operators
