@@ -799,7 +799,7 @@ class OperationTests: _TestCase
         self.wait()
     }
     
-    func test_zip()
+    func testZip()
     {
         if self.isAsync { return }
         
