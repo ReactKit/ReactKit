@@ -693,6 +693,40 @@ public func debounce<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> St
     }.name("\(upstream.name)-debounce(\(timeInterval))")
 }
 
+// MARK: collecting
+
+public func reduce<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
+{
+    return Stream<U> { progress, fulfill, reject, configure in
+        
+        let accumulatingStream = upstream
+            |> mapAccumulate(initialValue, accumulateClosure)
+        
+        _bindToUpstream(accumulatingStream, nil, nil, configure)
+        
+        var lastAccValue: U = initialValue   // last accumulated value
+        
+        accumulatingStream.react { value in
+            lastAccValue = value
+        }.then { value, errorInfo -> Void in
+            if value != nil {
+                progress(lastAccValue)
+                fulfill()
+            }
+            else if let errorInfo = errorInfo {
+                if let error = errorInfo.error {
+                    reject(error)
+                }
+                else {
+                    let cancelError = _RKError(.CancelledByUpstream, "Upstream is cancelled before performing `reduce()`.")
+                    reject(cancelError)
+                }
+            }
+        }
+        
+    }.name("\(upstream.name)-reduce")
+}
+
 //--------------------------------------------------
 // MARK: - Array Streams Operations
 //--------------------------------------------------
