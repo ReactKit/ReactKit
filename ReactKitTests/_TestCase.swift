@@ -13,6 +13,10 @@ typealias ErrorString = String
 
 class _TestCase: XCTestCase
 {
+    var timeInterval: NSTimeInterval = 0.0
+    
+    var isAsync: Bool { return false }
+    
     override func setUp()
     {
         super.setUp()
@@ -25,9 +29,21 @@ class _TestCase: XCTestCase
         super.tearDown()
     }
     
-    func wait(until: NSTimeInterval = 3, filename: String = __FILE__, functionName: String = __FUNCTION__, line: Int = __LINE__)
+    func perform(after: NSTimeInterval = 0.01, closure: Void -> Void)
     {
-        self.waitForExpectationsWithTimeout(until) { error in
+        self.timeInterval = after
+        
+        if self.isAsync {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1_000_000_000 * self.timeInterval)), dispatch_get_main_queue(), closure)
+        }
+        else {
+            closure()
+        }
+    }
+    
+    func wait(filename: String = __FILE__, functionName: String = __FUNCTION__, line: Int = __LINE__)
+    {
+        self.waitForExpectationsWithTimeout(self.timeInterval + 1) { error in
             if let error = error {
                 println()
                 println("*** Wait Error ***")
@@ -35,18 +51,6 @@ class _TestCase: XCTestCase
                 println("error = \(error)")
                 println()
             }
-        }
-    }
-    
-    var isAsync: Bool { return false }
-    
-    func perform(after: NSTimeInterval = 0.01, closure: Void -> Void)
-    {
-        if self.isAsync {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1_000_000_000 * after)), dispatch_get_main_queue(), closure)
-        }
-        else {
-            closure()
         }
     }
 }
