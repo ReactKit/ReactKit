@@ -25,24 +25,25 @@ class _TestCase: XCTestCase
         super.tearDown()
     }
     
-    func wait(handler: (Void -> Void)? = nil)
+    func wait(until: NSTimeInterval = 3, filename: String = __FILE__, functionName: String = __FUNCTION__, line: Int = __LINE__)
     {
-        self.waitForExpectationsWithTimeout(3) { error in
-            
-            println("wait error = \(error)")
-            
-            if let handler = handler {
-                handler()
+        self.waitForExpectationsWithTimeout(until) { error in
+            if let error = error {
+                println()
+                println("*** Wait Error ***")
+                println("file = \(filename.lastPathComponent), \(functionName), line \(line)")
+                println("error = \(error)")
+                println()
             }
         }
     }
     
     var isAsync: Bool { return false }
     
-    func perform(closure: Void -> Void)
+    func perform(after: NSTimeInterval = 0.01, closure: Void -> Void)
     {
         if self.isAsync {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1_000_000), dispatch_get_main_queue(), closure)
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1_000_000_000 * after)), dispatch_get_main_queue(), closure)
         }
         else {
             closure()
