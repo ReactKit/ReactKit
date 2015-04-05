@@ -765,6 +765,14 @@ public func reduce<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: 
 // MARK: - Array Streams Operations
 //--------------------------------------------------
 
+/// Merges multiple streams into single stream.
+/// See also: mergeInner
+public func mergeAll<T>(streams: [Stream<T>]) -> Stream<T>
+{
+    let stream = Stream(values: streams) |> mergeInner
+    return stream.name("mergeAll")
+}
+
 ///
 /// Merges multiple streams into single stream,
 /// combining latest values `[T?]` as well as changed value `T` together as `([T?], T)` tuple.
