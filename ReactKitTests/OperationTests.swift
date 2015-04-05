@@ -855,6 +855,48 @@ class OperationTests: _TestCase
     
     // MARK: timing
     
+    func testInterval()
+    {
+        if !self.isAsync { return }
+        
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let faster: NSTimeInterval = 0.1
+        
+        let stream = Stream(values: 0...2) |> interval(1.0 * faster)
+        
+        var results = [Int]()
+        
+        // REACT
+        stream ~> { value in
+            results += [value]
+            println("[REACT] value = \(value)")
+        }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(results, [])
+        
+        self.perform() {
+            
+            Async.main(after: 0.01 * faster) {
+                XCTAssertEqual(results, [0])
+            }
+            
+            Async.main(after: 1.01 * faster) {
+                XCTAssertEqual(results, [0, 1])
+            }
+            
+            Async.main(after: 2.01 * faster) {
+                XCTAssertEqual(results, [0, 1, 2])
+                expect.fulfill()
+            }
+            
+        }
+        
+        self.wait()
+    }
+    
     func testThrottle()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
@@ -1096,6 +1138,59 @@ class OperationTests: _TestCase
                 XCTAssertEqual(obj1.value, "123")
                 expect.fulfill()
             }
+        }
+        
+        self.wait()
+    }
+    
+    func testSwitchLatestAll()
+    {
+        if !self.isAsync { return }
+        
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let faster: NSTimeInterval = 0.1
+        
+        ///
+        /// - innerStream0: starts at `t = 0`
+        ///     - emits 1 at `t = 0.0`
+        ///     - emits 2 at `t = 0.6`
+        ///     - emits 3 at `t = 1.2` (will be ignored by switchLatestAll)
+        /// - innerStream1: starts at `t = 1`
+        ///     - emits 4 at `t = 0.0 + 1`
+        ///     - emits 5 at `t = 0.6 + 1`
+        ///     - emits 6 at `t = 1.2 + 1` (will be ignored by switchLatestAll)
+        /// - innerStream2: starts at `t = 2`
+        ///     - emits 7 at `t = 0.0 + 2`
+        ///     - emits 8 at `t = 0.6 + 2`
+        ///     - emits 9 at `t = 1.2 + 2`
+        ///
+        let nestedStream: Stream<Stream<Int>>
+        nestedStream = Stream(values: 0...2)
+            |> interval(1.0 * faster)
+            |> concat(Stream.never())   // don't let above `interval` stream fulfill at `t = 2`, or below `innerStream`s will also be deinited all together
+            |> map { (v: Int) -> Stream<Int> in
+                let innerStream = Stream(values: (3*v+1)...(3*v+3))
+                    |> interval(0.6 * faster)
+                innerStream.name = "innerStream\(v)"
+                return innerStream
+            }
+        
+        let switchingStream = nestedStream |> switchLatestAll
+        
+        var results = [Int]()
+        
+        // REACT
+        switchingStream ~> { value in
+            results += [value]
+            println("[REACT] value = \(value)")
+        }
+        
+        println("*** Start ***")
+        
+        self.perform(after: 4.0 * faster) {
+            XCTAssertEqual(results, [1, 2, 4, 5, 7, 8, 9], "Some of values sent by `switchingStream`'s `innerStream`s should be ignored.")
+            expect.fulfill()
         }
         
         self.wait()

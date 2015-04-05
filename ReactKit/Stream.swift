@@ -648,6 +648,40 @@ public func delay<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> Strea
     }.name("\(upstream.name)-delay(\(timeInterval))")
 }
 
+/// delay `progress` and `fulfill` for `timerInterval * eachProgressCount` seconds 
+/// (incremental delay with start at t = 0sec)
+public func interval<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> Stream<T>
+{
+    return Stream<T> { progress, fulfill, reject, configure in
+        
+        _bindToUpstream(upstream, nil, reject, configure)
+        
+        var incInterval = 0.0
+        
+        upstream.react { value in
+            var timerStream: Stream<Void>? = NSTimer.stream(timeInterval: incInterval, repeats: false) { _ in }
+            
+            incInterval += timeInterval
+            
+            timerStream!.react { _ in
+                progress(value)
+                timerStream = nil
+            }
+        }.success { _ -> Void in
+            
+            incInterval -= timeInterval - 0.01
+            
+            var timerStream: Stream<Void>? = NSTimer.stream(timeInterval: incInterval, repeats: false) { _ in }
+            
+            timerStream!.react { _ in
+                fulfill()
+                timerStream = nil
+            }
+        }
+        
+    }.name("\(upstream.name)-interval(\(timeInterval))")
+}
+
 /// limit continuous progress (reaction) for `timeInterval` seconds when first progress is triggered
 /// (see also: underscore.js throttle)
 public func throttle<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> Stream<T>
@@ -958,6 +992,35 @@ public func concatAll<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
     }.name("concatAll")
 }
 
+/// uses the latest innerStream and cancels previous innerStreams
+/// a.k.a Rx.switchLatest
+public func switchLatestAll<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
+{
+    return Stream<T> { progress, fulfill, reject, configure in
+        
+        configure.pause = {
+            nestedStream.pause()
+        }
+        configure.resume = {
+            nestedStream.resume()
+        }
+        configure.cancel = {
+            nestedStream.cancel()
+        }
+        
+        var currentInnerStream: Stream<T>?
+        
+        nestedStream.react { (innerStream: Stream<T>) in
+            currentInnerStream?.cancel()
+            currentInnerStream = innerStream
+            
+            innerStream.react { value in
+                progress(value)
+            }
+        }
+        
+    }.name("concatAll")
+}
 
 //--------------------------------------------------
 /// MARK: - Rx Semantics
