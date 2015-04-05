@@ -23,7 +23,7 @@ class TypeCastTests: _TestCase
             optIntStreamProducer() |> asStream(Any?),
             numberStreamProducer() |> asStream(Any?),
             optNumberStreamProducer() |> asStream(Any?)
-        ] |> concatAll
+        ] |> concatInner
         
         var reactCount = 0
         

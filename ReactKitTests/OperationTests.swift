@@ -1016,7 +1016,7 @@ class OperationTests: _TestCase
     
     //
     // NOTE: 
-    // `merge2()` works like both `Rx.merge()` and `Rx.combineLatest()`.
+    // `merge2All()` works like both `Rx.merge()` and `Rx.combineLatest()`.
     // This test demonstrates `combineLatest` example.
     //
     func testMerge2All()
@@ -1108,7 +1108,7 @@ class OperationTests: _TestCase
         self.wait()
     }
     
-    func testConcatAll()
+    func testConcatInner()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -1117,7 +1117,7 @@ class OperationTests: _TestCase
         let stream1: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.1, userInfo: nil, repeats: false) { _ in "Next" }
         let stream2: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.3, userInfo: nil, repeats: false) { _ in 123 }
         
-        var concatStream = [stream1, stream2] |> concatAll |> map { (value: AnyObject?) -> NSString? in
+        var concatStream = [stream1, stream2] |> concatInner |> map { (value: AnyObject?) -> NSString? in
             let valueString: AnyObject = value ?? "nil"
             return "\(valueString)"
         }
@@ -1143,7 +1143,7 @@ class OperationTests: _TestCase
         self.wait()
     }
     
-    func testSwitchLatestAll()
+    func testSwitchLatestInner()
     {
         if !self.isAsync { return }
         
@@ -1155,11 +1155,11 @@ class OperationTests: _TestCase
         /// - innerStream0: starts at `t = 0`
         ///     - emits 1 at `t = 0.0`
         ///     - emits 2 at `t = 0.6`
-        ///     - emits 3 at `t = 1.2` (will be ignored by switchLatestAll)
+        ///     - emits 3 at `t = 1.2` (will be ignored by switchLatestInner)
         /// - innerStream1: starts at `t = 1`
         ///     - emits 4 at `t = 0.0 + 1`
         ///     - emits 5 at `t = 0.6 + 1`
-        ///     - emits 6 at `t = 1.2 + 1` (will be ignored by switchLatestAll)
+        ///     - emits 6 at `t = 1.2 + 1` (will be ignored by switchLatestInner)
         /// - innerStream2: starts at `t = 2`
         ///     - emits 7 at `t = 0.0 + 2`
         ///     - emits 8 at `t = 0.6 + 2`
@@ -1168,7 +1168,6 @@ class OperationTests: _TestCase
         let nestedStream: Stream<Stream<Int>>
         nestedStream = Stream(values: 0...2)
             |> interval(1.0 * faster)
-            |> concat(Stream.never())   // don't let above `interval` stream fulfill at `t = 2`, or below `innerStream`s will also be deinited all together
             |> map { (v: Int) -> Stream<Int> in
                 let innerStream = Stream(values: (3*v+1)...(3*v+3))
                     |> interval(0.6 * faster)
@@ -1176,7 +1175,7 @@ class OperationTests: _TestCase
                 return innerStream
             }
         
-        let switchingStream = nestedStream |> switchLatestAll
+        let switchingStream = nestedStream |> switchLatestInner
         
         var results = [Int]()
         
@@ -1200,7 +1199,7 @@ class OperationTests: _TestCase
     // MARK: - Nested Stream<Stream<T>> Operations
     //--------------------------------------------------
     
-    func testMergeAll()
+    func testMergeInner()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -1211,7 +1210,7 @@ class OperationTests: _TestCase
         let stream1 = KVO.stream(obj1, "value")
         let stream2 = KVO.stream(obj2, "number")
         
-        var bundledStream = [stream1, stream2] |> mergeAll |> map { (value: AnyObject?) -> NSString? in
+        var bundledStream = [stream1, stream2] |> mergeInner |> map { (value: AnyObject?) -> NSString? in
             let valueString: AnyObject = value ?? "nil"
             return "\(valueString)"
         }

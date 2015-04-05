@@ -572,7 +572,7 @@ public func merge<T>(stream: Stream<T>)(upstream: Stream<T>) -> Stream<T>
 
 public func merge<T>(streams: [Stream<T>])(upstream: Stream<T>) -> Stream<T>
 {
-    let stream = (streams + [upstream]) |> mergeAll
+    let stream = (streams + [upstream]) |> mergeInner
     return stream.name("\(upstream.name)-merge")
 }
 
@@ -583,7 +583,7 @@ public func concat<T>(nextStream: Stream<T>)(upstream: Stream<T>) -> Stream<T>
 
 public func concat<T>(nextStreams: [Stream<T>])(upstream: Stream<T>) -> Stream<T>
 {
-    let stream = ([upstream] + nextStreams) |> concatAll
+    let stream = ([upstream] + nextStreams) |> concatInner
     return stream.name("\(upstream.name)-concat")
 }
 
@@ -599,13 +599,13 @@ public func startWith<T>(initialValue: T) -> (upstream: Stream<T>) -> Stream<T>
     return { (upstream: Stream<T>) -> Stream<T> in
         precondition(upstream.state == .Paused)
         
-        let stream = [Stream.once(initialValue), upstream] |> concatAll
+        let stream = [Stream.once(initialValue), upstream] |> concatInner
         return stream.name("\(upstream.name)-startWith")
     }
 }
 //public func startWith<T>(initialValue: T)(upstream: Stream<T>) -> Stream<T>
 //{
-//    let stream = [Stream.once(initialValue), upstream] |> concatAll
+//    let stream = [Stream.once(initialValue), upstream] |> concatInner
 //    return stream.name("\(upstream.name)-startWith")
 //}
 
@@ -767,7 +767,7 @@ public func reduce<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: 
 
 ///
 /// Merges multiple streams into single stream,
-/// combining latest values `[U?]` as well as changed value `U` together as `([U?], U)` tuple.
+/// combining latest values `[T?]` as well as changed value `T` together as `([T?], T)` tuple.
 ///
 /// This is a generalized method for `Rx.merge()` and `Rx.combineLatest()`.
 ///
@@ -803,7 +803,7 @@ public func merge2All<T>(streams: [Stream<T>]) -> Stream<(values: [T?], changedV
                         reject(error)
                     }
                     else {
-                        let error = _RKError(.CancelledByInternalStream, "One of stream is cancelled in Stream.merge2().")
+                        let error = _RKError(.CancelledByInternalStream, "One of stream is cancelled in `merge2All()`.")
                         reject(error)
                     }
                 }
@@ -894,23 +894,16 @@ public func zipAll<T>(streams: [Stream<T>]) -> Stream<[T]>
 ///
 /// Merges multiple streams into single stream.
 ///
-/// - e.g. `let mergedStream = [stream1, stream2, ...] |> mergeAll`
+/// - e.g. `let mergedStream = [stream1, stream2, ...] |> mergeInner`
 ///
-/// NOTE: This method is conceptually equal to `streams |> merge2(streams) |> map { $1 }`.
+/// NOTE: This method is conceptually equal to `streams |> merge2All(streams) |> map { $1 }`.
 ///
-public func mergeAll<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
+public func mergeInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
 {
     return Stream<T> { progress, fulfill, reject, configure in
         
-        configure.pause = {
-            nestedStream.pause()
-        }
-        configure.resume = {
-            nestedStream.resume()
-        }
-        configure.cancel = {
-            nestedStream.cancel()
-        }
+        // NOTE: don't bind nestedStream's fulfill with returning mergeInner-stream's fulfill
+        _bindToUpstream(nestedStream, nil, reject, configure)
         
         nestedStream.react { (innerStream: Stream<T>) in
             
@@ -927,14 +920,14 @@ public func mergeAll<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
                         reject(error)
                     }
                     else {
-                        let error = _RKError(.CancelledByInternalStream, "One of stream is cancelled in Stream.merge().")
+                        let error = _RKError(.CancelledByInternalStream, "One of stream is cancelled in `mergeInner()`.")
                         reject(error)
                     }
                 }
             }
         }
         
-    }.name("mergeAll")
+    }.name("mergeInner")
 }
 
 /// fixed-point combinator
@@ -943,39 +936,31 @@ private func _fix<T, U>(f: (T -> U) -> T -> U) -> T -> U
     return { f(_fix(f))($0) }
 }
 
-public func concatAll<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
+public func concatInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
 {
     return Stream<T> { progress, fulfill, reject, configure in
         
-        var pendingStreams = [Stream<T>]()
+        _bindToUpstream(nestedStream, nil, reject, configure)
         
-        configure.pause = {
-            nestedStream.pause()
-        }
-        configure.resume = {
-            nestedStream.resume()
-        }
-        configure.cancel = {
-            nestedStream.cancel()
-        }
+        var pendingInnerStreams = [Stream<T>]()
         
         let performRecursively: Void -> Void = _fix { recurse in
             return {
-                if let stream = pendingStreams.first {
-                    if pendingStreams.count == 1 {
-                        _bindToUpstream(stream, nil, nil, configure)
+                if let innerStream = pendingInnerStreams.first {
+                    if pendingInnerStreams.count == 1 {
+                        _bindToUpstream(innerStream, nil, nil, configure)
                         
-                        stream.react { value in
+                        innerStream.react { value in
                             progress(value)
                         }.success {
-                            pendingStreams.removeAtIndex(0)
+                            pendingInnerStreams.removeAtIndex(0)
                             recurse()
                         }.failure { errorInfo -> Void in
                             if let error = errorInfo.error {
                                 reject(error)
                             }
                             else {
-                                let error = _RKError(.CancelledByInternalStream, "One of stream is cancelled in Stream.concat().")
+                                let error = _RKError(.CancelledByInternalStream, "One of stream is cancelled in `concatInner()`.")
                                 reject(error)
                             }
                         }
@@ -984,33 +969,28 @@ public func concatAll<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
             }
         }
         
-        nestedStream.react { (stream: Stream<T>) in
-            pendingStreams += [stream]
+        nestedStream.react { (innerStream: Stream<T>) in
+            pendingInnerStreams += [innerStream]
             performRecursively()
         }
         
-    }.name("concatAll")
+    }.name("concatInner")
 }
 
 /// uses the latest innerStream and cancels previous innerStreams
 /// a.k.a Rx.switchLatest
-public func switchLatestAll<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
+public func switchLatestInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
 {
     return Stream<T> { progress, fulfill, reject, configure in
         
-        configure.pause = {
-            nestedStream.pause()
-        }
-        configure.resume = {
-            nestedStream.resume()
-        }
-        configure.cancel = {
-            nestedStream.cancel()
-        }
+        _bindToUpstream(nestedStream, nil, reject, configure)
         
         var currentInnerStream: Stream<T>?
         
         nestedStream.react { (innerStream: Stream<T>) in
+            
+            _bindToUpstream(innerStream, nil, nil, configure)
+            
             currentInnerStream?.cancel()
             currentInnerStream = innerStream
             
@@ -1019,7 +999,7 @@ public func switchLatestAll<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
             }
         }
         
-    }.name("concatAll")
+    }.name("concatInner")
 }
 
 //--------------------------------------------------
