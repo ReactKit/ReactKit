@@ -799,6 +799,50 @@ class OperationTests: _TestCase
         self.wait()
     }
     
+    func testCombineLatest()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        let obj3 = MyObject()
+        
+        let stream1 = KVO.stream(obj1, "value")
+        let stream2 = KVO.stream(obj2, "number")
+        
+        let bundledStream = stream1 |> combineLatest(stream2) |> map { (values: [AnyObject?]) -> NSString? in
+            let value0: AnyObject = values[0]!
+            let value1: AnyObject = values[1]!
+            return "\(value0)-\(value1)"
+        }
+        
+        // REACT
+        (obj3, "value") <~ bundledStream
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj3.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "test1"
+            XCTAssertEqual(obj3.value, "initial")
+            
+            obj1.value = "test2"
+            XCTAssertEqual(obj3.value, "initial")
+            
+            obj2.value = "test3"
+            XCTAssertEqual(obj3.value, "initial", "`obj3.value` should NOT be updated because `bundledStream` doesn't react to `obj2.value` (reacts to `obj2.number`).")
+            
+            obj2.number = 123
+            XCTAssertEqual(obj3.value, "test2-123")
+            
+            expect.fulfill()
+        }
+        
+        self.wait()
+    }
+    
     func testZip()
     {
         if self.isAsync { return }
@@ -1051,7 +1095,7 @@ class OperationTests: _TestCase
             XCTAssertEqual(obj3.value, "test2-notYet")
             
             obj2.value = "test3"
-            XCTAssertEqual(obj3.value, "test2-notYet", "`obj3.value` should NOT be updated because `bundledStream` doesn't react to `obj2.value`.")
+            XCTAssertEqual(obj3.value, "test2-notYet", "`obj3.value` should NOT be updated because `bundledStream` doesn't react to `obj2.value` (reacts to `obj2.number`).")
             
             obj2.number = 123
             XCTAssertEqual(obj3.value, "test2-123")
@@ -1230,7 +1274,7 @@ class OperationTests: _TestCase
             XCTAssertEqual(obj3.value, "test2")
             
             obj2.value = "test3"
-            XCTAssertEqual(obj3.value, "test2", "`obj3.value` should NOT be updated because `bundledStream` doesn't react to `obj2.value`.")
+            XCTAssertEqual(obj3.value, "test2", "`obj3.value` should NOT be updated because `bundledStream` doesn't react to `obj2.value` (reacts to `obj2.number`).")
             
             obj2.number = 123
             XCTAssertEqual(obj3.value, "123")

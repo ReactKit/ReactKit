@@ -609,6 +609,17 @@ public func startWith<T>(initialValue: T) -> (upstream: Stream<T>) -> Stream<T>
 //    return stream.name("\(upstream.name)-startWith")
 //}
 
+public func combineLatest<T>(stream: Stream<T>)(upstream: Stream<T>) -> Stream<[T]>
+{
+    return upstream |> combineLatest([stream])
+}
+
+public func combineLatest<T>(streams: [Stream<T>])(upstream: Stream<T>) -> Stream<[T]>
+{
+    let stream = ([upstream] + streams) |> combineLatestAll
+    return stream.name("\(upstream.name)-combineLatest")
+}
+
 public func zip<T>(stream: Stream<T>)(upstream: Stream<T>) -> Stream<[T]>
 {
     return upstream |> zip([stream])
