@@ -144,7 +144,7 @@ public extension Stream
         return Stream { progress, fulfill, reject, configure in
             progress(value)
             fulfill()
-        }.name("OnceStream")
+        }.name("Stream.once")
     }
     
     /// creates never (no progress & fulfill & reject) stream
@@ -152,7 +152,7 @@ public extension Stream
     {
         return Stream { progress, fulfill, reject, configure in
             // do nothing
-        }.name("NeverStream")
+        }.name("Stream.never")
     }
     
     /// creates empty (fulfilled without any progress) stream
@@ -160,7 +160,7 @@ public extension Stream
     {
         return Stream { progress, fulfill, reject, configure in
             fulfill()
-        }.name("FulfilledStream")
+        }.name("Stream.fulfilled")
     }
     
     /// creates error (rejected) stream
@@ -168,19 +168,19 @@ public extension Stream
     {
         return Stream { progress, fulfill, reject, configure in
             reject(error)
-        }.name("RejectedStream")
+        }.name("Stream.rejected")
     }
     
     ///
     /// creates stream from SequenceType (e.g. Array) and fulfills at last
     ///
-    /// - e.g. Stream(values: [1, 2, 3])
+    /// - e.g. Stream.sequence([1, 2, 3])
     ///
     /// a.k.a `Rx.fromArray`
     ///
-    public convenience init<S: SequenceType where S.Generator.Element == T>(values: S)
+    public class func sequence<S: SequenceType where S.Generator.Element == T>(values: S) -> Stream<T>
     {
-        self.init(initClosure: { progress, fulfill, reject, configure in
+        return Stream { progress, fulfill, reject, configure in
             var generator = values.generate()
             while let value: T = generator.next() {
                 progress(value)
@@ -188,8 +188,7 @@ public extension Stream
                 if configure.isFinished { break }
             }
             fulfill()
-        })
-        self.name = "Stream(array:)"
+        }.name("Stream.sequence")
     }
 }
 
@@ -780,7 +779,7 @@ public func reduce<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: 
 /// See also: mergeInner
 public func mergeAll<T>(streams: [Stream<T>]) -> Stream<T>
 {
-    let stream = Stream(values: streams) |> mergeInner
+    let stream = Stream.sequence(streams) |> mergeInner
     return stream.name("mergeAll")
 }
 
@@ -1075,7 +1074,7 @@ public func |> <T, U, S: SequenceType where S.Generator.Element == Stream<T>>(st
 /// nested-streams pipelining operator
 public func |> <T, U, S: SequenceType where S.Generator.Element == Stream<T>>(streams: S, transform: Stream<Stream<T>> -> U) -> U
 {
-    return transform(Stream(values: streams))
+    return transform(Stream.sequence(streams))
 }
 
 infix operator |>> { associativity left precedence 95}

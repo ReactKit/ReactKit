@@ -850,9 +850,9 @@ class OperationTests: _TestCase
         let expect = self.expectationWithDescription(__FUNCTION__)
         
         // create streams which will never be fulfilled/rejected
-        let stream1: Stream<Any> = Stream(values: [0, 1, 2, 3, 4])
+        let stream1: Stream<Any> = Stream.sequence([0, 1, 2, 3, 4])
             |> concat(Stream.never())
-        let stream2: Stream<Any> = Stream(values: ["A", "B", "C"])
+        let stream2: Stream<Any> = Stream.sequence(["A", "B", "C"])
             |> concat(Stream.never())
         
         var bundledStream = stream1 |> zip(stream2) |> map { (values: [Any]) -> String in
@@ -907,7 +907,7 @@ class OperationTests: _TestCase
         
         let faster: NSTimeInterval = 0.1
         
-        let stream = Stream(values: 0...2) |> interval(1.0 * faster)
+        let stream = Stream.sequence(0...2) |> interval(1.0 * faster)
         
         var results = [Int]()
         
@@ -1033,7 +1033,7 @@ class OperationTests: _TestCase
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        var stream = Stream(values: [1, 2, 3])
+        var stream = Stream.sequence([1, 2, 3])
         if self.isAsync {
             stream = stream |> delay(0.01)
         }
@@ -1210,10 +1210,10 @@ class OperationTests: _TestCase
         ///     - emits 9 at `t = 1.2 + 2`
         ///
         let nestedStream: Stream<Stream<Int>>
-        nestedStream = Stream(values: 0...2)
+        nestedStream = Stream.sequence(0...2)
             |> interval(1.0 * faster)
             |> map { (v: Int) -> Stream<Int> in
-                let innerStream = Stream(values: (3*v+1)...(3*v+3))
+                let innerStream = Stream.sequence((3*v+1)...(3*v+3))
                     |> interval(0.6 * faster)
                 innerStream.name = "innerStream\(v)"
                 return innerStream

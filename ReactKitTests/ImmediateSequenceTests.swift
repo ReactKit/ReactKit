@@ -18,7 +18,7 @@ class ImmediateSequenceTests: _TestCase
         var sourceBuffer = [Int]()
         var takeBuffer = [Int]()
         
-        let sourceStream = Stream(values: [Int](1...5))
+        let sourceStream = Stream.sequence([Int](1...5))
             |> peek { value in
                 println("sourceStream new value = \(value)")
                 sourceBuffer += [value]
