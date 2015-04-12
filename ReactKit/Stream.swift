@@ -1091,23 +1091,23 @@ public func |>> <T, U>(@autoclosure(escaping) streamProducer: Void -> Stream<T>,
     return { transform(streamProducer()) }
 }
 
-// NOTE: set precedence=255 to avoid "Operator is not a known binary operator" error
-infix operator ~> { associativity left precedence 255 }
+// NOTE: `infix operator ~>` is already declared in Swift
+//infix operator ~> { associativity left precedence 255 }
 
-/// i.e. stream.react { ... }
+/// right-closure reacting operator, i.e. `stream.react { ... }`
 public func ~> <T>(stream: Stream<T>, reactClosure: T -> Void) -> Stream<T>
 {
-    stream.react { value in reactClosure(value) }
+    stream.react(reactClosure)
     return stream
 }
 
 infix operator <~ { associativity right precedence 50 }
 
-/// closure-first operator, reversing `stream.react { ... }`
+/// left-closure (closure-first) reacting operator, reversing `stream.react { ... }`
 /// e.g. ^{ ... } <~ stream
-public func <~ <T>(reactClosure: T -> Void, stream: Stream<T>)
+public func <~ <T>(reactClosure: T -> Void, stream: Stream<T>) -> Stream<T>
 {
-    stream.react { value in reactClosure(value) }
+    return stream ~> reactClosure
 }
 
 prefix operator ^ {}
