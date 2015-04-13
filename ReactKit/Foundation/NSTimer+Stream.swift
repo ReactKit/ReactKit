@@ -30,7 +30,8 @@ public extension NSTimer
             }
             configure.resume = {
                 if timer == nil {
-                    timer = NSTimer.scheduledTimerWithTimeInterval(timeInterval, target: target, selector: _targetActionSelector, userInfo: userInfo, repeats: repeats)
+                    timer = NSTimer(timeInterval: timeInterval, target: target, selector: _targetActionSelector, userInfo: userInfo, repeats: repeats)
+                    NSRunLoop.currentRunLoop().addTimer(timer!, forMode: NSRunLoopCommonModes)
                 }
             }
             configure.cancel = {
