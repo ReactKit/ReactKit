@@ -1111,6 +1111,25 @@ public func <~ <T>(reactClosure: T -> Void, stream: Stream<T>) -> Stream<T>
     return stream ~> reactClosure
 }
 
+infix operator ~>! { associativity left precedence 50 }
+
+///
+/// terminal reacting operator, which returns synchronously-emitted last value
+/// to gain similar functionality as Java 8's Stream API,
+///
+/// e.g. 
+/// let sum = Stream.sequence([1, 2, 3]) |> reduce(0) { $0 + $1 } ~>! ()
+/// let distinctSequence = Stream.sequence([1, 2, 2, 3]) |> distinct |> buffer() ~>! () // NOTE: use `buffer()` whenever necessary
+///
+public func ~>! <T>(stream: Stream<T>, void: Void) -> T!
+{
+    var ret: T!
+    stream.react { value in
+        ret = value
+    }
+    return ret
+}
+
 prefix operator ^ {}
 
 /// Objective-C like 'block operator' to let Swift compiler know closure-type at start of the line
