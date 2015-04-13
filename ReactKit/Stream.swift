@@ -300,7 +300,7 @@ public func mapAccumulate<T, U>(initialValue: U, accumulateClosure: (accumulated
     }
 }
 
-public func buffer<T>(bufferCount: Int)(upstream: Stream<T>) -> Stream<[T]>
+public func buffer<T>(_ bufferCount: Int = Int.max)(upstream: Stream<T>) -> Stream<[T]>
 {
     precondition(bufferCount > 0)
     
@@ -317,7 +317,9 @@ public func buffer<T>(bufferCount: Int)(upstream: Stream<T>) -> Stream<[T]>
                 buffer = []
             }
         }.success { _ -> Void in
-            progress(buffer)
+            if buffer.count > 0 {
+                progress(buffer)
+            }
             fulfill()
         }
         
