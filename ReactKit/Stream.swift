@@ -302,9 +302,9 @@ public func mapAccumulate<T, U>(initialValue: U, accumulateClosure: (accumulated
     }
 }
 
-public func buffer<T>(_ bufferCount: Int = Int.max)(upstream: Stream<T>) -> Stream<[T]>
+public func buffer<T>(_ capacity: Int = Int.max)(upstream: Stream<T>) -> Stream<[T]>
 {
-    precondition(bufferCount > 0)
+    precondition(capacity >= 0)
     
     return Stream<[T]> { progress, fulfill, reject, configure in
         
@@ -314,7 +314,7 @@ public func buffer<T>(_ bufferCount: Int = Int.max)(upstream: Stream<T>) -> Stre
         
         upstream.react { value in
             buffer += [value]
-            if buffer.count >= bufferCount {
+            if buffer.count >= capacity {
                 progress(buffer)
                 buffer = []
             }
@@ -910,7 +910,7 @@ public func zipAll<T>(streams: [Stream<T>]) -> Stream<[T]>
 }
 
 //--------------------------------------------------
-// MARK: - Nested Stream<Stream<T>> Operations
+// MARK: - Nested Stream Operations
 //--------------------------------------------------
 
 ///
@@ -1050,7 +1050,7 @@ public extension Stream
     }
 }
 
-/// alias for `stream.mapAccumulate()`
+/// alias for `mapAccumulate()`
 public func scan<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
 {
     return upstream |> mapAccumulate(initialValue, accumulateClosure)
