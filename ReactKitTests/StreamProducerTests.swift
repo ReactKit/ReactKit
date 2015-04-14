@@ -85,6 +85,72 @@ class StreamProducerTests: _TestCase
         
         self.wait()
     }
+    
+    //--------------------------------------------------
+    // MARK: - Stream Producer Operations
+    //--------------------------------------------------
+    
+    func testPrestart()
+    {
+        // async test
+        if !self.isAsync { return }
+        
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let faster: NSTimeInterval = 0.1
+        
+        let intervalStream = Stream.sequence(0...4)
+            |> interval(1.0 * faster)
+            |> peek { println("interval: \($0)") }     // for logging
+        
+        // prestart: resumes upstream & caches its emitted values for future replay
+        var streamProducer = intervalStream |>> prestart()
+        
+        var stream1: Stream<Int>?
+        var stream2: Stream<Int>?
+        var stream1Values = [Int]()
+        var stream2Values = [Int]()
+        
+        Async.main(after: 1.1 * faster) {
+            stream1 = streamProducer()
+            // REACT
+            stream1! ~> { value in
+                println("stream1 value = \(value)")
+                stream1Values += [value]
+            }
+            
+            XCTAssertEqual(stream1Values, [0, 1], "`stream1` will replay already prestarted `interval` stream's emitted values, so `stream1Values` should contain them, i.e. `[0, 1]`")
+        }
+        
+        Async.main(after: 2.1 * faster) {
+            XCTAssertEqual(stream1Values, [0, 1, 2], "`interval` stream emits `2` at this point and so does `stream1`.")
+        }
+        
+        Async.main(after: 3.1 * faster) {
+            stream2 = streamProducer()
+            // REACT
+            stream2! ~> { value in
+                println("stream2 value = \(value)")
+                stream2Values += [value]
+            }
+            
+            XCTAssertEqual(stream1Values, [0, 1, 2, 3])
+            XCTAssertEqual(stream2Values, [0, 1, 2, 3], "`stream2` will replay already prestarted `interval` stream's emitted values, so `stream2Values` should contain them, i.e. `[0, 1, 2, 3]`")
+        }
+        
+        Async.main(after: 4.1 * faster) {
+            XCTAssertEqual(stream1Values, [0, 1, 2, 3, 4])
+            XCTAssertEqual(stream2Values, [0, 1, 2, 3, 4])
+        }
+        
+        self.perform(after: 5 * faster) {
+            stream1 = nil
+            stream2 = nil
+            expect.fulfill()
+        }
+        
+        self.wait()
+    }
 }
 
 class AsyncStreamProducerTests: StreamProducerTests

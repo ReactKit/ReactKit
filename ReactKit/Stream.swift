@@ -80,7 +80,7 @@ public class Stream<T>: Task<T, Void, NSError>
 }
 
 /// helper method to bind downstream's `fulfill`/`reject`/`configure` handlers with upstream
-private func _bindToUpstream<T>(upstream: Stream<T>, fulfill: (Void -> Void)?, reject: (NSError -> Void)?, configure: TaskConfiguration)
+private func _bindToUpstream<T>(upstream: Stream<T>, fulfill: (Void -> Void)?, reject: (NSError -> Void)?, configure: TaskConfiguration?)
 {
     //
     // NOTE:
@@ -95,14 +95,16 @@ private func _bindToUpstream<T>(upstream: Stream<T>, fulfill: (Void -> Void)?, r
     //
 
     // NOTE: downstream should capture upstream
-    let oldPause = configure.pause;
-    configure.pause = { oldPause?(); upstream.pause(); return }
-    
-    let oldResume = configure.resume;
-    configure.resume = { oldResume?(); upstream.resume(); return }
-    
-    let oldCancel = configure.cancel;
-    configure.cancel = { oldCancel?(); upstream.cancel(); return }
+    if let configure = configure {
+        let oldPause = configure.pause;
+        configure.pause = { oldPause?(); upstream.pause(); return }
+        
+        let oldResume = configure.resume;
+        configure.resume = { oldResume?(); upstream.resume(); return }
+        
+        let oldCancel = configure.cancel;
+        configure.cancel = { oldCancel?(); upstream.cancel(); return }
+    }
     
     if fulfill != nil || reject != nil {
         
@@ -1022,6 +1024,61 @@ public func switchLatestInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
         }
         
     }.name("concatInner")
+}
+
+//--------------------------------------------------
+// MARK: - Stream Producer Operations
+//--------------------------------------------------
+
+///
+/// Creates an upstream from `upstreamProducer`, resumes it (prestart),
+/// and caches its emitted values (`capacity` as max buffer count) for future "replay"
+/// when returning streamProducer creates a new stream & resumes it,
+/// a.k.a. Rx.replay().
+///
+/// NOTE: `downstream`'s `pause()`/`resume()`/`cancel()` will not affect `upstream`.
+///
+/// :Usage:
+///     let cachedStreamProducer = networkStream |>> prestart(capacity: 1)
+///     let cachedStream1 = cachedStreamProducer()
+///     cachedStream1 ~> { ... }
+///     let cachedStream2 = cachedStreamProducer() // can produce many cached streams
+///     ...
+///
+/// :param: capacity max buffer count for prestarted stream
+///
+public func prestart<T>(capacity: Int = Int.max) -> (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer
+{
+    return { (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer in
+        
+        var buffer = [T]()
+        let upstream = upstreamProducer()
+        
+        // REACT
+        upstream ~> { value in
+            buffer += [value]
+            while buffer.count > capacity {
+                buffer.removeAtIndex(0)
+            }
+        }
+        
+        return {
+            return Stream<T> { progress, fulfill, reject, configure in
+                
+                // NOTE: downstream's `configure` should not bind to upstream
+                _bindToUpstream(upstream, fulfill, reject, nil)
+                
+                for b in buffer {
+                    progress(b)
+                }
+                
+                upstream.react { value in
+                    progress(value)
+                }
+                
+            }.name("\(upstream.name)-replay")
+        }
+    }
 }
 
 //--------------------------------------------------
