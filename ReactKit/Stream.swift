@@ -10,6 +10,8 @@ import SwiftTask
 
 public class Stream<T>: Task<T, Void, NSError>
 {
+    public typealias Producer = Void -> Stream<T>
+    
     public override var description: String
     {
         return "<\(self.name); state=\(self.state.rawValue)>"
@@ -1059,38 +1061,69 @@ public func scan<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U,
 // + - * / % = < > ! & | ^ ~ .
 //--------------------------------------------------
 
+// MARK: |> (stream pipelining)
+
 infix operator |> { associativity left precedence 95}
 
 /// single-stream pipelining operator
-public func |> <T, U>(stream: Stream<T>, transform: Stream<T> -> U) -> U
+public func |> <T, U>(stream: Stream<T>, transform: Stream<T> -> Stream<U>) -> Stream<U>
 {
     return transform(stream)
 }
 
 /// array-streams pipelining operator
-public func |> <T, U, S: SequenceType where S.Generator.Element == Stream<T>>(streams: S, transform: S -> U) -> U
+public func |> <T, U, S: SequenceType where S.Generator.Element == Stream<T>>(streams: S, transform: S -> Stream<U>) -> Stream<U>
 {
     return transform(streams)
 }
 
 /// nested-streams pipelining operator
-public func |> <T, U, S: SequenceType where S.Generator.Element == Stream<T>>(streams: S, transform: Stream<Stream<T>> -> U) -> U
+public func |> <T, U, S: SequenceType where S.Generator.Element == Stream<T>>(streams: S, transform: Stream<Stream<T>> -> Stream<U>) -> Stream<U>
 {
     return transform(Stream.sequence(streams))
 }
 
+/// stream-transform pipelining operator
+public func |> <T, U, V>(transform1: Stream<T> -> Stream<U>, transform2: Stream<U> -> Stream<V>) -> Stream<T> -> Stream<V>
+{
+    return { transform2(transform1($0)) }
+}
+
+// MARK: |>> (streamProducer pipelining)
+
 infix operator |>> { associativity left precedence 95}
 
-/// streamProducer pipelining operator
-public func |>> <T, U>(streamProducer: Void -> Stream<T>, transform: Stream<T> -> U) -> Void -> U
+/// streamProducer lifting & pipelining operator
+public func |>> <T, U>(streamProducer: Stream<T>.Producer, transform: Stream<T> -> Stream<U>) -> Stream<U>.Producer
 {
     return { transform(streamProducer()) }
 }
 
-public func |>> <T, U>(@autoclosure(escaping) streamProducer: Void -> Stream<T>, transform: Stream<T> -> U) -> Void -> U
+/// streamProducer(autoclosured) lifting & pipelining operator
+public func |>> <T, U>(@autoclosure(escaping) streamProducer: Stream<T>.Producer, transform: Stream<T> -> Stream<U>) -> Stream<U>.Producer
 {
     return { transform(streamProducer()) }
 }
+
+/// streamProducer pipelining operator
+public func |>> <T, U>(streamProducer: Stream<T>.Producer, transform: Stream<T>.Producer -> Stream<U>.Producer) -> Stream<U>.Producer
+{
+    return transform(streamProducer)
+}
+
+/// streamProducer(autoclosured) pipelining operator
+public func |>> <T, U>(@autoclosure(escaping) streamProducer: Stream<T>.Producer, transform: Stream<T>.Producer -> Stream<U>.Producer) -> Stream<U>.Producer
+{
+    return transform(streamProducer)
+}
+
+/// streamProducer-transform pipelining operator
+public func |>> <T, U, V>(transform1: Stream<T>.Producer -> Stream<U>.Producer, transform2: Stream<U>.Producer -> Stream<V>.Producer) -> Stream<T>.Producer -> Stream<V>.Producer
+{
+    return { transform2(transform1($0)) }
+}
+
+// MARK: ~> (right reacting operator)
 
 // NOTE: `infix operator ~>` is already declared in Swift
 //infix operator ~> { associativity left precedence 255 }
@@ -1102,6 +1135,8 @@ public func ~> <T>(stream: Stream<T>, reactClosure: T -> Void) -> Stream<T>
     return stream
 }
 
+// MARK: ~> (left reacting operator)
+
 infix operator <~ { associativity right precedence 50 }
 
 /// left-closure (closure-first) reacting operator, reversing `stream.react { ... }`
@@ -1110,6 +1145,8 @@ public func <~ <T>(reactClosure: T -> Void, stream: Stream<T>) -> Stream<T>
 {
     return stream ~> reactClosure
 }
+
+// MARK: ~>! (terminal reacting operator)
 
 infix operator ~>! { associativity left precedence 50 }
 

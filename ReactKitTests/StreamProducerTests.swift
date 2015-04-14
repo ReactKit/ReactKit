@@ -35,7 +35,7 @@ class StreamProducerTests: _TestCase
         //   let streamProducer = { stream } |>> map { $0 }     // reusing same stream!
         //   ```
         //
-        let streamProducer: Void -> Stream<Int>
+        let streamProducer: Stream<Int>.Producer
         streamProducer = NSTimer.stream(timeInterval: 0.01, repeats: false) { _ in random() }
             |>> map { $0 }
         
