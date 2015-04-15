@@ -1076,7 +1076,7 @@ public func prestart<T>(capacity: Int = Int.max) -> (upstreamProducer: Stream<T>
                     progress(value)
                 }
                 
-            }.name("\(upstream.name)-replay")
+            }.name("\(upstream.name)-prestart")
         }
     }
 }
@@ -1110,7 +1110,13 @@ public extension Stream
 /// alias for `mapAccumulate()`
 public func scan<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
 {
-    return upstream |> mapAccumulate(initialValue, accumulateClosure)
+    return mapAccumulate(initialValue, accumulateClosure)(upstream: upstream)
+}
+
+/// alias for `prestart()`
+public func replay<T>(capacity: Int = Int.max) -> (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer
+{
+    return prestart(capacity: capacity)
 }
 
 //--------------------------------------------------
