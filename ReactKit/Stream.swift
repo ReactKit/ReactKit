@@ -176,11 +176,10 @@ public extension Stream
     }
     
     ///
-    /// creates stream from SequenceType (e.g. Array) and fulfills at last
+    /// creates **synchronous** stream from SequenceType (e.g. Array) and fulfills at last,
+    /// a.k.a `Rx.fromArray`
     ///
     /// - e.g. Stream.sequence([1, 2, 3])
-    ///
-    /// a.k.a `Rx.fromArray`
     ///
     public class func sequence<S: SequenceType where S.Generator.Element == T>(values: S) -> Stream<T>
     {
@@ -193,6 +192,22 @@ public extension Stream
             }
             fulfill()
         }.name("Stream.sequence")
+    }
+    
+    ///
+    /// creates **synchronous** stream which can send infinite number of values
+    /// by using `initialValue` and `nextClosure`,
+    /// a.k.a `Rx.generate`
+    ///
+    /// :Example:
+    /// - `Stream.infiniteSequence(0) { $0 + 1 }` will emit 0, 1, 2, ...
+    ///
+    /// NOTE: To prevent infinite loop, use `take(maxCount)` to limit the number of value generation.
+    ///
+    public class func infiniteSequence(initialValue: T, nextClosure: T -> T) -> Stream<T>
+    {
+        let generator = _InfiniteGenerator<T>(initialValue: initialValue, nextClosure: nextClosure)
+        return Stream<T>.sequence(SequenceOf({generator})).name("Stream.infiniteSequence")
     }
 }
 
@@ -1259,4 +1274,34 @@ public prefix func + <T>(stream: Stream<T>) -> Stream<T>
     }
     
     return stream
+}
+
+//--------------------------------------------------
+// MARK: - Utility
+//--------------------------------------------------
+
+private struct _InfiniteGenerator<T>: GeneratorType
+{
+    let initialValue: T
+    let nextClosure: T -> T
+    
+    var currentValue: T?
+    
+    init(initialValue: T, nextClosure: T -> T)
+    {
+        self.initialValue = initialValue
+        self.nextClosure = nextClosure
+    }
+    
+    mutating func next() -> T?
+    {
+        if let currentValue = self.currentValue {
+            self.currentValue = self.nextClosure(currentValue)
+        }
+        else {
+            self.currentValue = self.initialValue
+        }
+        
+        return self.currentValue
+    }
 }
