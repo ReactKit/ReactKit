@@ -23,7 +23,7 @@ public extension NSObject
         let stream = self.detailedStream(keyPath: keyPath)
             |> map { value, _, _ -> AnyObject? in value }
         
-        stream.name("KVO-\(NSStringFromClass(self.dynamicType))-\(keyPath)")
+        stream.name("KVO.stream(\(NSStringFromClass(self.dynamicType)), \"\(keyPath)\")")
         
         return stream
     }
@@ -36,7 +36,7 @@ public extension NSObject
         let stream = self.stream(keyPath: keyPath)
             |> startWith(_nullToNil(initial))
         
-        stream.name("KVO(starting)-\(NSStringFromClass(self.dynamicType))-\(keyPath)")
+        stream.name("KVO.startingStream(\(NSStringFromClass(self.dynamicType)), \"\(keyPath)\")")
         
         return stream
     }
@@ -65,7 +65,7 @@ public extension NSObject
                 configure.cancel = { observer.stop() }
             }
             
-        }.name("KVO(detailed)-\(NSStringFromClass(self.dynamicType))-\(keyPath)") |> takeUntil(self.deinitStream)
+        }.name("KVO.detailedStream(\(NSStringFromClass(self.dynamicType)), \"\(keyPath)\")") |> takeUntil(self.deinitStream)
     }
 }
 
