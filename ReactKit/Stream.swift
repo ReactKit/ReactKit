@@ -1230,6 +1230,12 @@ public func ~>! <T>(stream: Stream<T>, void: Void) -> T!
     return ret
 }
 
+/// terminal reacting operator (less precedence for '~>')
+public func ~>! <T>(stream: Stream<T>, reactClosure: T -> Void)
+{
+    stream ~> reactClosure
+}
+
 prefix operator ^ {}
 
 /// Objective-C like 'block operator' to let Swift compiler know closure-type at start of the line
