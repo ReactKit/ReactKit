@@ -7,7 +7,6 @@
 //
 
 import ReactKit
-import SwiftTask
 import XCTest
 
 /// `mutableArrayValueForKey()` test

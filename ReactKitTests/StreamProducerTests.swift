@@ -7,6 +7,7 @@
 //
 
 import ReactKit
+import Async
 import XCTest
 
 class StreamProducerTests: _TestCase

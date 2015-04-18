@@ -36,12 +36,12 @@
 		1FED896219C1EBD60065658B /* Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED895C19C1EBD60065658B /* Stream.swift */; };
 		1FED8AAA19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
 		1FED8AAB19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
+		1FF25DFB1AE2C06A002632C4 /* Async.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF25DFA1AE2C06A002632C4 /* Async.framework */; };
+		1FF25DFC1AE2C06F002632C4 /* Async.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF25DFA1AE2C06A002632C4 /* Async.framework */; };
 		1FF5E7161ACFD0E20062A9DD /* OperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FF5E7151ACFD0E20062A9DD /* OperationTests.swift */; };
 		1FF5E7171ACFD0E20062A9DD /* OperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FF5E7151ACFD0E20062A9DD /* OperationTests.swift */; };
 		480E83EB1ABB9B7400AF8346 /* DynamicArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480E83EA1ABB9B7400AF8346 /* DynamicArray.swift */; };
 		480E83EC1ABB9B7400AF8346 /* DynamicArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480E83EA1ABB9B7400AF8346 /* DynamicArray.swift */; };
-		484553991A4CF97C007770CA /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484552D11A4CF97B007770CA /* Async.swift */; };
-		4845539A1A4CF97C007770CA /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484552D11A4CF97B007770CA /* Async.swift */; };
 		484554ED1A4CF9CD007770CA /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 484554EC1A4CF9CD007770CA /* SwiftTask.framework */; };
 		484554F11A4CF9E3007770CA /* SwiftTask.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 484554EC1A4CF9CD007770CA /* SwiftTask.framework */; };
 		4875885519E4D94800828AD0 /* KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875885119E4D94800828AD0 /* KVO.swift */; };
@@ -86,9 +86,9 @@
 		1FED894B19C1EB7D0065658B /* ReactKit-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ReactKit-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FED895C19C1EBD60065658B /* Stream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stream.swift; sourceTree = "<group>"; };
 		1FED8AA919C1ECD30065658B /* _TestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _TestCase.swift; sourceTree = "<group>"; };
+		1FF25DFA1AE2C06A002632C4 /* Async.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Async.framework; path = ../Carthage/Checkouts/Async/build/Debug/Async.framework; sourceTree = "<group>"; };
 		1FF5E7151ACFD0E20062A9DD /* OperationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OperationTests.swift; sourceTree = "<group>"; };
 		480E83EA1ABB9B7400AF8346 /* DynamicArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DynamicArray.swift; sourceTree = "<group>"; };
-		484552D11A4CF97B007770CA /* Async.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
 		484554EC1A4CF9CD007770CA /* SwiftTask.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftTask.framework; path = ../Carthage/Checkouts/SwiftTask/build/Debug/SwiftTask.framework; sourceTree = "<group>"; };
 		4875885119E4D94800828AD0 /* KVO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KVO.swift; sourceTree = "<group>"; };
 		4875885219E4D94800828AD0 /* Notification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
@@ -117,6 +117,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1FF25DFB1AE2C06A002632C4 /* Async.framework in Frameworks */,
 				1F14EC3819C1EE350090C3D8 /* ReactKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -134,6 +135,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F14EC3919C1EE400090C3D8 /* ReactKit.framework in Frameworks */,
+				1FF25DFC1AE2C06F002632C4 /* Async.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -166,7 +168,6 @@
 		1FED88EE19C1EB120065658B = {
 			isa = PBXGroup;
 			children = (
-				484552CE1A4CF97B007770CA /* Checkouts */,
 				1FED88FA19C1EB120065658B /* ReactKit */,
 				1FED890719C1EB120065658B /* ReactKitTests */,
 				1FED88F919C1EB120065658B /* Products */,
@@ -229,26 +230,10 @@
 		1FED890819C1EB120065658B /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				1FF25DFA1AE2C06A002632C4 /* Async.framework */,
 				1FED890919C1EB120065658B /* Info.plist */,
 			);
 			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		484552CE1A4CF97B007770CA /* Checkouts */ = {
-			isa = PBXGroup;
-			children = (
-				484552CF1A4CF97B007770CA /* Async */,
-			);
-			name = Checkouts;
-			path = Carthage/Checkouts;
-			sourceTree = "<group>";
-		};
-		484552CF1A4CF97B007770CA /* Async */ = {
-			isa = PBXGroup;
-			children = (
-				484552D11A4CF97B007770CA /* Async.swift */,
-			);
-			path = Async;
 			sourceTree = "<group>";
 		};
 		4875885D19E4D95A00828AD0 /* UIKit */ = {
@@ -457,7 +442,6 @@
 				1FC50FF31AB9DA5400F363CD /* ImmediateSequenceTests.swift in Sources */,
 				1F822EF319D319FF00A3CA23 /* _MyObject.swift in Sources */,
 				1FED8AAA19C1ECD30065658B /* _TestCase.swift in Sources */,
-				484553991A4CF97C007770CA /* Async.swift in Sources */,
 				1F626D8F19D8799600D3ABCE /* NotificationTests.swift in Sources */,
 				1F626D9119D8799600D3ABCE /* DeinitStreamTests.swift in Sources */,
 				1F626D8E19D8799600D3ABCE /* KVOTests.swift in Sources */,
@@ -499,7 +483,6 @@
 				1FC50FF41AB9DA5400F363CD /* ImmediateSequenceTests.swift in Sources */,
 				1F822EF419D319FF00A3CA23 /* _MyObject.swift in Sources */,
 				1FED8AAB19C1ECD30065658B /* _TestCase.swift in Sources */,
-				4845539A1A4CF97C007770CA /* Async.swift in Sources */,
 				1F626D9319D8799900D3ABCE /* NotificationTests.swift in Sources */,
 				1F626D9519D8799900D3ABCE /* DeinitStreamTests.swift in Sources */,
 				1F626D9219D8799900D3ABCE /* KVOTests.swift in Sources */,
@@ -657,6 +640,7 @@
 				);
 				INFOPLIST_FILE = ReactKitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -672,6 +656,7 @@
 				);
 				INFOPLIST_FILE = ReactKitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};

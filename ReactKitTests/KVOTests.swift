@@ -7,7 +7,6 @@
 //
 
 import ReactKit
-import SwiftTask
 import XCTest
 
 let SAFE_DELAY = 0.5

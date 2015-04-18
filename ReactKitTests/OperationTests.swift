@@ -7,7 +7,7 @@
 //
 
 import ReactKit
-import SwiftTask
+import Async
 import XCTest
 
 class OperationTests: _TestCase
