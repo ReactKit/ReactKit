@@ -1118,6 +1118,47 @@ public func prestart<T>(capacity: Int = Int.max) -> (upstreamProducer: Stream<T>
     }
 }
 
+public func repeat<T>(repeatCount: Int) -> (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer
+{
+    return { (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer in
+        
+        if repeatCount <= 0 {
+            return { Stream.empty() }
+        }
+        if repeatCount == 1 {
+            return upstreamProducer
+        }
+        
+        return {
+            
+            let upstreamName = upstreamProducer().name
+            
+            return Stream<T> { progress, fulfill, reject, configure in
+                
+                var countDown = repeatCount
+                
+                let performRecursively: Void -> Void = _fix { recurse in
+                    return {
+                        let upstream = upstreamProducer()
+                        
+                        _bindToUpstream(upstream, nil, reject, configure)
+                        
+                        upstream.react { value in
+                            progress(value)
+                        }.success { _ -> Void in
+                            countDown--
+                            countDown > 0 ? recurse() : fulfill()
+                        }
+                    }
+                }
+                
+                performRecursively()
+                
+            }.name("\(upstreamName)-repeat")
+        }
+    }
+}
+
 public func retry<T>(retryCount: Int)(upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer
 {
     precondition(retryCount >= 0)

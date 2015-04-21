@@ -1329,6 +1329,39 @@ class OperationTests: _TestCase
     // MARK: - Stream Producer Operations
     //--------------------------------------------------
     
+    func testRepeat()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        var buffer = [Int]()
+        
+        var streamProducer: Stream<Int>.Producer = { Stream.sequence(1...3) }
+        if self.isAsync {
+            streamProducer = streamProducer |>> interval(0.01)
+        }
+        
+        let repeatStreamProducer = streamProducer
+            |>> repeat(3)
+        
+        println("*** Start ***")
+        
+        let repeatStream = repeatStreamProducer()
+        
+        // REACT
+        repeatStream ~> { value in
+            buffer.append(value)
+        }
+        
+        self.perform(after: 0.5) {
+            expect.fulfill()
+        }
+        
+        self.wait()
+        
+        XCTAssertEqual(buffer, [1, 2, 3, 1, 2, 3, 1, 2, 3], "`repeatStream` should repeat `1 -> 2 -> 3 -> ignore complete` 3 times (retryCount is 2).")
+        
+    }
+    
     // see also: `testCatch()`
     func testRetry()
     {
