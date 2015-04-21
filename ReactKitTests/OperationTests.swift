@@ -7,6 +7,7 @@
 //
 
 import ReactKit
+import SwiftTask
 import Async
 import XCTest
 
@@ -895,6 +896,44 @@ class OperationTests: _TestCase
         self.wait()
         
         XCTAssertEqual(reactCount, 3)
+    }
+    
+    func testCatch()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        var buffer = [Int]()
+        
+        var streamProducer: Stream<Int>.Producer = { Stream.sequence(1...3) }
+        if self.isAsync {
+            streamProducer = streamProducer |>> interval(0.1)
+        }
+        
+        let errorStream = streamProducer()
+            |> concat(Stream.error(NSError(domain: "test", code: -1, userInfo: nil)))
+        
+        let recoveryStream = errorStream
+            |> catch { errorInfo -> Stream<Int> in
+                return streamProducer()
+            }
+        
+        println("*** Start ***")
+        
+        // REACT
+        recoveryStream ~> { value in
+            buffer.append(value)
+        }
+        
+        self.perform(after: 0.5) {
+            expect.fulfill()
+        }
+        
+        self.wait()
+        
+        XCTAssertEqual(buffer, [1, 2, 3, 1, 2, 3], "`recoveryStream` should handle `1 -> 2 -> 3 -> recovery from error -> 1 -> 2 -> 3 -> fulfilled`.")
+        XCTAssertEqual(errorStream.state, TaskState.Rejected)
+        XCTAssertEqual(recoveryStream.state, TaskState.Fulfilled)
+        
     }
     
     // MARK: timing

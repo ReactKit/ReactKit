@@ -650,6 +650,29 @@ public func zip<T>(streams: [Stream<T>])(upstream: Stream<T>) -> Stream<[T]>
     return stream.name("\(upstream.name)-zip")
 }
 
+public func catch<T>(catchHandler: Stream<T>.ErrorInfo -> Stream<T>) -> (upstream: Stream<T>) -> Stream<T>
+{
+    return { (upstream: Stream<T>) -> Stream<T> in
+        return Stream<T> { progress, fulfill, reject, configure in
+            
+            // required for avoiding "swiftc failed with exit code 1" in Swift 1.2 (Xcode 6.3)
+            let configure = configure
+            
+            upstream.react { value in
+                progress(value)
+            }.failure { errorInfo in
+                let recoveryStream = catchHandler(errorInfo)
+                
+                _bindToUpstream(recoveryStream, fulfill, reject, configure)
+                
+                recoveryStream.react { value in
+                    progress(value)
+                }
+            }
+        }
+    }
+}
+
 // MARK: timing
 
 /// delay `progress` and `fulfill` for `timerInterval` seconds
