@@ -898,6 +898,7 @@ class OperationTests: _TestCase
         XCTAssertEqual(reactCount, 3)
     }
     
+    // see also: `testRetry()`
     func testCatch()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
@@ -1279,7 +1280,7 @@ class OperationTests: _TestCase
     }
     
     //--------------------------------------------------
-    // MARK: - Nested Stream<Stream<T>> Operations
+    // MARK: - Nested Stream Operations
     //--------------------------------------------------
     
     func testMergeInner()
@@ -1322,6 +1323,47 @@ class OperationTests: _TestCase
         }
         
         self.wait()
+    }
+    
+    //--------------------------------------------------
+    // MARK: - Stream Producer Operations
+    //--------------------------------------------------
+    
+    // see also: `testCatch()`
+    func testRetry()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        var buffer = [Int]()
+        
+        var streamProducer: Stream<Int>.Producer = { Stream.sequence(1...3) }
+        if self.isAsync {
+            streamProducer = streamProducer |>> interval(0.01)
+        }
+        
+        let errorStreamProducer = streamProducer
+            |>> concat(Stream.error(NSError(domain: "test", code: -1, userInfo: nil)))
+            
+        let retryStreamProducer = errorStreamProducer
+            |>> retry(2)
+        
+        println("*** Start ***")
+        
+        let retryStream = retryStreamProducer()
+        
+        // REACT
+        retryStream ~> { value in
+            buffer.append(value)
+        }
+        
+        self.perform(after: 0.5) {
+            expect.fulfill()
+        }
+        
+        self.wait()
+        
+        XCTAssertEqual(buffer, [1, 2, 3, 1, 2, 3, 1, 2, 3], "`retryStream` should handle `1 -> 2 -> 3 -> recovery from error` 3 times (retryCount is 2).")
+        
     }
     
 }

@@ -1118,6 +1118,20 @@ public func prestart<T>(capacity: Int = Int.max) -> (upstreamProducer: Stream<T>
     }
 }
 
+public func retry<T>(retryCount: Int)(upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer
+{
+    precondition(retryCount >= 0)
+    
+    if retryCount == 0 {
+        return upstreamProducer
+    }
+    else {
+        return upstreamProducer |>> catch { _ -> Stream<T> in
+            return (upstreamProducer |>> retry(retryCount - 1))()
+        }
+    }
+}
+
 //--------------------------------------------------
 /// MARK: - Rx Semantics
 /// (TODO: move to new file, but doesn't work in Swift 1.1. ERROR = ld: symbol(s) not found for architecture x86_64)
