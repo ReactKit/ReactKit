@@ -1037,7 +1037,7 @@ public func switchLatestInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
             }
         }
         
-    }.name("concatInner")
+    }.name("switchLatestInner")
 }
 
 //--------------------------------------------------
