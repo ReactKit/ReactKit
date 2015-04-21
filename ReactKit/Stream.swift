@@ -184,8 +184,7 @@ public extension Stream
     public class func sequence<S: SequenceType where S.Generator.Element == T>(values: S) -> Stream<T>
     {
         return Stream { progress, fulfill, reject, configure in
-            var generator = values.generate()
-            while let value: T = generator.next() {
+            for value in values {
                 progress(value)
                 
                 if configure.isFinished { break }
