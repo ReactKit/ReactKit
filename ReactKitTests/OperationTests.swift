@@ -768,6 +768,54 @@ class OperationTests: _TestCase
         
         self.wait()
     }
+    
+    func testDistinctUntilChanged()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let stream = KVO.stream(obj1, "value")
+            |> map { (($0 as? NSString) ?? "") }
+            |> distinctUntilChanged
+            |> map { $0 as NSString? }
+        
+        var reactCount = 0
+        
+        // REACT
+        (obj2, "value") <~ stream
+        stream ~> { _ in reactCount++; return }
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        XCTAssertEqual(obj2.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            XCTAssertEqual(obj2.value, "hoge")
+            XCTAssertEqual(reactCount, 1)
+            
+            obj1.value = "fuga"
+            XCTAssertEqual(obj2.value, "fuga")
+            XCTAssertEqual(reactCount, 2)
+            
+            obj1.value = "fuga"
+            XCTAssertEqual(obj2.value, "fuga")
+            XCTAssertEqual(reactCount, 2, "`reactCount` should not be incremented because `fuga` is sent last time thus filtered by `distinctUntilChanged()` method.")
+            
+            obj1.value = "hoge"
+            XCTAssertEqual(obj2.value, "hoge")
+            XCTAssertEqual(reactCount, 3, "`hoge` is already sent but not at last time, so it should not be filtered by `distinctUntilChanged()`.")
+            
+            expect.fulfill()
+            
+        }
+        
+        self.wait()
+    }
 
     // MARK: combining
     

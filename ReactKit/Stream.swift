@@ -582,6 +582,12 @@ public func distinct<H: Hashable>(upstream: Stream<H>) -> Stream<H>
     }
 }
 
+public func distinctUntilChanged<E: Equatable>(upstream: Stream<E>) -> Stream<E>
+{
+    let stream = upstream |> filter2 { $0 != $1 }
+    return stream.name("\(upstream.name)-distinctUntilChanged")
+}
+
 // MARK: combining
 
 public func merge<T>(stream: Stream<T>)(upstream: Stream<T>) -> Stream<T>
