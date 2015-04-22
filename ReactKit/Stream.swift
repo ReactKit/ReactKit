@@ -19,7 +19,7 @@ public class Stream<T>: Task<T, Void, NSError>
     
     ///
     /// Creates a new stream (event-delivery-pipeline over time).
-    /// Synonym of "stream", "observable", etc.
+    /// Synonym of "signal", "observable", etc.
     ///
     /// :param: initClosure Closure to define returning stream's behavior. Inside this closure, `configure.pause`/`resume`/`cancel` should capture inner logic (player) object. See also comment in `SwiftTask.Task.init()`.
     ///
