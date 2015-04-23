@@ -13,6 +13,10 @@ typealias ErrorString = String
 
 class _TestCase: XCTestCase
 {
+    var timeInterval: NSTimeInterval = 0.0
+    
+    var isAsync: Bool { return false }
+    
     override func setUp()
     {
         super.setUp()
@@ -25,27 +29,28 @@ class _TestCase: XCTestCase
         super.tearDown()
     }
     
-    func wait(handler: (Void -> Void)? = nil)
+    func perform(after: NSTimeInterval = 0.01, closure: Void -> Void)
     {
-        self.waitForExpectationsWithTimeout(3) { error in
-            
-            println("wait error = \(error)")
-            
-            if let handler = handler {
-                handler()
-            }
-        }
-    }
-    
-    var isAsync: Bool { return false }
-    
-    func perform(closure: Void -> Void)
-    {
+        self.timeInterval = after
+        
         if self.isAsync {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1_000_000), dispatch_get_main_queue(), closure)
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1_000_000_000 * self.timeInterval)), dispatch_get_main_queue(), closure)
         }
         else {
             closure()
+        }
+    }
+    
+    func wait(filename: String = __FILE__, functionName: String = __FUNCTION__, line: Int = __LINE__)
+    {
+        self.waitForExpectationsWithTimeout(self.timeInterval + 1) { error in
+            if let error = error {
+                println()
+                println("*** Wait Error ***")
+                println("file = \(filename.lastPathComponent), \(functionName), line \(line)")
+                println("error = \(error)")
+                println()
+            }
         }
     }
 }

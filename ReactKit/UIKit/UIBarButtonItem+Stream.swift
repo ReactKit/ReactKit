@@ -1,5 +1,5 @@
 //
-//  UIBarButtonItem+Signal.swift
+//  UIBarButtonItem+Stream.swift
 //  ReactKit
 //
 //  Created by Yasuhiro Inami on 2014/10/08.
@@ -10,9 +10,9 @@ import UIKit
 
 public extension UIBarButtonItem
 {
-    public func signal<T>(map: UIBarButtonItem? -> T) -> Signal<T>
+    public func stream<T>(map: UIBarButtonItem? -> T) -> Stream<T>
     {
-        return Signal { [weak self] progress, fulfill, reject, configure in
+        return Stream<T> { [weak self] progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 progress(map(self_ as? UIBarButtonItem))
@@ -42,11 +42,11 @@ public extension UIBarButtonItem
                 removeTargetAction()
             }
             
-        }.name("\(NSStringFromClass(self.dynamicType))").takeUntil(self.deinitSignal)
+        }.name("\(NSStringFromClass(self.dynamicType))") |> takeUntil(self.deinitStream)
     }
     
-    public func signal<T>(mappedValue: T) -> Signal<T>
+    public func stream<T>(mappedValue: T) -> Stream<T>
     {
-        return self.signal { _ in mappedValue }
+        return self.stream { _ in mappedValue }
     }
 }

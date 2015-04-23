@@ -8,38 +8,38 @@
 
 import Foundation
 
-private var deinitSignalKey: UInt8 = 0
+private var deinitStreamKey: UInt8 = 0
 
 public extension NSObject
 {
-    private var _deinitSignal: Signal<AnyObject?>?
+    private var _deinitStream: Stream<AnyObject?>?
     {
         get {
-            return objc_getAssociatedObject(self, &deinitSignalKey) as? Signal<AnyObject?>
+            return objc_getAssociatedObject(self, &deinitStreamKey) as? Stream<AnyObject?>
         }
         set {
-            objc_setAssociatedObject(self, &deinitSignalKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))  // not OBJC_ASSOCIATION_RETAIN_NONATOMIC
+            objc_setAssociatedObject(self, &deinitStreamKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))  // not OBJC_ASSOCIATION_RETAIN_NONATOMIC
         }
     }
     
-    public var deinitSignal: Signal<AnyObject?>
+    public var deinitStream: Stream<AnyObject?>
     {
-        var signal: Signal<AnyObject?>? = self._deinitSignal
+        var stream: Stream<AnyObject?>? = self._deinitStream
         
-        if signal == nil {
-            signal = Signal<AnyObject?> { (progress, fulfill, reject, configure) in
+        if stream == nil {
+            stream = Stream<AnyObject?> { (progress, fulfill, reject, configure) in
                 // do nothing
-            }.name("\(NSStringFromClass(self.dynamicType))-deinitSignal")
+            }.name("\(NSStringFromClass(self.dynamicType))-deinitStream")
             
 //            #if DEBUG
-//                signal?.then { value, errorInfo -> Void in
-//                    println("[internal] deinitSignal finished")
+//                stream?.then { value, errorInfo -> Void in
+//                    println("[internal] deinitStream finished")
 //                }
 //            #endif
             
-            self._deinitSignal = signal
+            self._deinitStream = stream
         }
         
-        return signal!
+        return stream!
     }
 }

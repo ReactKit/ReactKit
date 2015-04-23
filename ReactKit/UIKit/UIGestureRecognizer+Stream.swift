@@ -1,5 +1,5 @@
 //
-//  UIGestureRecognizer+Signal.swift
+//  UIGestureRecognizer+Stream.swift
 //  ReactKit
 //
 //  Created by Yasuhiro Inami on 2014/10/03.
@@ -8,12 +8,12 @@
 
 import UIKit
 
-// NOTE: see also UIControl+Signal
+// NOTE: see also UIControl+Stream
 public extension UIGestureRecognizer
 {
-    public func signal<T>(map: UIGestureRecognizer? -> T) -> Signal<T>
+    public func stream<T>(map: UIGestureRecognizer? -> T) -> Stream<T>
     {
-        return Signal { [weak self] progress, fulfill, reject, configure in
+        return Stream<T> { [weak self] progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 progress(map(self_ as? UIGestureRecognizer))
@@ -35,6 +35,6 @@ public extension UIGestureRecognizer
                 }
             }
             
-        }.name("\(NSStringFromClass(self.dynamicType))").takeUntil(self.deinitSignal)
+        }.name("\(NSStringFromClass(self.dynamicType))") |> takeUntil(self.deinitStream)
     }
 }

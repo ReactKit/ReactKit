@@ -10,10 +10,10 @@ import Foundation
 
 public extension NSNotificationCenter
 {
-    /// creates new Signal
-    public func signal(#notificationName: String, object: AnyObject? = nil, queue: NSOperationQueue? = nil) -> Signal<NSNotification?>
+    /// creates new Stream
+    public func stream(#notificationName: String, object: AnyObject? = nil, queue: NSOperationQueue? = nil) -> Stream<NSNotification?>
     {
-        return Signal { [weak self] progress, fulfill, reject, configure in
+        return Stream { [weak self] progress, fulfill, reject, configure in
             
             var observer: NSObjectProtocol?
             
@@ -43,16 +43,16 @@ public extension NSNotificationCenter
                 }
             }
             
-        }.name("NSNotification-\(notificationName)").takeUntil(self.deinitSignal)
+        }.name("NSNotification-\(notificationName)") |> takeUntil(self.deinitStream)
     }
 }
 
 /// NSNotificationCenter helper
 public struct Notification
 {
-    public static func signal(notificationName: String, _ object: AnyObject?) -> Signal<NSNotification?>
+    public static func stream(notificationName: String, _ object: AnyObject?) -> Stream<NSNotification?>
     {
-        return NSNotificationCenter.defaultCenter().signal(notificationName: notificationName, object: object)
+        return NSNotificationCenter.defaultCenter().stream(notificationName: notificationName, object: object)
     }
     
     public static func post(notificationName: String, _ object: AnyObject?)

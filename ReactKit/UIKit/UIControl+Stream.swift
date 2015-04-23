@@ -1,5 +1,5 @@
 //
-//  UIControl+Signal.swift
+//  UIControl+Stream.swift
 //  ReactKit
 //
 //  Created by Yasuhiro Inami on 2014/09/14.
@@ -10,18 +10,18 @@ import UIKit
 
 public extension UIControl
 {
-    public func signal<T>(#controlEvents: UIControlEvents, map: UIControl? -> T) -> Signal<T>
+    public func stream<T>(#controlEvents: UIControlEvents, map: UIControl? -> T) -> Stream<T>
     {
-        return Signal { [weak self] progress, fulfill, reject, configure in
+        return Stream<T> { [weak self] progress, fulfill, reject, configure in
             
             let target = _TargetActionProxy { (self_: AnyObject?) in
                 
                 //
                 // WARN:
                 //
-                // NEVER send `self_` to `progress()`, or incoming new signal e.g. `signal.filter()`
+                // NEVER send `self_` to `progress()`, or incoming new stream e.g. `stream.filter()`
                 // will capture `self_` if 1st progress is invoked, which will then cause 
-                // self_.deinitSignal not able to invoked at right place.
+                // self_.deinitStream not able to invoked at right place.
                 //
                 // To avoid this issue, use `map` closure (given as argument) to change
                 // the sending value at very first place.
@@ -52,6 +52,6 @@ public extension UIControl
                 }
             }
             
-        }.name("\(NSStringFromClass(self.dynamicType))-\(controlEvents)").takeUntil(self.deinitSignal)
+        }.name("\(NSStringFromClass(self.dynamicType))-\(controlEvents)") |> takeUntil(self.deinitStream)
     }
 }

@@ -1,5 +1,5 @@
 //
-//  UITextField+Signal.swift
+//  UITextField+Stream.swift
 //  ReactKit
 //
 //  Created by Yasuhiro Inami on 2014/09/14.
@@ -10,13 +10,13 @@ import UIKit
 
 public extension UITextField
 {
-    public func textChangedSignal() -> Signal<NSString?>
+    public func textChangedStream() -> Stream<NSString?>
     {
-        return self.signal(controlEvents: .EditingChanged) { (sender: UIControl?) -> NSString? in
+        return self.stream(controlEvents: .EditingChanged) { (sender: UIControl?) -> NSString? in
             if let sender = sender as? UITextField {
                 return sender.text
             }
             return nil
-        }.takeUntil(self.deinitSignal)
+        } |> takeUntil(self.deinitStream)
     }
 }

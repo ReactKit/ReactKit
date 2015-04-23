@@ -15,21 +15,19 @@ class ImmediateSequenceTests: _TestCase
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let sourceSignal = Signal(values: [Int](1...5))
-        let takeSignal = sourceSignal.take(3)
-        
         var sourceBuffer = [Int]()
         var takeBuffer = [Int]()
         
-        // NOTE: peek = progress without auto-resume
-        sourceSignal.peek { value in
-            println("sourceSignal new value = \(value)")
-            sourceBuffer += [value]
-        }
+        let sourceStream = Stream.sequence([Int](1...5))
+            |> peek { value in
+                println("sourceStream new value = \(value)")
+                sourceBuffer += [value]
+            }
+        let takeStream = sourceStream |> take(3)
         
         // REACT
-        takeSignal ~> { value in
-            println("[REACT] takeSignal new value = \(value)")
+        takeStream ~> { value in
+            println("[REACT] takeStream new value = \(value)")
             takeBuffer += [value]
         }
         

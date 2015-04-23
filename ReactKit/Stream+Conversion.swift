@@ -1,5 +1,5 @@
 //
-//  Signal+Conversion.swift
+//  Stream+Conversion.swift
 //  ReactKit
 //
 //  Created by Yasuhiro Inami on 2015/01/08.
@@ -9,40 +9,37 @@
 import Foundation
 import SwiftTask
 
-public extension Signal
+/// converts Stream<T> to Stream<U>
+public func asStream<T, U>(type: U.Type)(upstream: Stream<T>) -> Stream<U>
 {
-    ///
-    /// FIXME:
-    /// Currently in Swift 1.1, `signal.asSignal(U)` is only available
-    /// when both `T` of `signal: Signal<T>` and `U` are non-Optional.
-    /// Otherwise, "Swift dynamic cast failure" will occur (bug?).
-    ///
-    /// To work around this issue, use `map { $0 as U? }` directly
-    /// to convert from `Signal<T?>` to `Signal<U?>` as follows:
-    ///
-    /// ```
-    /// let signal: Signal<AnyObject?> = ...`
-    /// let convertedSignal: Signal<String?> = signal.map { $0 as String? }
-    /// ```
-    ///
-    public func asSignal<U>(type: U.Type) -> Signal<U>
-    {
-        return self.map { $0 as! U }
-    }
-    
+    let stream = upstream |> map { $0 as! U }
+    stream.name("\(upstream.name)-asStream(\(type))")
+    return stream
+}
+
+/// converts Stream<T> to Stream<U?>
+public func asStream<T, U>(type: U?.Type)(upstream: Stream<T>) -> Stream<U?>
+{
+    let stream = upstream |> map { $0 as? U }
+    stream.name("\(upstream.name)-asStream(\(type))")
+    return stream
+}
+
+public extension Stream
+{
     //--------------------------------------------------
     /// MARK: - From SwiftTask
     //--------------------------------------------------
     
     ///
-    /// Converts `Task<P, V, E>` to `Signal<V>`.
+    /// Converts `Task<P, V, E>` to `Stream<V>`.
     ///
-    /// Task's fulfilled-value (`task.value`) will be interpreted as signal's progress-value (`signal.progress`),
+    /// Task's fulfilled-value (`task.value`) will be interpreted as stream's progress-value (`stream.progress`),
     /// and any task's progress-values (`task.progress`) will be discarded.
     ///
-    public class func fromTask<P, V, E>(task: Task<P, V, E>) -> Signal<V>
+    public class func fromTask<P, V, E>(task: Task<P, V, E>) -> Stream<V>
     {
-        return Signal<V> { progress, fulfill, reject, configure in
+        return Stream<V> { progress, fulfill, reject, configure in
             
             task.then { value, errorInfo -> Void in
                 if let value = value {
@@ -54,7 +51,7 @@ public extension Signal
                         reject(error)
                     }
                     else {
-                        let error = _RKError(.RejectedByInternalTask, "`task` is rejected/cancelled while `Signal.fromTask(task)`.")
+                        let error = _RKError(.RejectedByInternalTask, "`task` is rejected/cancelled while `Stream.fromTask(task)`.")
                         reject(error)
                     }
                 }
@@ -73,19 +70,19 @@ public extension Signal
                 return
             }
             
-        }.name("Signal.fromTask")
+        }.name("Stream.fromTask")
     }
     
     ///
-    /// Converts `Task<P, V, E>` to `Signal<(P?, V?)>`.
+    /// Converts `Task<P, V, E>` to `Stream<(P?, V?)>`.
     ///
     /// Both task's progress-values (`task.progress`) and fulfilled-value (`task.value`) 
-    /// will be interpreted as signal's progress-value (`signal.progress`),
-    /// so unlike `Signal.fromTask(_:)`, all `task.progress` will NOT be discarded.
+    /// will be interpreted as stream's progress-value (`stream.progress`),
+    /// so unlike `Stream.fromTask(_:)`, all `task.progress` will NOT be discarded.
     ///
-    public class func fromProgressTask<P, V, E>(task: Task<P, V, E>) -> Signal<(P?, V?)>
+    public class func fromProgressTask<P, V, E>(task: Task<P, V, E>) -> Stream<(P?, V?)>
     {
-        return Signal<(P?, V?)> { progress, fulfill, reject, configure in
+        return Stream<(P?, V?)> { progress, fulfill, reject, configure in
             
             task.progress { [weak task] _, progressValue in
                 
@@ -102,7 +99,7 @@ public extension Signal
                         reject(error)
                     }
                     else {
-                        let error = _RKError(.RejectedByInternalTask, "`task` is rejected/cancelled while `Signal.fromProgressTask(task)`.")
+                        let error = _RKError(.RejectedByInternalTask, "`task` is rejected/cancelled while `Stream.fromProgressTask(task)`.")
                         reject(error)
                     }
                 }
@@ -121,6 +118,6 @@ public extension Signal
                 return
             }
             
-        }.name("Signal.fromProgressTask")
+        }.name("Stream.fromProgressTask")
     }
 }

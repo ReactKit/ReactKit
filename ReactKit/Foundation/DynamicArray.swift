@@ -9,7 +9,7 @@
 import Foundation
 
 ///
-/// Array-wrapper class to create mutableArrayValueForKey-`proxy` and its `signal`.
+/// Array-wrapper class to create mutableArrayValueForKey-`proxy` and its `stream`.
 ///
 /// (NOTE: to forward changes to original array, use `ForwardingDynamicArray` instead)
 ///
@@ -27,20 +27,21 @@ public class DynamicArray: NSObject
     private let _key = "_array"
     
     ///
-    /// Proxy array to send changes to `self.signal`.
+    /// Proxy array to send changes to `self.stream`.
     ///
-    /// NOTE: Make sure to bind `self.signal` first i.e. `self.signal ~> { ... }` (KVO-addObserver) before using this.
+    /// NOTE: Make sure to bind `self.stream` first i.e. `self.stream ~> { ... }` (KVO-addObserver) before using this.
     ///
     public var proxy: NSMutableArray
     {
         return self.mutableArrayValueForKey(self._key)
     }
     
-    /// creates new signal which sends `(changedValues, changedType, indexSet)` 
+    /// creates new stream which sends `(changedValues, changedType, indexSet)` 
     /// via changes in `self.proxy` NSMutableArray
-    public func signal() -> Signal<ChangedTuple>
+    public func stream() -> Stream<ChangedTuple>
     {
-        return KVO.detailedSignal(self, self._key).map { ($0 as? [Element], $1, $2!) }
+        return KVO.detailedStream(self, self._key)
+            |> map { ($0 as? [Element], $1, $2!) }
     }
     
     public init(_ array: [Element] = [])
@@ -85,15 +86,15 @@ public class ForwardingDynamicArray: DynamicArray
         
         //
         // NOTE:
-        // `originalMutableArray` via `mutableArrayValueForKeyPath()` can't be used as `forwardingSignalOwner`
+        // `originalMutableArray` via `mutableArrayValueForKeyPath()` can't be used as `forwardingStreamOwner`
         // because it doesn't get deinited for some reason (see https://gist.github.com/inamiy/577ae4b222dd38429aa2 ),
         // thus `ForwardingDynamicArray` won't get deinited too since retaining-flow will be like this:
         //
-        //     originalMutableArray (owner) -> forwardingSignal -> KVOProxy -> ForwardingDynamicArray
+        //     originalMutableArray (owner) -> forwardingStream -> KVOProxy -> ForwardingDynamicArray
         //
         // To avoid this issue, use model `object` as owner instead.
         //
-        self.init(original: originalMutableArray, forwardingSignalOwner: object)
+        self.init(original: originalMutableArray, forwardingStreamOwner: object)
     }
     
     ///
@@ -103,17 +104,17 @@ public class ForwardingDynamicArray: DynamicArray
     ///
     public convenience init(original originalMutableArray: NSMutableArray)
     {
-        self.init(original: originalMutableArray, forwardingSignalOwner: originalMutableArray)
+        self.init(original: originalMutableArray, forwardingStreamOwner: originalMutableArray)
     }
     
-    internal init(original originalMutableArray: NSMutableArray, forwardingSignalOwner: NSObject)
+    internal init(original originalMutableArray: NSMutableArray, forwardingStreamOwner: NSObject)
     {
         super.init(originalMutableArray as [Element])
         
-        let forwardingSignal = self.signal().ownedBy(forwardingSignalOwner)
+        let forwardingStream = self.stream().ownedBy(forwardingStreamOwner)
         
         // REACT: forward changes to `originalMutableArray`
-        forwardingSignal ~> { [weak originalMutableArray] values, change, indexSet in
+        forwardingStream ~> { [weak originalMutableArray] values, change, indexSet in
             
             switch change {
                 case .Insertion:
