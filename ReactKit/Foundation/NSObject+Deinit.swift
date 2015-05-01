@@ -12,22 +12,22 @@ private var deinitStreamKey: UInt8 = 0
 
 public extension NSObject
 {
-    private var _deinitStream: Stream<AnyObject?>?
+    private var _deinitStream: Stream<AnyObject?, NSError>?
     {
         get {
-            return objc_getAssociatedObject(self, &deinitStreamKey) as? Stream<AnyObject?>
+            return objc_getAssociatedObject(self, &deinitStreamKey) as? Stream<AnyObject?, NSError>
         }
         set {
             objc_setAssociatedObject(self, &deinitStreamKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))  // not OBJC_ASSOCIATION_RETAIN_NONATOMIC
         }
     }
     
-    public var deinitStream: Stream<AnyObject?>
+    public var deinitStream: Stream<AnyObject?, NSError>
     {
-        var stream: Stream<AnyObject?>? = self._deinitStream
+        var stream: Stream<AnyObject?, NSError>? = self._deinitStream
         
         if stream == nil {
-            stream = Stream<AnyObject?> { (progress, fulfill, reject, configure) in
+            stream = Stream<AnyObject?, NSError> { (progress, fulfill, reject, configure) in
                 // do nothing
             }.name("\(NSStringFromClass(self.dynamicType))-deinitStream")
             

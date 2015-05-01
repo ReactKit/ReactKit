@@ -9,16 +9,16 @@
 import Foundation
 import SwiftTask
 
-/// converts Stream<T> to Stream<U>
-public func asStream<T, U>(type: U.Type)(upstream: Stream<T>) -> Stream<U>
+/// converts Stream<T, E> to Stream<U, E>
+public func asStream<T, U, E: ErrorType>(type: U.Type)(upstream: Stream<T, E>) -> Stream<U, E>
 {
     let stream = upstream |> map { $0 as! U }
     stream.name("\(upstream.name)-asStream(\(type))")
     return stream
 }
 
-/// converts Stream<T> to Stream<U?>
-public func asStream<T, U>(type: U?.Type)(upstream: Stream<T>) -> Stream<U?>
+/// converts Stream<T, E> to Stream<U?, E>
+public func asStream<T, U, E: ErrorType>(type: U?.Type)(upstream: Stream<T, E>) -> Stream<U?, E>
 {
     let stream = upstream |> map { $0 as? U }
     stream.name("\(upstream.name)-asStream(\(type))")
@@ -32,14 +32,14 @@ public extension Stream
     //--------------------------------------------------
     
     ///
-    /// Converts `Task<P, V, E>` to `Stream<V>`.
+    /// Converts `Task<P, V, E>` to `Stream<V, E>`.
     ///
     /// Task's fulfilled-value (`task.value`) will be interpreted as stream's progress-value (`stream.progress`),
     /// and any task's progress-values (`task.progress`) will be discarded.
     ///
-    public class func fromTask<P, V, E>(task: Task<P, V, E>) -> Stream<V>
+    public class func fromTask<P, V, E>(task: Task<P, V, E>) -> Stream<V, E>
     {
-        return Stream<V> { progress, fulfill, reject, configure in
+        return Stream<V, E> { progress, fulfill, reject, configure in
             
             task.then { value, errorInfo -> Void in
                 if let value = value {
@@ -47,11 +47,11 @@ public extension Stream
                     fulfill()
                 }
                 else if let errorInfo = errorInfo {
-                    if let error = errorInfo.error as? NSError {
+                    if let error = errorInfo.error {
                         reject(error)
                     }
                     else {
-                        let error = _RKError(.RejectedByInternalTask, "`task` is rejected/cancelled while `Stream.fromTask(task)`.")
+                        let error = E.cancelledError("`task` is rejected/cancelled while `Stream.fromTask(task)`.")
                         reject(error)
                     }
                 }
@@ -74,15 +74,15 @@ public extension Stream
     }
     
     ///
-    /// Converts `Task<P, V, E>` to `Stream<(P?, V?)>`.
+    /// Converts `Task<P, V, E>` to `Stream<(P?, V?), E>`.
     ///
     /// Both task's progress-values (`task.progress`) and fulfilled-value (`task.value`) 
     /// will be interpreted as stream's progress-value (`stream.progress`),
     /// so unlike `Stream.fromTask(_:)`, all `task.progress` will NOT be discarded.
     ///
-    public class func fromProgressTask<P, V, E>(task: Task<P, V, E>) -> Stream<(P?, V?)>
+    public class func fromProgressTask<P, V, E>(task: Task<P, V, E>) -> Stream<(P?, V?), E>
     {
-        return Stream<(P?, V?)> { progress, fulfill, reject, configure in
+        return Stream<(P?, V?), E> { progress, fulfill, reject, configure in
             
             task.progress { [weak task] _, progressValue in
                 
@@ -95,11 +95,11 @@ public extension Stream
                     fulfill()
                 }
                 else if let errorInfo = errorInfo {
-                    if let error = errorInfo.error as? NSError {
+                    if let error = errorInfo.error {
                         reject(error)
                     }
                     else {
-                        let error = _RKError(.RejectedByInternalTask, "`task` is rejected/cancelled while `Stream.fromProgressTask(task)`.")
+                        let error = E.cancelledError("`task` is rejected/cancelled while `Stream.fromProgressTask(task)`.")
                         reject(error)
                     }
                 }

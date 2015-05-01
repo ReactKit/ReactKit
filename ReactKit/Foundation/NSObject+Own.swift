@@ -12,7 +12,7 @@ private var owninigStreamsKey: UInt8 = 0
 
 internal extension NSObject
 {
-    internal typealias AnyStream = AnyObject // NOTE: can't use Stream<AnyObject?>
+    internal typealias AnyStream = AnyObject // NOTE: can't use Stream<AnyObject?, NSError>
     
     internal var _owninigStreams: [AnyStream]
     {

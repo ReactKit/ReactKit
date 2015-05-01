@@ -56,10 +56,10 @@ class CustomOperatorTests: _TestCase
     /// e.g. `let value = stream ~>! ()`
     func testTerminalReactingOperator()
     {
-        var sum: Int! = Stream.sequence([1, 2, 3]) |> reduce(100) { $0 + $1 } ~>! ()
+        var sum: Int! = Stream<Int, DefaultError>.sequence([1, 2, 3]) |> reduce(100) { $0 + $1 } ~>! ()
         XCTAssertEqual(sum, 106)
         
-        var distinctValues: [Int] = Stream.sequence([1, 2, 2, 3]) |> distinct |> buffer() ~>! ()
+        var distinctValues: [Int] = Stream<Int, DefaultError>.sequence([1, 2, 2, 3]) |> distinct |> buffer() ~>! ()
         XCTAssertEqual(distinctValues, [1, 2, 3])
     }
 }

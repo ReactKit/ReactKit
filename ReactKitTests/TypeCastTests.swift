@@ -13,13 +13,13 @@ class TypeCastTests: _TestCase
 {
     func testTypeCast()
     {
-        let intStreamProducer: Stream<Int>.Producer = { Stream.once(1) }
+        let intStreamProducer: Stream<Int, DefaultError>.Producer = { Stream.once(1) }
         
-        let optIntStreamProducer: Stream<Int?>.Producer = intStreamProducer |>> asStream(Int?)
-        let numberStreamProducer: Stream<NSNumber>.Producer = intStreamProducer |>> asStream(NSNumber)
-        let optNumberStreamProducer: Stream<NSNumber?>.Producer = intStreamProducer |>> asStream(NSNumber?)
+        let optIntStreamProducer: Stream<Int?, DefaultError>.Producer = intStreamProducer |>> asStream(Int?)
+        let numberStreamProducer: Stream<NSNumber, DefaultError>.Producer = intStreamProducer |>> asStream(NSNumber)
+        let optNumberStreamProducer: Stream<NSNumber?, DefaultError>.Producer = intStreamProducer |>> asStream(NSNumber?)
         
-        let concatStream: Stream<Any?> = [
+        let concatStream: Stream<Any?, DefaultError> = [
             optIntStreamProducer() |> asStream(Any?),
             numberStreamProducer() |> asStream(Any?),
             optNumberStreamProducer() |> asStream(Any?)

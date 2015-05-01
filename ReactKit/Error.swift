@@ -8,27 +8,31 @@
 
 import Foundation
 
-public enum ReactKitError: Int
+public let ReactKitErrorDomain = "ReactKitErrorDomain"
+
+public protocol ErrorType
 {
-    public static let Domain = "ReactKitErrorDomain"
-    
-    case Cancelled = 0
-    case CancelledByDeinit = 1
-    case CancelledByUpstream = 2
-    case CancelledByTriggerStream = 3
-    case CancelledByInternalStream = 4
-    
-    case RejectedByInternalTask = 1000
+    static func cancelledError(message: String?) -> Self
 }
 
-/// helper
-internal func _RKError(error: ReactKitError, localizedDescriptionKey: String) -> NSError
+extension NSError: ErrorType
 {
-    return NSError(
-        domain: ReactKitError.Domain,
-        code: error.rawValue,
-        userInfo: [
-            NSLocalizedDescriptionKey : localizedDescriptionKey
-        ]
-    )
+    public class func cancelledError(message: String?) -> Self
+    {
+        return self(
+            domain: ReactKitErrorDomain,
+            code: -1,
+            userInfo: [
+                NSLocalizedDescriptionKey : message ?? "Stream is cancelled."
+            ]
+        )
+    }
+}
+
+public struct DefaultError: ErrorType
+{
+    public static func cancelledError(message: String?) -> DefaultError
+    {
+        return self()
+    }
 }

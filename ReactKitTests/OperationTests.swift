@@ -68,7 +68,7 @@ class OperationTests: _TestCase
         let obj2 = MyObject()
         
         // NOTE: `mapClosure` is returning Stream
-        let stream = KVO.stream(obj1, "value") |> flatMap { (value: AnyObject?) -> Stream<AnyObject?> in
+        let stream = KVO.stream(obj1, "value") |> flatMap { (value: AnyObject?) -> Stream<AnyObject?, NSError> in
             // delay sending value for 0.01 sec
             return NSTimer.stream(timeInterval: 0.01, repeats: false) { _ in value }
         }
@@ -197,7 +197,7 @@ class OperationTests: _TestCase
         
         let obj1 = MyObject()
         
-        let stream: Stream<[AnyObject?]> = KVO.stream(obj1, "value") |> buffer(3)
+        let stream: Stream<[AnyObject?], NSError> = KVO.stream(obj1, "value") |> buffer(3)
         
         var result: String? = "no result"
         
@@ -248,7 +248,7 @@ class OperationTests: _TestCase
         let trigger = MyObject()
         
         let triggerStream = KVO.stream(trigger, "value")
-        let stream: Stream<[AnyObject?]> = KVO.stream(obj1, "value") |> bufferBy(triggerStream)
+        let stream: Stream<[AnyObject?], NSError> = KVO.stream(obj1, "value") |> bufferBy(triggerStream)
         
         var result: String? = "no result"
         
@@ -296,13 +296,13 @@ class OperationTests: _TestCase
         let obj1 = MyObject()
         
         // group by `key = countElement(value)`
-        let stream: Stream<(Int, Stream<AnyObject?>)> = KVO.stream(obj1, "value") |> groupBy { count($0! as! String) }
+        let stream: Stream<(Int, Stream<AnyObject?, NSError>), NSError> = KVO.stream(obj1, "value") |> groupBy { count($0! as! String) }
         
         var lastKey: Int?
         var lastValue: String?
         
         // REACT
-        stream ~> { (key: Int, groupedStream: Stream<AnyObject?>) in
+        stream ~> { (key: Int, groupedStream: Stream<AnyObject?, NSError>) in
             lastKey = key
             
             // REACT
@@ -528,8 +528,7 @@ class OperationTests: _TestCase
         // failure
         takeStream.failure { errorInfo -> Void in
             
-            XCTAssertEqual(errorInfo.error!.domain, ReactKitError.Domain, "`sourceStream` is cancelled before any progress, so `takeStream` should fail.")
-            XCTAssertEqual(errorInfo.error!.code, ReactKitError.CancelledByUpstream.rawValue)
+            XCTAssertEqual(errorInfo.error!.domain, ReactKitErrorDomain, "`sourceStream` is cancelled before any progress, so `takeStream` should fail.")
             
             XCTAssertFalse(errorInfo.isCancelled, "Though `sourceStream` is cancelled, `takeStream` is rejected rather than cancelled.")
             
@@ -727,7 +726,7 @@ class OperationTests: _TestCase
         let stream = KVO.stream(obj1, "value")
             |> map { (($0 as? NSString) ?? "") }    // create stream with Hashable value-type for `distinct()`
             |> distinct
-            |> map { $0 as NSString? }  // convert: Stream<NSString> -> Stream<NSString?>
+            |> map { $0 as NSString? }  // convert: Stream<NSString, NSError> -> Stream<NSString?, NSError>
         
         var reactCount = 0
         
@@ -776,7 +775,7 @@ class OperationTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let stream = KVO.stream(obj1, "value")
+        let stream: Stream<NSString?, NSError> = KVO.stream(obj1, "value")
             |> map { (($0 as? NSString) ?? "") }
             |> distinctUntilChanged
             |> map { $0 as NSString? }
@@ -899,9 +898,9 @@ class OperationTests: _TestCase
         let expect = self.expectationWithDescription(__FUNCTION__)
         
         // create streams which will never be fulfilled/rejected
-        let stream1: Stream<Any> = Stream.sequence([0, 1, 2, 3, 4])
+        let stream1: Stream<Any, DefaultError> = Stream.sequence([0, 1, 2, 3, 4])
             |> concat(Stream.never())
-        let stream2: Stream<Any> = Stream.sequence(["A", "B", "C"])
+        let stream2: Stream<Any, DefaultError> = Stream.sequence(["A", "B", "C"])
             |> concat(Stream.never())
         
         var bundledStream = stream1 |> zip(stream2) |> map { (values: [Any]) -> String in
@@ -953,7 +952,7 @@ class OperationTests: _TestCase
         
         var buffer = [Int]()
         
-        var streamProducer: Stream<Int>.Producer = { Stream.sequence(1...3) }
+        var streamProducer: Stream<Int, NSError>.Producer = { Stream.sequence(1...3) }
         if self.isAsync {
             streamProducer = streamProducer |>> interval(0.1)
         }
@@ -962,7 +961,7 @@ class OperationTests: _TestCase
             |> concat(Stream.error(NSError(domain: "test", code: -1, userInfo: nil)))
         
         let recoveryStream = errorStream
-            |> catch { errorInfo -> Stream<Int> in
+            |> catch { errorInfo -> Stream<Int, NSError> in
                 return streamProducer()
             }
         
@@ -995,7 +994,7 @@ class OperationTests: _TestCase
         
         let faster: NSTimeInterval = 0.1
         
-        let stream = Stream.sequence(0...2) |> interval(1.0 * faster)
+        let stream = Stream<Int, DefaultError>.sequence(0...2) |> interval(1.0 * faster)
         
         var results = [Int]()
         
@@ -1121,7 +1120,7 @@ class OperationTests: _TestCase
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        var stream = Stream.sequence([1, 2, 3])
+        var stream = Stream<Int, DefaultError>.sequence([1, 2, 3])
         if self.isAsync {
             stream = stream |> delay(0.01)
         }
@@ -1246,8 +1245,8 @@ class OperationTests: _TestCase
         
         let obj1 = MyObject()
         
-        let stream1: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.1, userInfo: nil, repeats: false) { _ in "Next" }
-        let stream2: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.3, userInfo: nil, repeats: false) { _ in 123 }
+        let stream1: Stream<AnyObject?, NSError> = NSTimer.stream(timeInterval: 0.1, userInfo: nil, repeats: false) { _ in "Next" }
+        let stream2: Stream<AnyObject?, NSError> = NSTimer.stream(timeInterval: 0.3, userInfo: nil, repeats: false) { _ in 123 }
         
         var concatStream = [stream1, stream2] |> concatInner |> map { (value: AnyObject?) -> NSString? in
             let valueString: AnyObject = value ?? "nil"
@@ -1297,11 +1296,11 @@ class OperationTests: _TestCase
         ///     - emits 8 at `t = 0.6 + 2`
         ///     - emits 9 at `t = 1.2 + 2`
         ///
-        let nestedStream: Stream<Stream<Int>>
+        let nestedStream: Stream<Stream<Int, DefaultError>, DefaultError>
         nestedStream = Stream.sequence(0...2)
             |> interval(1.0 * faster)
-            |> map { (v: Int) -> Stream<Int> in
-                let innerStream = Stream.sequence((3*v+1)...(3*v+3))
+            |> map { (v: Int) -> Stream<Int, DefaultError> in
+                let innerStream = Stream<Int, DefaultError>.sequence((3*v+1)...(3*v+3))
                     |> interval(0.6 * faster)
                 innerStream.name = "innerStream\(v)"
                 return innerStream
@@ -1383,7 +1382,7 @@ class OperationTests: _TestCase
         
         var buffer = [Int]()
         
-        var streamProducer: Stream<Int>.Producer = { Stream.sequence(1...3) }
+        var streamProducer: Stream<Int, DefaultError>.Producer = { Stream.sequence(1...3) }
         if self.isAsync {
             streamProducer = streamProducer |>> interval(0.01)
         }
@@ -1417,7 +1416,7 @@ class OperationTests: _TestCase
         
         var buffer = [Int]()
         
-        var streamProducer: Stream<Int>.Producer = { Stream.sequence(1...3) }
+        var streamProducer: Stream<Int, NSError>.Producer = { Stream.sequence(1...3) }
         if self.isAsync {
             streamProducer = streamProducer |>> interval(0.01)
         }

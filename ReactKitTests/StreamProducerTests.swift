@@ -36,7 +36,7 @@ class StreamProducerTests: _TestCase
         //   let streamProducer = { stream } |>> map { $0 }     // reusing same stream!
         //   ```
         //
-        let streamProducer: Stream<Int>.Producer
+        let streamProducer: Stream<Int, DefaultError>.Producer
         streamProducer = NSTimer.stream(timeInterval: 0.01, repeats: false) { _ in random() }
             |>> map { $0 }
         
@@ -100,15 +100,15 @@ class StreamProducerTests: _TestCase
         
         let faster: NSTimeInterval = 0.1
         
-        let intervalStream = Stream.sequence(0...4)
+        let intervalStream = Stream<Int, DefaultError>.sequence(0...4)
             |> interval(1.0 * faster)
             |> peek { println("interval: \($0)") }     // for logging
         
         // prestart: resumes upstream & caches its emitted values for future replay
         var streamProducer = intervalStream |>> prestart()
         
-        var stream1: Stream<Int>?
-        var stream2: Stream<Int>?
+        var stream1: Stream<Int, DefaultError>?
+        var stream2: Stream<Int, DefaultError>?
         var stream1Values = [Int]()
         var stream2Values = [Int]()
         

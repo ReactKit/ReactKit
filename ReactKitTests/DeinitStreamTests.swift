@@ -20,7 +20,7 @@ class DeinitStreamTests: _TestCase
         let obj2 = MyObject()
         
         // always use `weak` for deinitStream to avoid it being captured by current execution context
-        weak var deinitStream: Stream<AnyObject?>? = shortLivedObject!.deinitStream
+        weak var deinitStream: Stream<AnyObject?, NSError>? = shortLivedObject!.deinitStream
         
         let obj1Stream = KVO.stream(obj1, "value") |> takeUntil(deinitStream!)
         
@@ -60,7 +60,7 @@ class DeinitStreamTests: _TestCase
         let obj2 = MyObject()
         
         // NOTE: `weak` is not used for this test
-        var deinitStream: Stream<AnyObject?>? = shortLivedObject!.deinitStream
+        var deinitStream: Stream<AnyObject?, NSError>? = shortLivedObject!.deinitStream
         
         let obj1Stream = KVO.stream(obj1, "value") |> takeUntil(deinitStream!)
         

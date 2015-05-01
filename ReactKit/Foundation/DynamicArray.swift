@@ -38,7 +38,7 @@ public class DynamicArray: NSObject
     
     /// creates new stream which sends `(changedValues, changedType, indexSet)` 
     /// via changes in `self.proxy` NSMutableArray
-    public func stream() -> Stream<ChangedTuple>
+    public func stream() -> Stream<ChangedTuple, NSError>
     {
         return KVO.detailedStream(self, self._key)
             |> map { ($0 as? [Element], $1, $2!) }

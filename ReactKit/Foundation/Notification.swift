@@ -11,7 +11,7 @@ import Foundation
 public extension NSNotificationCenter
 {
     /// creates new Stream
-    public func stream(#notificationName: String, object: AnyObject? = nil, queue: NSOperationQueue? = nil) -> Stream<NSNotification?>
+    public func stream(#notificationName: String, object: AnyObject? = nil, queue: NSOperationQueue? = nil) -> Stream<NSNotification?, NSError>
     {
         return Stream { [weak self] progress, fulfill, reject, configure in
             
@@ -50,7 +50,7 @@ public extension NSNotificationCenter
 /// NSNotificationCenter helper
 public struct Notification
 {
-    public static func stream(notificationName: String, _ object: AnyObject?) -> Stream<NSNotification?>
+    public static func stream(notificationName: String, _ object: AnyObject?) -> Stream<NSNotification?, NSError>
     {
         return NSNotificationCenter.defaultCenter().stream(notificationName: notificationName, object: object)
     }
