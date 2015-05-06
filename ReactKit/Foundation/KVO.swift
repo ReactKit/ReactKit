@@ -201,7 +201,7 @@ infix operator <~ { associativity right }
 
 /// Key-Value Binding
 /// e.g. (obj2, "value") <~ stream
-public func <~ <T: AnyObject>(tuple: (object: NSObject, keyPath: String), stream: Stream<T?, NSError>)
+public func <~ <T: AnyObject, E: ErrorType>(tuple: (object: NSObject, keyPath: String), stream: Stream<T?, E>)
 {
     weak var object = tuple.object
     let keyPath = tuple.keyPath
@@ -215,7 +215,7 @@ public func <~ <T: AnyObject>(tuple: (object: NSObject, keyPath: String), stream
 
 /// Multiple Key-Value Binding
 /// e.g. [ (obj1, "value1"), (obj2, "value2") ] <~ stream (sending [value1, value2] array)
-public func <~ <T: AnyObject>(tuples: [(object: NSObject, keyPath: String)], stream: Stream<[T?], NSError>)
+public func <~ <T: AnyObject, E: ErrorType>(tuples: [(object: NSObject, keyPath: String)], stream: Stream<[T?], E>)
 {
     stream.react { (values: [T?]) in
         for i in 0..<tuples.count {
