@@ -985,6 +985,44 @@ class OperationTests: _TestCase
         
     }
     
+    func testCatch_noCatch()
+    {
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        var buffer = [Int]()
+        
+        var streamProducer: Stream<Int>.Producer = { Stream.sequence(1...3) }
+        if self.isAsync {
+            streamProducer = streamProducer |>> interval(0.1)
+        }
+        
+        let errorStream = streamProducer()
+//            |> concat(Stream.error(NSError(domain: "test", code: -1, userInfo: nil))) // comment-out: not attaching error at end for testing
+        
+        let recoveryStream = errorStream
+            |> catch { errorInfo -> Stream<Int> in
+                return streamProducer()
+        }
+        
+        println("*** Start ***")
+        
+        // REACT
+        recoveryStream ~> { value in
+            buffer.append(value)
+        }
+        
+        self.perform(after: 0.5) {
+            expect.fulfill()
+        }
+        
+        self.wait()
+        
+        XCTAssertEqual(buffer, [1, 2, 3], "`recoveryStream` won't catch any error to recover, so it will send `1 -> 2 -> 3 -> fulfilled`.")
+        XCTAssertEqual(errorStream.state, TaskState.Fulfilled)
+        XCTAssertEqual(recoveryStream.state, TaskState.Fulfilled)
+        
+    }
+    
     // MARK: timing
     
     func testInterval()
