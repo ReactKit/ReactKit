@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftTask
 
 // NSNull-to-nil converter for KVO which returns NSNull when nil is set
 // https://github.com/ReactKit/ReactKit/pull/18
@@ -200,24 +201,29 @@ extension NSKeyValueChange: Printable
 infix operator <~ { associativity right }
 
 /// Key-Value Binding
-/// e.g. (obj2, "value") <~ stream
-public func <~ <T: AnyObject>(tuple: (object: NSObject, keyPath: String), stream: Stream<T?>)
+/// e.g. `(obj2, "value") <~ stream`
+public func <~ <T: AnyObject>(tuple: (object: NSObject, keyPath: String), stream: Stream<T?>) -> Canceller?
 {
     weak var object = tuple.object
     let keyPath = tuple.keyPath
+    var canceller: Canceller? = nil
     
-    stream.react { value in
+    stream.react(&canceller) { value in
         if let object = object {
             object.setValue(value, forKeyPath:keyPath)  // NOTE: don't use `tuple` inside closure, or object will be captured
         }
     }
+    
+    return canceller
 }
 
 /// Multiple Key-Value Binding
-/// e.g. [ (obj1, "value1"), (obj2, "value2") ] <~ stream (sending [value1, value2] array)
-public func <~ <T: AnyObject>(tuples: [(object: NSObject, keyPath: String)], stream: Stream<[T?]>)
+/// e.g. `[ (obj1, "value1"), (obj2, "value2") ] <~ stream` (sending [value1, value2] array)
+public func <~ <T: AnyObject>(tuples: [(object: NSObject, keyPath: String)], stream: Stream<[T?]>) -> Canceller?
 {
-    stream.react { (values: [T?]) in
+    var canceller: Canceller? = nil
+    
+    stream.react(&canceller) { (values: [T?]) in
         for i in 0..<tuples.count {
             if i >= values.count { break }
             
@@ -227,6 +233,8 @@ public func <~ <T: AnyObject>(tuples: [(object: NSObject, keyPath: String)], str
             tuple.object.setValue(value, forKeyPath:tuple.keyPath)
         }
     }
+    
+    return canceller
 }
 
 /// short-living Key-Value Binding

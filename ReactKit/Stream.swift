@@ -37,14 +37,16 @@ public class Stream<T>: Task<T, Void, NSError>
         self.name = "DefaultStream"
         
 //        #if DEBUG
-//            println("[init] \(self)")
+//            let addr = String(format: "%p", unsafeAddressOf(self))
+//            NSLog("[init] \(self.name) \(addr)")
 //        #endif
     }
     
     deinit
     {
 //        #if DEBUG
-//            println("[deinit] \(self)")
+//            let addr = String(format: "%p", unsafeAddressOf(self))
+//            NSLog("[deinit] \(self.name) \(addr)")
 //        #endif
         
         let cancelError = _RKError(.CancelledByDeinit, "Stream=\(self.name) is cancelled via deinit.")
@@ -55,15 +57,15 @@ public class Stream<T>: Task<T, Void, NSError>
     /// progress-chaining with auto-resume
     public func react(reactClosure: T -> Void) -> Self
     {
-        let stream = super.progress { _, value in reactClosure(value) }
-        self.resume()
-        return self
+        var dummyCanceller: Canceller? = nil
+        return self.react(&dummyCanceller, reactClosure: reactClosure)
     }
     
-    // required (Swift compiler fails...)
-    public override func cancel(error: NSError? = nil) -> Bool
+    public func react<C: Canceller>(inout canceller: C?, reactClosure: T -> Void) -> Self
     {
-        return super.cancel(error: error)
+        let stream = super.progress(&canceller) { _, value in reactClosure(value) }
+        self.resume()
+        return self
     }
     
     /// Easy strong referencing by owner e.g. UIViewController holding its UI component's stream
@@ -218,11 +220,13 @@ public extension Stream
 /// a.k.a Rx.do, tap
 public func peek<T>(peekClosure: T -> Void)(upstream: Stream<T>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, fulfill, reject, configure)
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             peekClosure(value)
             progress(value)
         }
@@ -247,11 +251,13 @@ public func customize<T, U>
 /// map using newValue only
 public func map<T, U>(transform: T -> U)(upstream: Stream<T>) -> Stream<U>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<U> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, fulfill, reject, configure)
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             progress(transform(value))
         }
         
@@ -261,6 +267,8 @@ public func map<T, U>(transform: T -> U)(upstream: Stream<T>) -> Stream<U>
 /// map using newValue only & bind to transformed Stream
 public func flatMap<T, U>(transform: T -> Stream<U>)(upstream: Stream<T>) -> Stream<U>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<U> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, fulfill, reject, configure)
@@ -268,7 +276,7 @@ public func flatMap<T, U>(transform: T -> Stream<U>)(upstream: Stream<T>) -> Str
         // NOTE: each of `transformToStream()` needs to be retained outside
         var innerStreams: [Stream<U>] = []
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             let innerStream = transform(value)
             innerStreams += [innerStream]
             
@@ -302,6 +310,8 @@ public func map2<T, U>(transform2: (oldValue: T?, newValue: T) -> U)(upstream: S
 /// a.k.a `Rx.scan()`
 public func mapAccumulate<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> (upstream: Stream<T>) -> Stream<U>
 {
+    var autoCanceller: AutoCanceller? = nil
+
     return { (upstream: Stream<T>) -> Stream<U> in
         return Stream<U> { progress, fulfill, reject, configure in
             
@@ -309,7 +319,7 @@ public func mapAccumulate<T, U>(initialValue: U, accumulateClosure: (accumulated
             
             var accumulatedValue: U = initialValue
             
-            upstream.react { value in
+            upstream.react(&autoCanceller) { value in
                 accumulatedValue = accumulateClosure(accumulatedValue: accumulatedValue, newValue: value)
                 progress(accumulatedValue)
             }
@@ -322,13 +332,15 @@ public func buffer<T>(_ capacity: Int = Int.max)(upstream: Stream<T>) -> Stream<
 {
     precondition(capacity >= 0)
     
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<[T]> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, nil, reject, configure)
         
         var buffer: [T] = []
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             buffer += [value]
             if buffer.count >= capacity {
                 progress(buffer)
@@ -346,20 +358,23 @@ public func buffer<T>(_ capacity: Int = Int.max)(upstream: Stream<T>) -> Stream<
 
 public func bufferBy<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Stream<[T]>
 {
+    var upstreamAutoCanceller: AutoCanceller? = nil
+    var triggerAutoCanceller: AutoCanceller? = nil
+    
     return Stream<[T]> { [weak triggerStream] progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, nil, reject, configure)
         
         var buffer: [T] = []
         
-        upstream.react { value in
+        upstream.react(&upstreamAutoCanceller) { value in
             buffer += [value]
         }.success { _ -> Void in
             progress(buffer)
             fulfill()
         }
         
-        triggerStream?.react { [weak upstream] _ in
+        triggerStream?.react(&triggerAutoCanceller) { [weak upstream] _ in
             if let upstream = upstream {
                 progress(buffer)
                 buffer = []
@@ -376,13 +391,15 @@ public func bufferBy<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Str
 
 public func groupBy<T, Key: Hashable>(groupingClosure: T -> Key)(upstream: Stream<T>) -> Stream<(Key, Stream<T>)>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<(Key, Stream<T>)> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, fulfill, reject, configure)
         
         var buffer: [Key : (stream: Stream<T>, progressHandler: Stream<T>.ProgressHandler)] = [:]
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             let key = groupingClosure(value)
             
             if buffer[key] == nil {
@@ -410,11 +427,13 @@ public func groupBy<T, Key: Hashable>(groupingClosure: T -> Key)(upstream: Strea
 /// filter using newValue only
 public func filter<T>(filterClosure: T -> Bool)(upstream: Stream<T>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, fulfill, reject, configure)
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             if filterClosure(value) {
                 progress(value)
             }
@@ -441,13 +460,15 @@ public func filter2<T>(filterClosure2: (oldValue: T?, newValue: T) -> Bool)(upst
 
 public func take<T>(maxCount: Int)(upstream: Stream<T>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, nil, reject, configure)
         
         var count = 0
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             count++
             
             if count < maxCount {
@@ -465,19 +486,22 @@ public func take<T>(maxCount: Int)(upstream: Stream<T>) -> Stream<T>
 
 public func takeUntil<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Stream<T>
 {
+    var upstreamAutoCanceller: AutoCanceller? = nil
+    var triggerAutoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { [weak triggerStream] progress, fulfill, reject, configure in
         
         if let triggerStream = triggerStream {
             
             _bindToUpstream(upstream, fulfill, reject, configure)
             
-            upstream.react { value in
+            upstream.react(&upstreamAutoCanceller) { value in
                 progress(value)
             }
 
             let cancelError = _RKError(.CancelledByTriggerStream, "Stream=\(upstream.name) is cancelled by takeUntil(\(triggerStream.name)).")
             
-            triggerStream.react { [weak upstream] _ in
+            triggerStream.react(&triggerAutoCanceller) { [weak upstream] _ in
                 if let upstream_ = upstream {
                     upstream_.cancel(error: cancelError)
                 }
@@ -497,13 +521,15 @@ public func takeUntil<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> St
 
 public func skip<T>(skipCount: Int)(upstream: Stream<T>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, fulfill, reject, configure)
         
         var count = 0
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             count++
             if count <= skipCount { return }
             
@@ -515,20 +541,23 @@ public func skip<T>(skipCount: Int)(upstream: Stream<T>) -> Stream<T>
 
 public func skipUntil<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Stream<T>
 {
+    var upstreamAutoCanceller: AutoCanceller? = nil
+    var triggerAutoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { [weak triggerStream] progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, fulfill, reject, configure)
         
         var shouldSkip = true
         
-        upstream.react { value in
+        upstream.react(&upstreamAutoCanceller) { value in
             if !shouldSkip {
                 progress(value)
             }
         }
         
         if let triggerStream = triggerStream {
-            triggerStream.react { _ in
+            triggerStream.react(&triggerAutoCanceller) { _ in
                 shouldSkip = false
             }.then { _ -> Void in
                 shouldSkip = false
@@ -543,18 +572,21 @@ public func skipUntil<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> St
 
 public func sample<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Stream<T>
 {
+    var upstreamAutoCanceller: AutoCanceller? = nil
+    var triggerAutoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { [weak triggerStream] progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, fulfill, reject, configure)
         
         var lastValue: T?
         
-        upstream.react { value in
+        upstream.react(&upstreamAutoCanceller) { value in
             lastValue = value
         }
         
         if let triggerStream = triggerStream {
-            triggerStream.react { _ in
+            triggerStream.react(&triggerAutoCanceller) { _ in
                 if let lastValue = lastValue {
                     progress(lastValue)
                 }
@@ -566,13 +598,15 @@ public func sample<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Strea
 
 public func distinct<H: Hashable>(upstream: Stream<H>) -> Stream<H>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<H> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, fulfill, reject, configure)
         
         var usedValueHashes = Set<H>()
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             if !usedValueHashes.contains(value) {
                 usedValueHashes.insert(value)
                 progress(value)
@@ -658,13 +692,15 @@ public func zip<T>(streams: [Stream<T>])(upstream: Stream<T>) -> Stream<[T]>
 
 public func catch<T>(catchHandler: Stream<T>.ErrorInfo -> Stream<T>) -> (upstream: Stream<T>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return { (upstream: Stream<T>) -> Stream<T> in
         return Stream<T> { progress, fulfill, reject, configure in
             
             // required for avoiding "swiftc failed with exit code 1" in Swift 1.2 (Xcode 6.3)
             let configure = configure
             
-            upstream.react { value in
+            upstream.react(&autoCanceller) { value in
                 progress(value)
             }.failure { errorInfo in
                 let recoveryStream = catchHandler(errorInfo)
@@ -684,11 +720,13 @@ public func catch<T>(catchHandler: Stream<T>.ErrorInfo -> Stream<T>) -> (upstrea
 /// delay `progress` and `fulfill` for `timerInterval` seconds
 public func delay<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, nil, reject, configure)
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             var timerStream: Stream<Void>? = NSTimer.stream(timeInterval: timeInterval, repeats: false) { _ in }
             
             timerStream!.react { _ in
@@ -711,13 +749,15 @@ public func delay<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> Strea
 /// (incremental delay with start at t = 0sec)
 public func interval<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, nil, reject, configure)
         
         var incInterval = 0.0
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             var timerStream: Stream<Void>? = NSTimer.stream(timeInterval: incInterval, repeats: false) { _ in }
             
             incInterval += timeInterval
@@ -745,13 +785,15 @@ public func interval<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> St
 /// (see also: underscore.js throttle)
 public func throttle<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, fulfill, reject, configure)
         
         var lastProgressDate = NSDate(timeIntervalSince1970: 0)
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             let now = NSDate()
             let timeDiff = now.timeIntervalSinceDate(lastProgressDate)
             
@@ -768,13 +810,15 @@ public func throttle<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> St
 /// (see also: underscore.js debounce)
 public func debounce<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { progress, fulfill, reject, configure in
         
         _bindToUpstream(upstream, fulfill, reject, configure)
         
         var timerStream: Stream<Void>? = nil    // retained by upstream via upstream.react()
         
-        upstream.react { value in
+        upstream.react(&autoCanceller) { value in
             // NOTE: overwrite to deinit & cancel old timerStream
             timerStream = NSTimer.stream(timeInterval: timeInterval, repeats: false) { _ in }
             
@@ -790,6 +834,8 @@ public func debounce<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> St
 
 public func reduce<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<U> { progress, fulfill, reject, configure in
         
         let accumulatingStream = upstream
@@ -799,7 +845,7 @@ public func reduce<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: 
         
         var lastAccValue: U = initialValue   // last accumulated value
         
-        accumulatingStream.react { value in
+        accumulatingStream.react(&autoCanceller) { value in
             lastAccValue = value
         }.then { value, errorInfo -> Void in
             if value != nil {
@@ -840,6 +886,8 @@ public func mergeAll<T>(streams: [Stream<T>]) -> Stream<T>
 ///
 public func merge2All<T>(streams: [Stream<T>]) -> Stream<(values: [T?], changedValue: T)>
 {
+    var autoCancellers = [AutoCanceller?](count: streams.count, repeatedValue: nil)
+    
     return Stream { progress, fulfill, reject, configure in
         
         configure.pause = {
@@ -857,8 +905,9 @@ public func merge2All<T>(streams: [Stream<T>]) -> Stream<(values: [T?], changedV
         for i in 0..<streams.count {
             
             let stream = streams[i]
+            var autoCanceller: AutoCanceller? = nil
             
-            stream.react { value in
+            stream.react(&autoCanceller) { value in
                 states[i] = value
                 progress(values: states, changedValue: value)
             }.then { value, errorInfo -> Void in
@@ -875,6 +924,8 @@ public func merge2All<T>(streams: [Stream<T>]) -> Stream<(values: [T?], changedV
                     }
                 }
             }
+            
+            autoCancellers += [autoCanceller]
         }
         
     }.name("merge2All")
@@ -902,6 +953,8 @@ public func zipAll<T>(streams: [Stream<T>]) -> Stream<[T]>
 {
     precondition(streams.count > 1)
     
+    var autoCancellers = [AutoCanceller?](count: streams.count, repeatedValue: nil)
+    
     return Stream<[T]> { progress, fulfill, reject, configure in
         
         configure.pause = {
@@ -923,7 +976,9 @@ public func zipAll<T>(streams: [Stream<T>]) -> Stream<[T]>
         
         for i in 0..<streamCount {
             
-            streams[i].react { value in
+            var autoCanceller: AutoCanceller? = nil
+            
+            streams[i].react(&autoCanceller) { value in
                 
                 storedValuesArray[i] += [value]
                 
@@ -949,6 +1004,8 @@ public func zipAll<T>(streams: [Stream<T>]) -> Stream<[T]>
             }.success { _ -> Void in
                 fulfill()
             }
+            
+            autoCancellers += [autoCanceller]
         }
         
     }.name("zipAll")
@@ -967,12 +1024,14 @@ public func zipAll<T>(streams: [Stream<T>]) -> Stream<[T]>
 ///
 public func mergeInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { progress, fulfill, reject, configure in
         
         // NOTE: don't bind nestedStream's fulfill with returning mergeInner-stream's fulfill
         _bindToUpstream(nestedStream, nil, reject, configure)
         
-        nestedStream.react { (innerStream: Stream<T>) in
+        nestedStream.react(&autoCanceller) { (innerStream: Stream<T>) in
             
             _bindToUpstream(innerStream, nil, nil, configure)
 
@@ -1005,6 +1064,8 @@ private func _fix<T, U>(f: (T -> U) -> T -> U) -> T -> U
 
 public func concatInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { progress, fulfill, reject, configure in
         
         _bindToUpstream(nestedStream, nil, reject, configure)
@@ -1036,7 +1097,7 @@ public func concatInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
             }
         }
         
-        nestedStream.react { (innerStream: Stream<T>) in
+        nestedStream.react(&autoCanceller) { (innerStream: Stream<T>) in
             pendingInnerStreams += [innerStream]
             performRecursively()
         }
@@ -1048,13 +1109,15 @@ public func concatInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
 /// a.k.a Rx.switchLatest
 public func switchLatestInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
 {
+    var autoCanceller: AutoCanceller? = nil
+    
     return Stream<T> { progress, fulfill, reject, configure in
         
         _bindToUpstream(nestedStream, nil, reject, configure)
         
         var currentInnerStream: Stream<T>?
         
-        nestedStream.react { (innerStream: Stream<T>) in
+        nestedStream.react(&autoCanceller) { (innerStream: Stream<T>) in
             
             _bindToUpstream(innerStream, nil, nil, configure)
             
@@ -1098,7 +1161,7 @@ public func prestart<T>(capacity: Int = Int.max) -> (upstreamProducer: Stream<T>
         let upstream = upstreamProducer()
         
         // REACT
-        upstream ~> { value in
+        upstream.react { value in
             buffer += [value]
             while buffer.count > capacity {
                 buffer.removeAtIndex(0)
@@ -1289,20 +1352,30 @@ public func |>> <T, U, V>(transform1: Stream<T>.Producer -> Stream<U>.Producer, 
 // NOTE: `infix operator ~>` is already declared in Swift
 //infix operator ~> { associativity left precedence 255 }
 
-/// right-closure reacting operator, i.e. `stream.react { ... }`
-public func ~> <T>(stream: Stream<T>, reactClosure: T -> Void) -> Stream<T>
+///
+/// Right-closure reacting operator,
+/// e.g. `stream ~> { ... }`.
+///
+/// This method returns Canceller for removing `reactClosure`.
+///
+public func ~> <T>(stream: Stream<T>, reactClosure: T -> Void) -> Canceller?
 {
-    stream.react(reactClosure)
-    return stream
+    var canceller: Canceller? = nil
+    stream.react(&canceller, reactClosure: reactClosure)
+    return canceller
 }
 
-// MARK: ~> (left reacting operator)
+// MARK: <~ (left reacting operator)
 
 infix operator <~ { associativity right precedence 50 }
 
-/// left-closure (closure-first) reacting operator, reversing `stream.react { ... }`
-/// e.g. ^{ ... } <~ stream
-public func <~ <T>(reactClosure: T -> Void, stream: Stream<T>) -> Stream<T>
+///
+/// Left-closure (closure-first) reacting operator, reversing `stream ~> { ... }`
+/// e.g. `^{ ... } <~ stream`
+///
+/// This method returns Canceller for removing `reactClosure`.
+///
+public func <~ <T>(reactClosure: T -> Void, stream: Stream<T>) -> Canceller?
 {
     return stream ~> reactClosure
 }
@@ -1312,12 +1385,14 @@ public func <~ <T>(reactClosure: T -> Void, stream: Stream<T>) -> Stream<T>
 infix operator ~>! { associativity left precedence 50 }
 
 ///
-/// terminal reacting operator, which returns synchronously-emitted last value
+/// Terminal reacting operator, which returns synchronously-emitted last value
 /// to gain similar functionality as Java 8's Stream API,
 ///
 /// e.g. 
-/// let sum = Stream.sequence([1, 2, 3]) |> reduce(0) { $0 + $1 } ~>! ()
-/// let distinctSequence = Stream.sequence([1, 2, 2, 3]) |> distinct |> buffer() ~>! () // NOTE: use `buffer()` whenever necessary
+/// - let sum = Stream.sequence([1, 2, 3]) |> reduce(0) { $0 + $1 } ~>! ()
+/// - let distinctSequence = Stream.sequence([1, 2, 2, 3]) |> distinct |> buffer() ~>! ()
+///
+/// NOTE: use `buffer()` as collecting operation whenever necessary
 ///
 public func ~>! <T>(stream: Stream<T>, void: Void) -> T!
 {
@@ -1329,9 +1404,9 @@ public func ~>! <T>(stream: Stream<T>, void: Void) -> T!
 }
 
 /// terminal reacting operator (less precedence for '~>')
-public func ~>! <T>(stream: Stream<T>, reactClosure: T -> Void)
+public func ~>! <T>(stream: Stream<T>, reactClosure: T -> Void) -> Canceller?
 {
-    stream ~> reactClosure
+    return stream ~> reactClosure
 }
 
 prefix operator ^ {}
