@@ -697,8 +697,7 @@ public func catch<T>(catchHandler: Stream<T>.ErrorInfo -> Stream<T>) -> (upstrea
     return { (upstream: Stream<T>) -> Stream<T> in
         return Stream<T> { progress, fulfill, reject, configure in
             
-            // required for avoiding "swiftc failed with exit code 1" in Swift 1.2 (Xcode 6.3)
-            let configure = configure
+            _bindToUpstream(upstream, fulfill, nil, configure)
             
             upstream.react(&autoCanceller) { value in
                 progress(value)
