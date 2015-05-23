@@ -42,6 +42,8 @@ public extension UIBarButtonItem
                 removeTargetAction()
             }
             
+            configure.resume?()
+            
         }.name("\(NSStringFromClass(self.dynamicType))") |> takeUntil(self.deinitStream)
     }
     

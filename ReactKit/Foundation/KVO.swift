@@ -64,6 +64,8 @@ public extension NSObject
                 configure.pause = { observer.stop() }
                 configure.resume = { observer.start() }
                 configure.cancel = { observer.stop() }
+                
+                configure.resume?()
             }
             
         }.name("KVO.detailedStream(\(NSStringFromClass(self.dynamicType)), \"\(keyPath)\")") |> takeUntil(self.deinitStream)
