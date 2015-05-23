@@ -43,6 +43,8 @@ public extension NSNotificationCenter
                 }
             }
             
+            configure.resume?()
+            
         }.name("NSNotification-\(notificationName)") |> takeUntil(self.deinitStream)
     }
 }

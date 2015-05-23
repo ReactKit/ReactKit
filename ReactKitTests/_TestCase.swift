@@ -13,7 +13,7 @@ typealias ErrorString = String
 
 class _TestCase: XCTestCase
 {
-    var timeInterval: NSTimeInterval = 0.0
+    var performAfter: NSTimeInterval = 0.0
     
     var isAsync: Bool { return false }
     
@@ -31,19 +31,19 @@ class _TestCase: XCTestCase
     
     func perform(after: NSTimeInterval = 0.01, closure: Void -> Void)
     {
-        self.timeInterval = after
+        self.performAfter = after
         
         if self.isAsync {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1_000_000_000 * self.timeInterval)), dispatch_get_main_queue(), closure)
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1_000_000_000 * self.performAfter)), dispatch_get_main_queue(), closure)
         }
         else {
             closure()
         }
     }
     
-    func wait(filename: String = __FILE__, functionName: String = __FUNCTION__, line: Int = __LINE__)
+    func wait(until: NSTimeInterval = 1.0, filename: String = __FILE__, functionName: String = __FUNCTION__, line: Int = __LINE__)
     {
-        self.waitForExpectationsWithTimeout(self.timeInterval + 1) { error in
+        self.waitForExpectationsWithTimeout(self.performAfter + until) { error in
             if let error = error {
                 println()
                 println("*** Wait Error ***")
@@ -53,4 +53,9 @@ class _TestCase: XCTestCase
             }
         }
     }
+}
+
+func _isCurrentQueue(queue: dispatch_queue_t) -> Bool
+{
+    return dispatch_queue_get_label(queue) == dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL)
 }

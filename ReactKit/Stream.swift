@@ -81,13 +81,21 @@ public class Stream<T>: Task<T, Void, NSError>
     
 }
 
-/// helper method to bind downstream's `fulfill`/`reject`/`configure` handlers with upstream
+///
+/// Helper method to bind downstream's `fulfill`/`reject`/`configure` handlers to `upstream`.
+///
+/// :param: upstream upstream to be bound to downstream
+/// :param: downstreamFulfill `downstream`'s `fulfill`
+/// :param: downstreamReject `downstream`'s `reject`
+/// :param: downstreamConfigure `downstream`'s `configure`
+/// :param: reactCanceller `canceller` used in `upstream.react(&canceller)` (`@autoclosure(escaping)` for lazy evaluation)
+///
 private func _bindToUpstream<T, C: Canceller>(
     upstream: Stream<T>,
-    fulfill: (Void -> Void)?,       // downstream fulfill
-    reject: (NSError -> Void)?,     // downstream reject
-    configure: TaskConfiguration?,  // downstream configure
-    @autoclosure(escaping) lazyCanceller: Void -> C?    // canceller used in `upstream.react(&canceller)` (@autoclosure for lazy evaluation to allow calling `_bindToUpstream()` first before `upstream.react(&canceller)`
+    downstreamFulfill: (Void -> Void)?,
+    downstreamReject: (NSError -> Void)?,
+    downstreamConfigure: TaskConfiguration?,
+    @autoclosure(escaping) reactCanceller: Void -> C?
 )
 {
     //
@@ -103,47 +111,55 @@ private func _bindToUpstream<T, C: Canceller>(
     //
 
     // NOTE: downstream should capture upstream
-    if let configure = configure {
-        configure.pause = {
+    if let downstreamConfigure = downstreamConfigure {
+        downstreamConfigure.pause = {
             upstream.pause()
         }
         
-        configure.resume = {
+        downstreamConfigure.resume = {
             upstream.resume()
         }
         
         // NOTE: `configure.cancel()` is always called on downstream-finish
-        configure.cancel = {
-            let canceller = lazyCanceller()
+        downstreamConfigure.cancel = {
+            let canceller = reactCanceller()
             canceller?.cancel()
             upstream.cancel()
         }
     }
     
-    if fulfill != nil || reject != nil {
+    if downstreamFulfill != nil || downstreamReject != nil {
         
-        let streamName = upstream.name
+        let upstreamName = upstream.name
 
         // fulfill/reject downstream on upstream-fulfill/reject/cancel
         upstream.then { value, errorInfo -> Void in
-            
-            if value != nil {
-                fulfill?()
-                return
-            }
-            else if let errorInfo = errorInfo {
-                // rejected
-                if let error = errorInfo.error {
-                    reject?(error)
-                    return
-                }
-                // cancelled
-                else {
-                    let cancelError = _RKError(.CancelledByUpstream, "Stream=\(streamName) is rejected or cancelled.")
-                    reject?(cancelError)
-                }
-            }
-            
+            _finishDownstreamOnUpstreamFinished(upstreamName, value, errorInfo, downstreamFulfill, downstreamReject)
+        }
+    }
+}
+
+/// helper method to send upstream's fulfill/reject to downstream
+private func _finishDownstreamOnUpstreamFinished(
+    upstreamName: String,
+    upstreamValue: Void?,
+    upstreamErrorInfo: Stream<Void>.ErrorInfo?,
+    downstreamFulfill: (Void -> Void)?,
+    downstreamReject: (NSError -> Void)?
+)
+{
+    if upstreamValue != nil {
+        downstreamFulfill?()
+    }
+    else if let upstreamErrorInfo = upstreamErrorInfo {
+        // rejected
+        if let upstreamError = upstreamErrorInfo.error {
+            downstreamReject?(upstreamError)
+        }
+        // cancelled
+        else {
+            let cancelError = _RKError(.CancelledByUpstream, "Upstream=\(upstreamName) is rejected or cancelled.")
+            downstreamReject?(cancelError)
         }
     }
 }
@@ -198,12 +214,14 @@ public extension Stream
     public class func sequence<S: SequenceType where S.Generator.Element == T>(values: S) -> Stream<T>
     {
         return Stream { progress, fulfill, reject, configure in
+            
             for value in values {
                 progress(value)
                 
                 if configure.isFinished { break }
             }
             fulfill()
+            
         }.name("Stream.sequence")
     }
     
@@ -875,6 +893,139 @@ public func reduce<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: 
     }.name("\(upstream.name)-reduce")
 }
 
+// MARK: async
+
+///
+/// Wraps `upstream` to perform `dispatch_async(queue)` when it first starts running.
+/// a.k.a. `Rx.subscribeOn`.
+///
+/// For example:
+///
+///   let downstream = upstream |> startAsync(queue) |> map {...A...}`
+///   downstream ~> {...B...}`
+///
+/// 1. `~>` resumes `downstream` all the way up to `upstream`
+/// 2. calls `dispatch_async(queue)` wrapping `upstream`
+/// 3. A and B will run on `queue` rather than the thread `~>` was called
+///
+/// :NOTE 1:
+/// `upstream` MUST NOT START `.Running` in order to safely perform `startAsync(queue)`.
+/// If `upstream` is already running, `startAsync(queue)` will have no effect.
+///
+/// :NOTE 2:
+/// `upstream |> startAsync(queue) ~> { ... }` is same as `dispatch_async(queue, { upstream ~> {...} })`,
+/// but it guarantees the `upstream` to start on target `queue` if not started yet.
+///
+public func startAsync<T>(queue: dispatch_queue_t)(_ upstream: Stream<T>) -> Stream<T>
+{
+    return Stream<T> { progress, fulfill, reject, configure in
+        dispatch_async(queue) {
+            var canceller: Canceller? = nil
+            _bindToUpstream(upstream, fulfill, reject, configure, canceller)
+            
+            upstream.react(&canceller, reactClosure: progress)
+        }
+    }.name("\(upstream.name)-startAsync(\(_queueLabel(queue)))")
+}
+
+///
+/// Performs `dispatch_async(queue)` to the consecutive pipelining operations.
+/// a.k.a. `Rx.observeOn`.
+/// 
+/// For example:
+///
+///   let downstream = upstream |> map {...A...}` |> async(queue) |> map {...B...}`
+///   downstream ~> {...C...}`
+///
+/// 1. `~>` resumes `downstream` all the way up to `upstream`
+/// 2. `upstream` and A will run on the thread `~>` was called
+/// 3. B and C will run on `queue`
+///
+/// :param: queue `dispatch_queue_t` to perform consecutive stream operations. Using concurrent queue is not recommended.
+///
+public func async<T>(queue: dispatch_queue_t)(upstream: Stream<T>) -> Stream<T>
+{
+    return Stream<T> { progress, fulfill, reject, configure in
+        
+        var canceller: Canceller? = nil
+        _bindToUpstream(upstream, nil, nil, configure, canceller)
+        
+        let upstreamName = upstream.name
+        
+        upstream.react(&canceller) { value in
+            dispatch_async(queue) {
+                progress(value)
+            }
+        }.then { value, errorInfo -> Void in
+            dispatch_barrier_async(queue) {
+                _finishDownstreamOnUpstreamFinished(upstreamName, value, errorInfo, fulfill, reject)
+            }
+        }
+        
+    }.name("\(upstream.name))-async(\(_queueLabel(queue)))")
+}
+
+///
+/// async + backpressure using blocking semaphore
+///
+public func asyncBackpressureBlock<T>(
+    queue: dispatch_queue_t,
+    high highCountForPause: Int,
+    low lowCountForResume: Int
+)(upstream: Stream<T>) -> Stream<T>
+{
+    return Stream<T> { progress, fulfill, reject, configure in
+        
+        var canceller: Canceller? = nil
+        _bindToUpstream(upstream, nil, nil, configure, canceller)
+        
+        let upstreamName = upstream.name
+        
+        var count = 0
+        var isBackpressuring = false
+        let lock = NSRecursiveLock()
+        let semaphore = dispatch_semaphore_create(0)
+        
+        upstream.react(&canceller) { value in
+            
+            dispatch_async(queue) {
+                progress(value)
+                
+                lock.lock()
+                count--
+                let shouldResume = isBackpressuring && count <= lowCountForResume
+                if shouldResume {
+                    isBackpressuring = false
+                }
+                lock.unlock()
+                
+                if shouldResume {
+                    dispatch_semaphore_signal(semaphore)
+                }
+            }
+            
+            lock.lock()
+            count++
+            let shouldPause = count >= highCountForPause
+            if shouldPause {
+                isBackpressuring = true
+            }
+            lock.unlock()
+            
+            if shouldPause {
+                dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER)
+            }
+            
+        }.then { value, errorInfo -> Void in
+            
+            dispatch_barrier_async(queue) {
+                _finishDownstreamOnUpstreamFinished(upstreamName, value, errorInfo, fulfill, reject)
+            }
+        }
+        
+    }.name("\(upstream.name))-async(\(_queueLabel(queue)))")
+}
+
 //--------------------------------------------------
 // MARK: - Array Streams Operations
 //--------------------------------------------------
@@ -1469,4 +1620,10 @@ private struct _InfiniteGenerator<T>: GeneratorType
         
         return self.currentValue
     }
+}
+
+private func _queueLabel(queue: dispatch_queue_t) -> String
+{
+    return String.fromCString(dispatch_queue_get_label(queue))
+        .flatMap { label in split(label, isSeparator: { $0 == "." }).last } ?? "?"
 }
