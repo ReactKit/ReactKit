@@ -37,6 +37,6 @@ public extension UIGestureRecognizer
             
             configure.resume?()
             
-        }.name("\(NSStringFromClass(self.dynamicType))") |> takeUntil(self.deinitStream)
+        }.name("\(_summary(self))") |> takeUntil(self.deinitStream)
     }
 }

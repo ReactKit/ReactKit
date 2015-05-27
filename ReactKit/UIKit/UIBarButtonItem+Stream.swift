@@ -44,7 +44,7 @@ public extension UIBarButtonItem
             
             configure.resume?()
             
-        }.name("\(NSStringFromClass(self.dynamicType))") |> takeUntil(self.deinitStream)
+        }.name("\(_summary(self))") |> takeUntil(self.deinitStream)
     }
     
     public func stream<T>(mappedValue: T) -> Stream<T>

@@ -29,7 +29,7 @@ public extension NSObject
         if stream == nil {
             stream = Stream<AnyObject?> { (progress, fulfill, reject, configure) in
                 // do nothing
-            }.name("\(NSStringFromClass(self.dynamicType))-deinitStream")
+            }.name("\(_summary(self)).deinitStream")
             
 //            #if DEBUG
 //                stream?.then { value, errorInfo -> Void in

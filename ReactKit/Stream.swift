@@ -178,7 +178,7 @@ public extension Stream
         return Stream { progress, fulfill, reject, configure in
             progress(value)
             fulfill()
-        }.name("Stream.once")
+        }.name("Stream.once(\(value))")
     }
     
     /// creates never (no progress & fulfill & reject) stream
@@ -202,7 +202,7 @@ public extension Stream
     {
         return Stream { progress, fulfill, reject, configure in
             reject(error)
-        }.name("Stream.rejected")
+        }.name("Stream.rejected(\(error))")
     }
     
     ///
@@ -260,7 +260,7 @@ public func peek<T>(peekClosure: T -> Void)(upstream: Stream<T>) -> Stream<T>
             progress(value)
         }
         
-    }.name("\(upstream.name)-peek")
+    }.name("\(upstream.name) |> peek")
 }
 
 /// creates your own customizable & method-chainable stream without writing `return Stream<U> { ... }`
@@ -272,7 +272,7 @@ public func customize<T, U>
     return Stream<U> { progress, fulfill, reject, configure in
         _bindToUpstream(upstream, nil, nil, configure, nil)
         customizeClosure(upstream: upstream, progress: progress, fulfill: fulfill, reject: reject)
-    }.name("\(upstream.name)-customize")
+    }.name("\(upstream.name) |> customize")
 }
 
 // MARK: transforming
@@ -289,7 +289,7 @@ public func map<T, U>(transform: T -> U)(upstream: Stream<T>) -> Stream<U>
             progress(transform(value))
         }
         
-    }.name("\(upstream.name)-map")
+    }.name("\(upstream.name) |> map")
 }
 
 /// map using newValue only & bind to transformed Stream
@@ -312,7 +312,7 @@ public func flatMap<T, U>(transform: T -> Stream<U>)(upstream: Stream<T>) -> Str
             }
         }
 
-    }.name("\(upstream.name)-flatMap")
+    }.name("\(upstream.name) |> flatMap")
     
 }
 
@@ -327,7 +327,7 @@ public func map2<T, U>(transform2: (oldValue: T?, newValue: T) -> U)(upstream: S
         return mappedValue
     }
     
-    stream.name("\(upstream.name)-map2")
+    stream.name("\(upstream.name) |> map2")
     
     return stream
 }
@@ -350,7 +350,7 @@ public func mapAccumulate<T, U>(initialValue: U, accumulateClosure: (accumulated
                 progress(accumulatedValue)
             }
             
-        }.name("\(upstream.name)-mapAccumulate")
+        }.name("\(upstream.name) |> mapAccumulate")
     }
 }
 
@@ -378,7 +378,7 @@ public func buffer<T>(_ capacity: Int = Int.max)(upstream: Stream<T>) -> Stream<
             fulfill()
         }
         
-    }.name("\(upstream.name)-buffer")
+    }.name("\(upstream.name) |> buffer")
 }
 
 public func bufferBy<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Stream<[T]>
@@ -414,7 +414,7 @@ public func bufferBy<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Str
             }
         }
         
-    }.name("\(upstream.name)-bufferBy")
+    }.name("\(upstream.name) |> bufferBy")
 }
 
 public func groupBy<T, Key: Hashable>(groupingClosure: T -> Key)(upstream: Stream<T>) -> Stream<(Key, Stream<T>)>
@@ -446,7 +446,7 @@ public func groupBy<T, Key: Hashable>(groupingClosure: T -> Key)(upstream: Strea
             
         }
         
-    }.name("\(upstream.name)-groupBy")
+    }.name("\(upstream.name) |> groupBy")
 }
 
 // MARK: filtering
@@ -465,7 +465,7 @@ public func filter<T>(filterClosure: T -> Bool)(upstream: Stream<T>) -> Stream<T
             }
         }
         
-    }.name("\(upstream.name)-filter")
+    }.name("\(upstream.name) |> filter")
 }
 
 /// filter using (oldValue, newValue)
@@ -479,7 +479,7 @@ public func filter2<T>(filterClosure2: (oldValue: T?, newValue: T) -> Bool)(upst
         return flag
     }
     
-    stream.name("\(upstream.name)-filter2")
+    stream.name("\(upstream.name) |> filter2")
     
     return stream
 }
@@ -506,7 +506,7 @@ public func take<T>(maxCount: Int)(upstream: Stream<T>) -> Stream<T>
             
         }
         
-    }.name("\(upstream.name)-take(\(maxCount))")
+    }.name("\(upstream.name) |> take(\(maxCount))")
 }
 
 public func takeUntil<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Stream<T>
@@ -544,7 +544,7 @@ public func takeUntil<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> St
             upstream.cancel(error: cancelError)
         }
         
-    }.name("\(upstream.name)-takeUntil")
+    }.name("\(upstream.name) |> takeUntil")
 }
 
 public func skip<T>(skipCount: Int)(upstream: Stream<T>) -> Stream<T>
@@ -563,7 +563,7 @@ public func skip<T>(skipCount: Int)(upstream: Stream<T>) -> Stream<T>
             progress(value)
         }
         
-    }.name("\(upstream.name)-skip(\(skipCount))")
+    }.name("\(upstream.name) |> skip(\(skipCount))")
 }
 
 public func skipUntil<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Stream<T>
@@ -597,7 +597,7 @@ public func skipUntil<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> St
             shouldSkip = false
         }
         
-    }.name("\(upstream.name)-skipUntil")
+    }.name("\(upstream.name) |> skipUntil")
 }
 
 public func sample<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Stream<T>
@@ -651,7 +651,7 @@ public func distinct<H: Hashable>(upstream: Stream<H>) -> Stream<H>
 public func distinctUntilChanged<E: Equatable>(upstream: Stream<E>) -> Stream<E>
 {
     let stream = upstream |> filter2 { $0 != $1 }
-    return stream.name("\(upstream.name)-distinctUntilChanged")
+    return stream.name("\(upstream.name) |> distinctUntilChanged")
 }
 
 // MARK: combining
@@ -664,7 +664,7 @@ public func merge<T>(stream: Stream<T>)(upstream: Stream<T>) -> Stream<T>
 public func merge<T>(streams: [Stream<T>])(upstream: Stream<T>) -> Stream<T>
 {
     let stream = (streams + [upstream]) |> mergeInner
-    return stream.name("\(upstream.name)-merge")
+    return stream.name("\(upstream.name) |> merge")
 }
 
 public func concat<T>(nextStream: Stream<T>)(upstream: Stream<T>) -> Stream<T>
@@ -675,7 +675,7 @@ public func concat<T>(nextStream: Stream<T>)(upstream: Stream<T>) -> Stream<T>
 public func concat<T>(nextStreams: [Stream<T>])(upstream: Stream<T>) -> Stream<T>
 {
     let stream = ([upstream] + nextStreams) |> concatInner
-    return stream.name("\(upstream.name)-concat")
+    return stream.name("\(upstream.name) |> concat")
 }
 
 //
@@ -691,13 +691,13 @@ public func startWith<T>(initialValue: T) -> (upstream: Stream<T>) -> Stream<T>
         precondition(upstream.state == .Paused)
         
         let stream = [Stream.once(initialValue), upstream] |> concatInner
-        return stream.name("\(upstream.name)-startWith")
+        return stream.name("\(upstream.name) |> startWith")
     }
 }
 //public func startWith<T>(initialValue: T)(upstream: Stream<T>) -> Stream<T>
 //{
 //    let stream = [Stream.once(initialValue), upstream] |> concatInner
-//    return stream.name("\(upstream.name)-startWith")
+//    return stream.name("\(upstream.name) |> startWith")
 //}
 
 public func combineLatest<T>(stream: Stream<T>)(upstream: Stream<T>) -> Stream<[T]>
@@ -708,7 +708,7 @@ public func combineLatest<T>(stream: Stream<T>)(upstream: Stream<T>) -> Stream<[
 public func combineLatest<T>(streams: [Stream<T>])(upstream: Stream<T>) -> Stream<[T]>
 {
     let stream = ([upstream] + streams) |> combineLatestAll
-    return stream.name("\(upstream.name)-combineLatest")
+    return stream.name("\(upstream.name) |> combineLatest")
 }
 
 public func zip<T>(stream: Stream<T>)(upstream: Stream<T>) -> Stream<[T]>
@@ -719,7 +719,7 @@ public func zip<T>(stream: Stream<T>)(upstream: Stream<T>) -> Stream<[T]>
 public func zip<T>(streams: [Stream<T>])(upstream: Stream<T>) -> Stream<[T]>
 {
     let stream = ([upstream] + streams) |> zipAll
-    return stream.name("\(upstream.name)-zip")
+    return stream.name("\(upstream.name) |> zip")
 }
 
 public func catch<T>(catchHandler: Stream<T>.ErrorInfo -> Stream<T>) -> (upstream: Stream<T>) -> Stream<T>
@@ -773,7 +773,7 @@ public func delay<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> Strea
             }
         }
         
-    }.name("\(upstream.name)-delay(\(timeInterval))")
+    }.name("\(upstream.name) |> delay(\(timeInterval))")
 }
 
 /// delay `progress` and `fulfill` for `timerInterval * eachProgressCount` seconds 
@@ -808,7 +808,7 @@ public func interval<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> St
             }
         }
         
-    }.name("\(upstream.name)-interval(\(timeInterval))")
+    }.name("\(upstream.name) |> interval(\(timeInterval))")
 }
 
 /// limit continuous progress (reaction) for `timeInterval` seconds when first progress is triggered
@@ -832,7 +832,7 @@ public func throttle<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> St
             }
         }
         
-    }.name("\(upstream.name)-throttle(\(timeInterval))")
+    }.name("\(upstream.name) |> throttle(\(timeInterval))")
 }
 
 /// delay progress (reaction) for `timeInterval` seconds and truly invoke reaction afterward if not interrupted by continuous progress
@@ -855,7 +855,7 @@ public func debounce<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> St
             }
         }
         
-    }.name("\(upstream.name)-debounce(\(timeInterval))")
+    }.name("\(upstream.name) |> debounce(\(timeInterval))")
 }
 
 // MARK: collecting
@@ -890,7 +890,7 @@ public func reduce<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: 
             }
         }
         
-    }.name("\(upstream.name)-reduce")
+    }.name("\(upstream.name) |> reduce")
 }
 
 // MARK: async
@@ -925,7 +925,7 @@ public func startAsync<T>(queue: dispatch_queue_t)(_ upstream: Stream<T>) -> Str
             
             upstream.react(&canceller, reactClosure: progress)
         }
-    }.name("\(upstream.name)-startAsync(\(_queueLabel(queue)))")
+    }.name("\(upstream.name) |> startAsync(\(_queueLabel(queue)))")
 }
 
 ///
@@ -1215,12 +1215,6 @@ public func mergeInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
     }.name("mergeInner")
 }
 
-/// fixed-point combinator
-private func _fix<T, U>(f: (T -> U) -> T -> U) -> T -> U
-{
-    return { f(_fix(f))($0) }
-}
-
 public func concatInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
 {
     return Stream<T> { progress, fulfill, reject, configure in
@@ -1339,7 +1333,7 @@ public func prestart<T>(capacity: Int = Int.max) -> (upstreamProducer: Stream<T>
                     progress(value)
                 }
                 
-            }.name("\(upstream.name)-prestart")
+            }
         }
     }
 }
@@ -1356,9 +1350,6 @@ public func repeat<T>(repeatCount: Int) -> (upstreamProducer: Stream<T>.Producer
         }
         
         return {
-            
-            let upstreamName = upstreamProducer().name
-            
             return Stream<T> { progress, fulfill, reject, configure in
                 
                 var countDown = repeatCount
@@ -1381,7 +1372,7 @@ public func repeat<T>(repeatCount: Int) -> (upstreamProducer: Stream<T>.Producer
                 
                 performRecursively()
                 
-            }.name("\(upstreamName)-repeat")
+            }
         }
     }
 }
@@ -1596,7 +1587,7 @@ public prefix func + <T>(stream: Stream<T>) -> Stream<T>
 // MARK: - Utility
 //--------------------------------------------------
 
-private struct _InfiniteGenerator<T>: GeneratorType
+internal struct _InfiniteGenerator<T>: GeneratorType
 {
     let initialValue: T
     let nextClosure: T -> T
@@ -1622,7 +1613,18 @@ private struct _InfiniteGenerator<T>: GeneratorType
     }
 }
 
-private func _queueLabel(queue: dispatch_queue_t) -> String
+/// fixed-point combinator
+internal func _fix<T, U>(f: (T -> U) -> T -> U) -> T -> U
+{
+    return { f(_fix(f))($0) }
+}
+
+internal func _summary<T>(type: T) -> String
+{
+    return split(reflect(type).summary, isSeparator: { $0 == "." }).last ?? "?"
+}
+
+internal func _queueLabel(queue: dispatch_queue_t) -> String
 {
     return String.fromCString(dispatch_queue_get_label(queue))
         .flatMap { label in split(label, isSeparator: { $0 == "." }).last } ?? "?"

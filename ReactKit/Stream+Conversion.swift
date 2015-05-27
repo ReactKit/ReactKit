@@ -13,7 +13,7 @@ import SwiftTask
 public func asStream<T, U>(type: U.Type)(upstream: Stream<T>) -> Stream<U>
 {
     let stream = upstream |> map { $0 as! U }
-    stream.name("\(upstream.name)-asStream(\(type))")
+    stream.name("\(upstream.name) |> asStream(\(type))")
     return stream
 }
 
@@ -21,7 +21,7 @@ public func asStream<T, U>(type: U.Type)(upstream: Stream<T>) -> Stream<U>
 public func asStream<T, U>(type: U?.Type)(upstream: Stream<T>) -> Stream<U?>
 {
     let stream = upstream |> map { $0 as? U }
-    stream.name("\(upstream.name)-asStream(\(type))")
+    stream.name("\(upstream.name) |> asStream(\(type))")
     return stream
 }
 
@@ -70,7 +70,7 @@ public extension Stream
                 return
             }
             
-        }.name("Stream.fromTask")
+        }.name("Stream.fromTask(\(task.name))")
     }
     
     ///
@@ -118,6 +118,6 @@ public extension Stream
                 return
             }
             
-        }.name("Stream.fromProgressTask")
+        }.name("Stream.fromProgressTask(\(task.name))")
     }
 }

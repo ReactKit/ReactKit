@@ -45,7 +45,7 @@ public extension NSNotificationCenter
             
             configure.resume?()
             
-        }.name("NSNotification-\(notificationName)") |> takeUntil(self.deinitStream)
+        }.name("NSNotification.stream(\(notificationName))") |> takeUntil(self.deinitStream)
     }
 }
 

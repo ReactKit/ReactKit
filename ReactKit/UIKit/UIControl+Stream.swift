@@ -54,6 +54,6 @@ public extension UIControl
             
             configure.resume?()
             
-        }.name("\(NSStringFromClass(self.dynamicType))-\(controlEvents)") |> takeUntil(self.deinitStream)
+        }.name("\(_summary(self))-\(controlEvents)") |> takeUntil(self.deinitStream)
     }
 }

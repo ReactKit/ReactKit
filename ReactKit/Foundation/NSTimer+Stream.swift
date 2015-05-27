@@ -41,6 +41,6 @@ public extension NSTimer
             
             configure.resume?()
             
-        }.name("\(NSStringFromClass(self))")
+        }.name("\(_summary(self))")
     }
 }
