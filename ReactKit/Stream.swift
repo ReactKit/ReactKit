@@ -263,6 +263,28 @@ public func peek<T>(peekClosure: T -> Void)(upstream: Stream<T>) -> Stream<T>
     }.name("\(upstream.name) |> peek")
 }
 
+/// Stops pause/resume/cancel propagation to upstream, and only pass-through `progressValue`s to downstream.
+/// Useful for oneway-pipelining to consecutive downstream.
+public func branch<T>(upstream: Stream<T>) -> Stream<T>
+{
+    return Stream<T> { progress, fulfill, reject, configure in
+        
+        var canceller: Canceller? = nil
+        _bindToUpstream(upstream, fulfill, reject, nil, canceller)
+        
+        // configure manually to not propagate pause/resume/cancel to upstream
+        configure.cancel = {
+            canceller?.cancel()
+        }
+        
+        // NOTE: use `upstream.progress()`, not `.react()`
+        upstream.progress(&canceller) { _, value in
+            progress(value)
+        }
+        
+    }.name("\(upstream.name) |> branch")
+}
+
 /// creates your own customizable & method-chainable stream without writing `return Stream<U> { ... }`
 public func customize<T, U>
     (customizeClosure: (upstream: Stream<T>, progress: Stream<U>.ProgressHandler, fulfill: Stream<U>.FulfillHandler, reject: Stream<U>.RejectHandler) -> Void)
