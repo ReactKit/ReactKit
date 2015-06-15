@@ -57,62 +57,6 @@ class OperationTests: _TestCase
         self.wait()
     }
     
-    func testFlatMap()
-    {
-        // NOTE: this is async test
-        if !self.isAsync { return }
-        
-        let expect = self.expectationWithDescription(__FUNCTION__)
-        
-        let obj1 = MyObject()
-        let obj2 = MyObject()
-        
-        // NOTE: `mapClosure` is returning Stream
-        let stream = KVO.stream(obj1, "value") |> flatMap { (value: AnyObject?) -> Stream<AnyObject?> in
-            // delay sending value for 0.01 sec
-            return NSTimer.stream(timeInterval: 0.01, repeats: false) { _ in value }
-        }
-        
-        // REACT
-        (obj2, "value") <~ stream
-        
-        println("*** Start ***")
-        
-        XCTAssertEqual(obj1.value, "initial")
-        XCTAssertEqual(obj2.value, "initial")
-        
-        self.perform {
-            
-            obj1.value = "hoge"
-            
-            XCTAssertEqual(obj1.value, "hoge")
-            XCTAssertEqual(obj2.value, "initial", "`obj2.value` should NOT be updated because `stream` is delayed.")
-            
-            // wait for "hoge" to arrive...
-            Async.main(after: 0.1) {
-                
-                XCTAssertEqual(obj1.value, "hoge")
-                XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should be updated because delayed `stream` message arrived.")
-                
-                obj1.value = "fuga"
-                
-                XCTAssertEqual(obj1.value, "fuga")
-                XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should NOT be updated because `stream` is delayed.")
-            }
-            
-            // wait for "fuga" to arrive...
-            Async.main(after: 0.2 + SAFE_DELAY) {
-                
-                XCTAssertEqual(obj1.value, "fuga")
-                XCTAssertEqual(obj2.value, "fuga", "`obj2.value` should be updated because delayed `stream` message arrived.")
-                
-                expect.fulfill()
-            }
-        }
-        
-        self.wait()
-    }
-    
     func testMap2()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
@@ -186,6 +130,99 @@ class OperationTests: _TestCase
             
             expect.fulfill()
             
+        }
+        
+        self.wait()
+    }
+    
+    func testFlatMapMerge()
+    {
+        // NOTE: this is async test
+        if !self.isAsync { return }
+        
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj1 = MyObject()
+        let obj2 = MyObject()
+        
+        let stream = KVO.stream(obj1, "value")
+            |> flatMap(.Merge) { (value: AnyObject?) -> Stream<AnyObject?> in
+                // delay sending value for 0.01 sec
+                return NSTimer.stream(timeInterval: 0.01, repeats: false) { _ in value }
+            }
+        
+        // REACT
+        (obj2, "value") <~ stream
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj1.value, "initial")
+        XCTAssertEqual(obj2.value, "initial")
+        
+        self.perform {
+            
+            obj1.value = "hoge"
+            
+            XCTAssertEqual(obj1.value, "hoge")
+            XCTAssertEqual(obj2.value, "initial", "`obj2.value` should NOT be updated because `stream` is delayed.")
+            
+            // wait for "hoge" to arrive...
+            Async.main(after: 0.1) {
+                
+                XCTAssertEqual(obj1.value, "hoge")
+                XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should be updated because delayed `stream` message arrived.")
+                
+                obj1.value = "fuga"
+                
+                XCTAssertEqual(obj1.value, "fuga")
+                XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should NOT be updated because `stream` is delayed.")
+            }
+            
+            // wait for "fuga" to arrive...
+            Async.main(after: 0.2 + SAFE_DELAY) {
+                
+                XCTAssertEqual(obj1.value, "fuga")
+                XCTAssertEqual(obj2.value, "fuga", "`obj2.value` should be updated because delayed `stream` message arrived.")
+                
+                expect.fulfill()
+            }
+        }
+        
+        self.wait()
+    }
+    
+    func testFlatMapMerge_upstream_fulfill()
+    {
+        // NOTE: this is async test
+        if !self.isAsync { return }
+        
+        let expect = self.expectationWithDescription(__FUNCTION__)
+        
+        let obj2 = MyObject()
+        
+        let stream = NSTimer.stream(timeInterval: 0.01, repeats: false) { _ in "hoge" }
+            |> flatMap(.Merge) { (value: AnyObject?) -> Stream<AnyObject?> in
+                // delay sending value for 0.01 sec
+                return NSTimer.stream(timeInterval: 0.01, repeats: false) { _ in value }
+            }
+        
+        // REACT
+        (obj2, "value") <~ stream
+        
+        println("*** Start ***")
+        
+        XCTAssertEqual(obj2.value, "initial")
+        
+        self.perform {
+            
+            XCTAssertEqual(obj2.value, "initial", "`obj2.value` should NOT be updated because `stream` is delayed.")
+            
+            // wait for "hoge" to arrive...
+            Async.main(after: 0.1) {
+                XCTAssertEqual(obj2.value, "hoge", "`obj2.value` should be updated because delayed `stream` message arrived.")
+                
+                expect.fulfill()
+            }
         }
         
         self.wait()

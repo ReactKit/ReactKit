@@ -314,30 +314,6 @@ public func map<T, U>(transform: T -> U)(upstream: Stream<T>) -> Stream<U>
     }.name("\(upstream.name) |> map")
 }
 
-/// map using newValue only & bind to transformed Stream
-public func flatMap<T, U>(transform: T -> Stream<U>)(upstream: Stream<T>) -> Stream<U>
-{
-    return Stream<U> { progress, fulfill, reject, configure in
-        
-        var canceller: Canceller? = nil
-        _bindToUpstream(upstream, fulfill, reject, configure, canceller)
-        
-        // NOTE: each of `transformToStream()` needs to be retained outside
-        var innerStreams: [Stream<U>] = []
-        
-        upstream.react(&canceller) { value in
-            let innerStream = transform(value)
-            innerStreams += [innerStream]
-            
-            innerStream.react { value in
-                progress(value)
-            }
-        }
-
-    }.name("\(upstream.name) |> flatMap")
-    
-}
-
 /// map using (oldValue, newValue)
 public func map2<T, U>(transform2: (oldValue: T?, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
 {
@@ -374,6 +350,13 @@ public func mapAccumulate<T, U>(initialValue: U, accumulateClosure: (accumulated
             
         }.name("\(upstream.name) |> mapAccumulate")
     }
+}
+
+/// map to stream + flatten
+public func flatMap<T, U>(_ style: FlattenStyle = .Merge, transform: T -> Stream<U>)(upstream: Stream<T>) -> Stream<U>
+{
+    let stream = upstream |> map(transform) |> flatten(style)
+    return stream.name("\(upstream.name) |> flatMap(.\(style))")
 }
 
 public func buffer<T>(_ capacity: Int = Int.max)(upstream: Stream<T>) -> Stream<[T]>
@@ -1194,25 +1177,41 @@ public func zipAll<T>(streams: [Stream<T>]) -> Stream<[T]>
 }
 
 //--------------------------------------------------
-// MARK: - Nested Stream Operations
+// MARK: - Nested Stream Operations (flattening)
 //--------------------------------------------------
+
+public enum FlattenStyle: String, Printable
+{
+    case Merge = "Merge"
+    case Concat = "Concat"
+    case Latest = "Latest"
+    
+    public var description: String { return self.rawValue }
+}
+
+public func flatten<T>(style: FlattenStyle) -> (upstream: Stream<Stream<T>>) -> Stream<T>
+{
+    switch style {
+        case .Merge: return mergeInner
+        case .Concat: return concatInner
+        case .Latest: return switchLatestInner
+    }
+}
 
 ///
 /// Merges multiple streams into single stream.
 ///
 /// - e.g. `let mergedStream = [stream1, stream2, ...] |> mergeInner`
 ///
-/// NOTE: This method is conceptually equal to `streams |> merge2All(streams) |> map { $1 }`.
-///
-public func mergeInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
+public func mergeInner<T>(upstream: Stream<Stream<T>>) -> Stream<T>
 {
     return Stream<T> { progress, fulfill, reject, configure in
         
-        // NOTE: don't bind nestedStream's fulfill with returning mergeInner-stream's fulfill
+        // NOTE: when flattening, don't bind upstream's fulfill/reject with flattened-downstream's fulfill/reject
         var canceller: Canceller? = nil
-        _bindToUpstream(nestedStream, nil, reject, configure, canceller)
+        _bindToUpstream(upstream, nil, nil, configure, canceller)
         
-        nestedStream.react(&canceller) { (innerStream: Stream<T>) in
+        upstream.react(&canceller) { (innerStream: Stream<T>) in
             
             _bindToUpstream(innerStream, nil, nil, configure, nil)
 
@@ -1220,7 +1219,7 @@ public func mergeInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
                 progress(value)
             }.then { value, errorInfo -> Void in
                 if value != nil {
-                    fulfill()
+                    //fulfill() // comment-out: don't fulfill for multiple innerStream progresses
                 }
                 else if let errorInfo = errorInfo {
                     if let error = errorInfo.error {
@@ -1237,12 +1236,12 @@ public func mergeInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
     }.name("mergeInner")
 }
 
-public func concatInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
+public func concatInner<T>(upstream: Stream<Stream<T>>) -> Stream<T>
 {
     return Stream<T> { progress, fulfill, reject, configure in
         
         var canceller: Canceller? = nil
-        _bindToUpstream(nestedStream, nil, reject, configure, canceller)
+        _bindToUpstream(upstream, nil, nil, configure, canceller)
         
         var pendingInnerStreams = [Stream<T>]()
         
@@ -1271,7 +1270,7 @@ public func concatInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
             }
         }
         
-        nestedStream.react(&canceller) { (innerStream: Stream<T>) in
+        upstream.react(&canceller) { (innerStream: Stream<T>) in
             pendingInnerStreams += [innerStream]
             performRecursively()
         }
@@ -1281,16 +1280,16 @@ public func concatInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
 
 /// uses the latest innerStream and cancels previous innerStreams
 /// a.k.a Rx.switchLatest
-public func switchLatestInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
+public func switchLatestInner<T>(upstream: Stream<Stream<T>>) -> Stream<T>
 {
     return Stream<T> { progress, fulfill, reject, configure in
         
         var canceller: Canceller? = nil
-        _bindToUpstream(nestedStream, nil, reject, configure, canceller)
+        _bindToUpstream(upstream, nil, nil, configure, canceller)
         
         var currentInnerStream: Stream<T>?
         
-        nestedStream.react(&canceller) { (innerStream: Stream<T>) in
+        upstream.react(&canceller) { (innerStream: Stream<T>) in
             
             _bindToUpstream(innerStream, nil, nil, configure, nil)
             
