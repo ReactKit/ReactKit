@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		1F14EC3819C1EE350090C3D8 /* ReactKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FED88F819C1EB120065658B /* ReactKit.framework */; };
-		1F14EC3919C1EE400090C3D8 /* ReactKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FED894119C1EB7D0065658B /* ReactKit.framework */; };
 		1F2BEB601AAAB3A500256A58 /* ArrayKVOTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2BEB5F1AAAB3A500256A58 /* ArrayKVOTests.swift */; };
 		1F2BEB611AAAB3A500256A58 /* ArrayKVOTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2BEB5F1AAAB3A500256A58 /* ArrayKVOTests.swift */; };
 		1F44E43A1ACAD0DF00B8428A /* StreamProducerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F44E4391ACAD0DF00B8428A /* StreamProducerTests.swift */; };
@@ -68,8 +67,41 @@
 		48DDE7731A0C41A300125F36 /* NSObject+Own.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DDE7711A0C41A300125F36 /* NSObject+Own.swift */; };
 		48F5CE3C1ACCCAD800608038 /* TypeCastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48F5CE3B1ACCCAD800608038 /* TypeCastTests.swift */; };
 		48F5CE3D1ACCCAD800608038 /* TypeCastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48F5CE3B1ACCCAD800608038 /* TypeCastTests.swift */; };
+		48F6CFB31B2FB99D00317198 /* ReactKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FED894119C1EB7D0065658B /* ReactKit.framework */; };
+		48F6CFB61B2FBB6700317198 /* ReactKit.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 1FED894119C1EB7D0065658B /* ReactKit.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		48FD5B3C19E51E7100913946 /* UIBarButtonItem+Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FD5B3B19E51E7100913946 /* UIBarButtonItem+Stream.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		48F2228C1B2FC2500001FCE9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1FED88EF19C1EB120065658B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1FED88F719C1EB120065658B;
+			remoteInfo = "ReactKit-OSX";
+		};
+		48F6CFB11B2FB93800317198 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1FED88EF19C1EB120065658B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1FED894019C1EB7D0065658B;
+			remoteInfo = "ReactKit-iOS";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		48F6CFB41B2FBAB200317198 /* Copy Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				48F6CFB61B2FBB6700317198 /* ReactKit.framework in Copy Frameworks */,
+			);
+			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		1F14EC4319C1FC040090C3D8 /* NotificationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationTests.swift; sourceTree = "<group>"; };
@@ -143,7 +175,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1F14EC3919C1EE400090C3D8 /* ReactKit.framework in Frameworks */,
+				48F6CFB31B2FB99D00317198 /* ReactKit.framework in Frameworks */,
 				1FF25DFC1AE2C06F002632C4 /* Async.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -310,6 +342,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				48F2228D1B2FC2500001FCE9 /* PBXTargetDependency */,
 			);
 			name = "ReactKit-OSXTests";
 			productName = ReactKitTests;
@@ -341,10 +374,12 @@
 				1FED894719C1EB7D0065658B /* Sources */,
 				1FED894819C1EB7D0065658B /* Frameworks */,
 				1FED894919C1EB7D0065658B /* Resources */,
+				48F6CFB41B2FBAB200317198 /* Copy Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				48F6CFB21B2FB93800317198 /* PBXTargetDependency */,
 			);
 			name = "ReactKit-iOSTests";
 			productName = "ReactKit-iOSTests";
@@ -511,6 +546,19 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		48F2228D1B2FC2500001FCE9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1FED88F719C1EB120065658B /* ReactKit-OSX */;
+			targetProxy = 48F2228C1B2FC2500001FCE9 /* PBXContainerItemProxy */;
+		};
+		48F6CFB21B2FB93800317198 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1FED894019C1EB7D0065658B /* ReactKit-iOS */;
+			targetProxy = 48F6CFB11B2FB93800317198 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1FED890C19C1EB120065658B /* Debug */ = {
