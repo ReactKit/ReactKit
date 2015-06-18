@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name     = 'ReactKit'
-  s.version  = '0.11.0'
+  s.version  = '0.11.1'
   s.license  = { :type => 'MIT' }
   s.homepage = 'https://github.com/ReactKit/ReactKit'
   s.authors  = { 'Yasuhiro Inami' => 'inamiy@gmail.com' }
