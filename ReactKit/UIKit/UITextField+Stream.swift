@@ -10,9 +10,9 @@ import UIKit
 
 public extension UITextField
 {
-    public func textChangedStream() -> Stream<NSString?>
+    public func textChangedStream() -> Stream<String?>
     {
-        return self.stream(controlEvents: .EditingChanged) { (sender: UIControl?) -> NSString? in
+        return self.stream(controlEvents: .EditingChanged) { (sender: UIControl?) -> String? in
             if let sender = sender as? UITextField {
                 return sender.text
             }
