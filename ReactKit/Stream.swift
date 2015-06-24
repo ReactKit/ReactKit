@@ -112,16 +112,23 @@ private func _bindToUpstream<T, C: Canceller>(
 
     // NOTE: downstream should capture upstream
     if let downstreamConfigure = downstreamConfigure {
+        let oldPause = downstreamConfigure.pause
         downstreamConfigure.pause = {
+            oldPause?()
             upstream.pause()
         }
         
+        let oldResume = downstreamConfigure.resume
         downstreamConfigure.resume = {
+            oldResume?()
             upstream.resume()
         }
         
         // NOTE: `configure.cancel()` is always called on downstream-finish
+        let oldCancel = downstreamConfigure.cancel
         downstreamConfigure.cancel = {
+            oldCancel?()
+            
             let canceller = reactCanceller()
             canceller?.cancel()
             upstream.cancel()
@@ -314,30 +321,6 @@ public func map<T, U>(transform: T -> U)(upstream: Stream<T>) -> Stream<U>
     }.name("\(upstream.name) |> map")
 }
 
-/// map using newValue only & bind to transformed Stream
-public func flatMap<T, U>(transform: T -> Stream<U>)(upstream: Stream<T>) -> Stream<U>
-{
-    return Stream<U> { progress, fulfill, reject, configure in
-        
-        var canceller: Canceller? = nil
-        _bindToUpstream(upstream, fulfill, reject, configure, canceller)
-        
-        // NOTE: each of `transformToStream()` needs to be retained outside
-        var innerStreams: [Stream<U>] = []
-        
-        upstream.react(&canceller) { value in
-            let innerStream = transform(value)
-            innerStreams += [innerStream]
-            
-            innerStream.react { value in
-                progress(value)
-            }
-        }
-
-    }.name("\(upstream.name) |> flatMap")
-    
-}
-
 /// map using (oldValue, newValue)
 public func map2<T, U>(transform2: (oldValue: T?, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
 {
@@ -374,6 +357,13 @@ public func mapAccumulate<T, U>(initialValue: U, accumulateClosure: (accumulated
             
         }.name("\(upstream.name) |> mapAccumulate")
     }
+}
+
+/// map to stream + flatten
+public func flatMap<T, U>(_ style: FlattenStyle = .Merge, transform: T -> Stream<U>)(upstream: Stream<T>) -> Stream<U>
+{
+    let stream = upstream |> map(transform) |> flatten(style)
+    return stream.name("\(upstream.name) |> flatMap(.\(style))")
 }
 
 public func buffer<T>(_ capacity: Int = Int.max)(upstream: Stream<T>) -> Stream<[T]>
@@ -1194,75 +1184,125 @@ public func zipAll<T>(streams: [Stream<T>]) -> Stream<[T]>
 }
 
 //--------------------------------------------------
-// MARK: - Nested Stream Operations
+// MARK: - Nested Stream Operations (flattening)
 //--------------------------------------------------
+
+public enum FlattenStyle: String, Printable
+{
+    case Merge = "Merge"
+    case Concat = "Concat"
+    case Latest = "Latest"
+    
+    public var description: String { return self.rawValue }
+}
+
+public func flatten<T>(style: FlattenStyle) -> (upstream: Stream<Stream<T>>) -> Stream<T>
+{
+    switch style {
+        case .Merge: return mergeInner
+        case .Concat: return concatInner
+        case .Latest: return switchLatestInner
+    }
+}
 
 ///
 /// Merges multiple streams into single stream.
 ///
 /// - e.g. `let mergedStream = [stream1, stream2, ...] |> mergeInner`
 ///
-/// NOTE: This method is conceptually equal to `streams |> merge2All(streams) |> map { $1 }`.
-///
-public func mergeInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
+public func mergeInner<T>(upstream: Stream<Stream<T>>) -> Stream<T>
 {
     return Stream<T> { progress, fulfill, reject, configure in
         
-        // NOTE: don't bind nestedStream's fulfill with returning mergeInner-stream's fulfill
-        var canceller: Canceller? = nil
-        _bindToUpstream(nestedStream, nil, reject, configure, canceller)
+        var unfinishedCount = 1
+        let lock = NSRecursiveLock()
         
-        nestedStream.react(&canceller) { (innerStream: Stream<T>) in
+        let fulfillIfPossible: Void -> Void = {
+            lock.lock()
+            unfinishedCount--
+            if unfinishedCount == 0 {
+                fulfill()
+            }
+            lock.unlock()
+        }
+        
+        var canceller: Canceller? = nil
+        _bindToUpstream(upstream, nil, reject, configure, canceller)
+        
+        upstream.react(&canceller) { (innerStream: Stream<T>) in
             
-            _bindToUpstream(innerStream, nil, nil, configure, nil)
+            lock.lock()
+            unfinishedCount++
+            lock.unlock()
+            
+            var innerCanceller: Canceller? = nil
+            _bindToUpstream(innerStream, nil, nil, configure, innerCanceller)
 
-            innerStream.react { value in
+            innerStream.react(&innerCanceller) { value in
                 progress(value)
             }.then { value, errorInfo -> Void in
                 if value != nil {
-                    fulfill()
+                    fulfillIfPossible()
                 }
                 else if let errorInfo = errorInfo {
                     if let error = errorInfo.error {
                         reject(error)
                     }
                     else {
-                        let error = _RKError(.CancelledByInternalStream, "One of stream is cancelled in `mergeInner()`.")
+                        let error = _RKError(.CancelledByInternalStream, "One of the inner stream in `mergeInner()` is cancelled.")
                         reject(error)
                     }
                 }
             }
+        }.success {
+            fulfillIfPossible()
         }
         
     }.name("mergeInner")
 }
 
-public func concatInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
+public func concatInner<T>(upstream: Stream<Stream<T>>) -> Stream<T>
 {
     return Stream<T> { progress, fulfill, reject, configure in
         
-        var canceller: Canceller? = nil
-        _bindToUpstream(nestedStream, nil, reject, configure, canceller)
-        
         var pendingInnerStreams = [Stream<T>]()
+        
+        var unfinishedCount = 1
+        let lock = NSRecursiveLock()
+        
+        let fulfillIfPossible: Void -> Void = {
+            lock.lock()
+            unfinishedCount--
+            if unfinishedCount == 0 {
+                fulfill()
+            }
+            lock.unlock()
+        }
         
         let performRecursively: Void -> Void = _fix { recurse in
             return {
                 if let innerStream = pendingInnerStreams.first {
-                    if pendingInnerStreams.count == 1 {
-                        _bindToUpstream(innerStream, nil, nil, configure, nil)
                         
-                        innerStream.react { value in
-                            progress(value)
-                        }.success {
+                    var innerCanceller: Canceller? = nil
+                    _bindToUpstream(innerStream, nil, nil, configure, innerCanceller)
+                    
+                    innerStream.react(&innerCanceller) { value in
+                        progress(value)
+                    }.then { value, errorInfo -> Void in
+                        if value != nil {
+                            lock.lock()
                             pendingInnerStreams.removeAtIndex(0)
                             recurse()
-                        }.failure { errorInfo -> Void in
+                            lock.unlock()
+                            
+                            fulfillIfPossible()
+                        }
+                        else if let errorInfo = errorInfo {
                             if let error = errorInfo.error {
                                 reject(error)
                             }
                             else {
-                                let error = _RKError(.CancelledByInternalStream, "One of stream is cancelled in `concatInner()`.")
+                                let error = _RKError(.CancelledByInternalStream, "One of the inner stream in `concatInner()` is cancelled.")
                                 reject(error)
                             }
                         }
@@ -1271,9 +1311,20 @@ public func concatInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
             }
         }
         
-        nestedStream.react(&canceller) { (innerStream: Stream<T>) in
+        var canceller: Canceller? = nil
+        _bindToUpstream(upstream, nil, reject, configure, canceller)
+        
+        upstream.react(&canceller) { (innerStream: Stream<T>) in
+            lock.lock()
+            unfinishedCount++
+            
             pendingInnerStreams += [innerStream]
-            performRecursively()
+            if pendingInnerStreams.count == 1 {
+                performRecursively()
+            }
+            lock.unlock()
+        }.success { _ -> Void in
+            fulfillIfPossible()
         }
         
     }.name("concatInner")
@@ -1281,25 +1332,64 @@ public func concatInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
 
 /// uses the latest innerStream and cancels previous innerStreams
 /// a.k.a Rx.switchLatest
-public func switchLatestInner<T>(nestedStream: Stream<Stream<T>>) -> Stream<T>
+public func switchLatestInner<T>(upstream: Stream<Stream<T>>) -> Stream<T>
 {
     return Stream<T> { progress, fulfill, reject, configure in
         
-        var canceller: Canceller? = nil
-        _bindToUpstream(nestedStream, nil, reject, configure, canceller)
-        
         var currentInnerStream: Stream<T>?
         
-        nestedStream.react(&canceller) { (innerStream: Stream<T>) in
+        var unfinishedCount = 1
+        let lock = NSRecursiveLock()
+        
+        let finishIfPossible: (Void -> Void) -> Void -> Void = { finish in
+            return {
+                lock.lock()
+                unfinishedCount--
+                if unfinishedCount == 0 {
+                    finish()
+                }
+                lock.unlock()
+            }
+        }
+        let fulfillIfPossible = finishIfPossible { fulfill() }
+        let rejectIfPossible = finishIfPossible {
+            let error = _RKError(.CancelledByInternalStream, "Last inner stream in `switchLatestInner()` is cancelled.")
+            reject(error)
+        }
+        
+        var canceller: Canceller? = nil
+        _bindToUpstream(upstream, nil, reject, configure, canceller)
+        
+        upstream.react(&canceller) { (innerStream: Stream<T>) in
             
-            _bindToUpstream(innerStream, nil, nil, configure, nil)
+            lock.lock()
+            unfinishedCount++
+            lock.unlock()
             
             currentInnerStream?.cancel()
             currentInnerStream = innerStream
             
-            innerStream.react { value in
+            var innerCanceller: Canceller? = nil
+            _bindToUpstream(innerStream, nil, nil, configure, innerCanceller)
+            
+            innerStream.react(&innerCanceller) { value in
                 progress(value)
+            }.then { value, errorInfo -> Void in
+                if value != nil {
+                    fulfillIfPossible()
+                }
+                else if let errorInfo = errorInfo {
+                    if let error = errorInfo.error {
+                        reject(error)
+                    }
+                    else {
+                        rejectIfPossible()  // will reject if upstream finished & last innerStream is cancelled
+                    }
+                }
             }
+            
+        }.success { _ -> Void in
+            fulfillIfPossible()
         }
         
     }.name("switchLatestInner")
