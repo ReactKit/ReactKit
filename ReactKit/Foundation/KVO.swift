@@ -206,13 +206,38 @@ infix operator <~ { associativity right }
 /// e.g. `(obj2, "value") <~ stream`
 public func <~ <T: AnyObject>(tuple: (object: NSObject, keyPath: String), stream: Stream<T?>) -> Canceller?
 {
+    return _reactLeft(tuple, stream)
+}
+
+public func <~ (tuple: (object: NSObject, keyPath: String), stream: Stream<String?>) -> Canceller?
+{
+    return _reactLeft(tuple, stream)
+}
+
+public func <~ (tuple: (object: NSObject, keyPath: String), stream: Stream<Int?>) -> Canceller?
+{
+    return _reactLeft(tuple, stream)
+}
+
+public func <~ (tuple: (object: NSObject, keyPath: String), stream: Stream<Float?>) -> Canceller?
+{
+    return _reactLeft(tuple, stream)
+}
+
+public func <~ (tuple: (object: NSObject, keyPath: String), stream: Stream<Double?>) -> Canceller?
+{
+    return _reactLeft(tuple, stream)
+}
+
+private func _reactLeft <T>(tuple: (object: NSObject, keyPath: String), stream: Stream<T?>) -> Canceller?
+{
     weak var object = tuple.object
     let keyPath = tuple.keyPath
     var canceller: Canceller? = nil
     
     stream.react(&canceller) { value in
         if let object = object {
-            object.setValue(value, forKeyPath:keyPath)  // NOTE: don't use `tuple` inside closure, or object will be captured
+            object.setValue(value as? AnyObject, forKeyPath:keyPath)  // NOTE: don't use `tuple` inside closure, or object will be captured
         }
     }
     

@@ -26,7 +26,7 @@ class OperationTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let stream = KVO.stream(obj1, "value") |> map { (value: AnyObject?) -> NSString? in
+        let stream = KVO.stream(obj1, "value") |> map { (value: AnyObject?) -> String? in
             return (value as! String).uppercaseString
         }
         
@@ -64,8 +64,8 @@ class OperationTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let stream = KVO.stream(obj1, "value") |> map2 { (oldValue: AnyObject??, newValue: AnyObject?) -> NSString? in
-            let oldString = (oldValue as? NSString) ?? "empty"
+        let stream = KVO.stream(obj1, "value") |> map2 { (oldValue: AnyObject??, newValue: AnyObject?) -> String? in
+            let oldString = (oldValue as? String) ?? "empty"
             return "\(oldString) -> \(newValue as! String)"
         }
         
@@ -762,9 +762,9 @@ class OperationTests: _TestCase
         let obj2 = MyObject()
         
         let stream = KVO.stream(obj1, "value")
-            |> map { (($0 as? NSString) ?? "") }    // create stream with Hashable value-type for `distinct()`
+            |> map { (($0 as? String) ?? "") }    // create stream with Hashable value-type for `distinct()`
             |> distinct
-            |> map { $0 as NSString? }  // convert: Stream<NSString> -> Stream<NSString?>
+            |> map { $0 as String? }  // convert: Stream<String> -> Stream<String?>
         
         var reactCount = 0
         
@@ -814,9 +814,9 @@ class OperationTests: _TestCase
         let obj2 = MyObject()
         
         let stream = KVO.stream(obj1, "value")
-            |> map { (($0 as? NSString) ?? "") }
+            |> map { (($0 as? String) ?? "") }
             |> distinctUntilChanged
-            |> map { $0 as NSString? }
+            |> map { $0 as String? }
         
         var reactCount = 0
         
@@ -896,7 +896,7 @@ class OperationTests: _TestCase
         let stream1 = KVO.stream(obj1, "value")
         let stream2 = KVO.stream(obj2, "number")
         
-        let bundledStream = stream1 |> combineLatest(stream2) |> map { (values: [AnyObject?]) -> NSString? in
+        let bundledStream = stream1 |> combineLatest(stream2) |> map { (values: [AnyObject?]) -> String? in
             let value0: AnyObject = values[0]!
             let value1: AnyObject = values[1]!
             return "\(value0)-\(value1)"
@@ -1237,7 +1237,7 @@ class OperationTests: _TestCase
         let stream1 = KVO.stream(obj1, "value")
         let stream2 = KVO.stream(obj2, "number")
         
-        let bundledStream = [stream1, stream2] |> merge2All |> map { (values: [AnyObject??], _) -> NSString? in
+        let bundledStream = [stream1, stream2] |> merge2All |> map { (values: [AnyObject??], _) -> String? in
             let value0: AnyObject = (values[0] ?? "notYet") ?? "nil"
             let value1: AnyObject = (values[1] ?? "notYet") ?? "nil"
             return "\(value0)-\(value1)"
@@ -1280,7 +1280,7 @@ class OperationTests: _TestCase
         let stream1 = KVO.stream(obj1, "value")
         let stream2 = KVO.stream(obj2, "number")
         
-        let combinedStream = [stream1, stream2] |> combineLatestAll |> map { (values: [AnyObject?]) -> NSString? in
+        let combinedStream = [stream1, stream2] |> combineLatestAll |> map { (values: [AnyObject?]) -> String? in
             let value0: AnyObject = (values[0] ?? "nil")
             let value1: AnyObject = (values[1] ?? "nil")
             return "\(value0)-\(value1)"
@@ -1324,7 +1324,7 @@ class OperationTests: _TestCase
         let stream1: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.1, userInfo: nil, repeats: false) { _ in "Next" }
         let stream2: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.3, userInfo: nil, repeats: false) { _ in 123 }
         
-        var concatStream = [stream1, stream2] |> concatInner |> map { (value: AnyObject?) -> NSString? in
+        var concatStream = [stream1, stream2] |> concatInner |> map { (value: AnyObject?) -> String? in
             let valueString: AnyObject = value ?? "nil"
             return "\(valueString)"
         }
@@ -1417,7 +1417,7 @@ class OperationTests: _TestCase
         let stream1 = KVO.stream(obj1, "value")
         let stream2 = KVO.stream(obj2, "number")
         
-        var bundledStream = [stream1, stream2] |> mergeInner |> map { (value: AnyObject?) -> NSString? in
+        var bundledStream = [stream1, stream2] |> mergeInner |> map { (value: AnyObject?) -> String? in
             let valueString: AnyObject = value ?? "nil"
             return "\(valueString)"
         }
