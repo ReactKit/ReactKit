@@ -70,6 +70,7 @@
 		48F6CFB31B2FB99D00317198 /* ReactKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FED894119C1EB7D0065658B /* ReactKit.framework */; };
 		48F6CFB61B2FBB6700317198 /* ReactKit.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 1FED894119C1EB7D0065658B /* ReactKit.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		48FD5B3C19E51E7100913946 /* UIBarButtonItem+Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FD5B3B19E51E7100913946 /* UIBarButtonItem+Stream.swift */; };
+		F399DCA51B3A80480084BD1F /* UITextView+Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = F399DCA41B3A80480084BD1F /* UITextView+Stream.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -143,6 +144,7 @@
 		48DDE7711A0C41A300125F36 /* NSObject+Own.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+Own.swift"; sourceTree = "<group>"; };
 		48F5CE3B1ACCCAD800608038 /* TypeCastTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeCastTests.swift; sourceTree = "<group>"; };
 		48FD5B3B19E51E7100913946 /* UIBarButtonItem+Stream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIBarButtonItem+Stream.swift"; sourceTree = "<group>"; };
+		F399DCA41B3A80480084BD1F /* UITextView+Stream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITextView+Stream.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -286,6 +288,7 @@
 				4875885F19E4D95A00828AD0 /* UIControl+Stream.swift */,
 				4875885E19E4D95A00828AD0 /* UIButton+Stream.swift */,
 				4875886119E4D95A00828AD0 /* UITextField+Stream.swift */,
+				F399DCA41B3A80480084BD1F /* UITextView+Stream.swift */,
 				4875886019E4D95A00828AD0 /* UIGestureRecognizer+Stream.swift */,
 				48FD5B3B19E51E7100913946 /* UIBarButtonItem+Stream.swift */,
 			);
@@ -506,6 +509,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F72332C1ABDB34C00A0C8CF /* NSIndexSet+Helper.swift in Sources */,
+				F399DCA51B3A80480084BD1F /* UITextView+Stream.swift in Sources */,
 				4875885A19E4D94800828AD0 /* NSObject+Deinit.swift in Sources */,
 				4875886319E4D95A00828AD0 /* UIControl+Stream.swift in Sources */,
 				1FED896219C1EBD60065658B /* Stream.swift in Sources */,
