@@ -10,7 +10,7 @@ import UIKit
 
 public extension UIControl
 {
-    public func stream<T>(#controlEvents: UIControlEvents, map: UIControl? -> T) -> Stream<T>
+    public func stream<T>(controlEvents controlEvents: UIControlEvents, map: UIControl? -> T) -> Stream<T>
     {
         return Stream<T> { [weak self] progress, fulfill, reject, configure in
             
