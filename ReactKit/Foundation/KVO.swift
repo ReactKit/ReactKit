@@ -233,36 +233,3 @@ private func _reactLeft <T>(tuple: (object: NSObject, keyPath: String), _ stream
     
     return canceller
 }
-
-/// Multiple Key-Value Binding
-/// e.g. `[ (obj1, "value1"), (obj2, "value2") ] <~ stream` (sending [value1, value2] array)
-public func <~ <T: AnyObject>(tuples: [(object: NSObject, keyPath: String)], stream: Stream<[T?]>) -> Canceller?
-{
-    var canceller: Canceller? = nil
-    
-    stream.react(&canceller) { (values: [T?]) in
-        for i in 0..<tuples.count {
-            if i >= values.count { break }
-            
-            let tuple = tuples[i]
-            let value = values[i]
-            
-            tuple.object.setValue(value, forKeyPath:tuple.keyPath)
-        }
-    }
-    
-    return canceller
-}
-
-/// short-living Key-Value Binding
-/// e.g. (obj2, "value") <~ (obj1, "value")
-public func <~ (tuple: (object: NSObject, keyPath: String), tuple2: (object: NSObject, keyPath: String))
-{
-    var stream: Stream<AnyObject?>? = KVO.stream(tuple2.object, tuple2.keyPath)
-    tuple <~ stream!
-    
-    // let stream be captured by dispatch_queue to guarantee its lifetime until next runloop
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue()) {
-        stream = nil
-    }
-}

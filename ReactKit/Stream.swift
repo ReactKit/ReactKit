@@ -1679,22 +1679,6 @@ public prefix func ^ <T, U>(closure: T -> U) -> (T -> U)
     return closure
 }
 
-prefix operator + {}
-
-/// short-living operator for stream not being retained
-/// e.g. ^{ print($0) } <~ +KVO.stream(obj1, "value")
-public prefix func + <T>(stream: Stream<T>) -> Stream<T>
-{
-    var holder: Stream<T>? = stream
-    
-    // let stream be captured by dispatch_queue to guarantee its lifetime until next runloop
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue()) {    // on main-thread
-        holder = nil
-    }
-    
-    return stream
-}
-
 //--------------------------------------------------
 // MARK: - Utility
 //--------------------------------------------------
