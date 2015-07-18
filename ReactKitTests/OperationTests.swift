@@ -8,7 +8,7 @@
 
 import ReactKit
 import SwiftTask
-import Async
+//import Async
 import XCTest
 
 class OperationTests: _TestCase
@@ -33,7 +33,7 @@ class OperationTests: _TestCase
         // REACT
         (obj2, "value") <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -72,7 +72,7 @@ class OperationTests: _TestCase
         // REACT
         (obj2, "value") <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -112,7 +112,7 @@ class OperationTests: _TestCase
         // REACT
         stream ~> { result = $0 }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         
@@ -154,7 +154,7 @@ class OperationTests: _TestCase
         // REACT
         (obj2, "value") <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -209,7 +209,7 @@ class OperationTests: _TestCase
         // REACT
         (obj2, "value") <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj2.value, "initial")
         
@@ -244,7 +244,7 @@ class OperationTests: _TestCase
             result = "-".join(buffer_)
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         
@@ -295,7 +295,7 @@ class OperationTests: _TestCase
             result = "-".join(buffer_)
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         
@@ -333,7 +333,7 @@ class OperationTests: _TestCase
         let obj1 = MyObject()
         
         // group by `key = countElement(value)`
-        let stream: Stream<(Int, Stream<AnyObject?>)> = KVO.stream(obj1, "value") |> groupBy { count($0! as! String) }
+        let stream: Stream<(Int, Stream<AnyObject?>)> = KVO.stream(obj1, "value") |> groupBy { ($0! as! String).characters.count }
         
         var lastKey: Int?
         var lastValue: String?
@@ -349,7 +349,7 @@ class OperationTests: _TestCase
             }
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertNil(lastKey)
         XCTAssertNil(lastValue)
@@ -404,7 +404,7 @@ class OperationTests: _TestCase
         // REACT
         (obj2, "value") <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -448,7 +448,7 @@ class OperationTests: _TestCase
         // REACT
         stream ~> { _ in count++; return }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         
@@ -489,7 +489,7 @@ class OperationTests: _TestCase
         // REACT
         (obj2, "value") <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -532,7 +532,7 @@ class OperationTests: _TestCase
             successCount++
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(progressCount, 0)
         XCTAssertEqual(successCount, 0)
@@ -598,7 +598,7 @@ class OperationTests: _TestCase
         // REACT
         (obj2, "value") <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -636,7 +636,7 @@ class OperationTests: _TestCase
         // REACT
         (obj2, "value") <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -674,7 +674,7 @@ class OperationTests: _TestCase
         // REACT
         (obj2, "value") <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -717,7 +717,7 @@ class OperationTests: _TestCase
         (obj2, "value") <~ stream
         stream ~> { _ in reactCount++; return }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -772,7 +772,7 @@ class OperationTests: _TestCase
         (obj2, "value") <~ stream
         stream ~> { _ in reactCount++; return }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -824,7 +824,7 @@ class OperationTests: _TestCase
         (obj2, "value") <~ stream
         stream ~> { _ in reactCount++; return }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -865,12 +865,12 @@ class OperationTests: _TestCase
         
         let stream1 = KVO.stream(obj1, "value")
         
-        var bundledStream = stream1 |> startWith("start!")
+        let bundledStream = stream1 |> startWith("start!")
         
         // REACT
         (obj2, "value") <~ bundledStream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         self.perform {
             // NOTE: not "initial"
@@ -905,7 +905,7 @@ class OperationTests: _TestCase
         // REACT
         (obj3, "value") <~ bundledStream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj3.value, "initial")
         
@@ -941,12 +941,12 @@ class OperationTests: _TestCase
         let stream2: Stream<Any> = Stream.sequence(["A", "B", "C"])
             |> concat(Stream.never())
         
-        var bundledStream = stream1 |> zip(stream2) |> map { (values: [Any]) -> String in
+        let bundledStream = stream1 |> zip(stream2) |> map { (values: [Any]) -> String in
             let valueStrings = values.map { "\($0)" }
             return "-".join(valueStrings)
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         var reactCount = 0
         
@@ -954,7 +954,7 @@ class OperationTests: _TestCase
         bundledStream ~> { value in
             reactCount++
             
-            println(value)
+            print(value)
             
             switch reactCount {
                 case 1:
@@ -999,18 +999,18 @@ class OperationTests: _TestCase
             |> concat(Stream.error(NSError(domain: "test", code: -1, userInfo: nil)))
         
         let recoveryStream = errorStream
-            |> catch { errorInfo -> Stream<Int> in
+            |> `catch` { errorInfo -> Stream<Int> in
                 return streamProducer()
             }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         // REACT
         recoveryStream ~> { value in
             buffer.append(value)
         }
         
-        self.perform(after: 0.5) {
+        self.perform(0.5) {
             expect.fulfill()
         }
         
@@ -1037,18 +1037,18 @@ class OperationTests: _TestCase
 //            |> concat(Stream.error(NSError(domain: "test", code: -1, userInfo: nil))) // comment-out: not attaching error at end for testing
         
         let recoveryStream = errorStream
-            |> catch { errorInfo -> Stream<Int> in
+            |> `catch` { errorInfo -> Stream<Int> in
                 return streamProducer()
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         // REACT
         recoveryStream ~> { value in
             buffer.append(value)
         }
         
-        self.perform(after: 0.5) {
+        self.perform(0.5) {
             expect.fulfill()
         }
         
@@ -1077,10 +1077,10 @@ class OperationTests: _TestCase
         // REACT
         stream ~> { value in
             results += [value]
-            println("[REACT] value = \(value)")
+            print("[REACT] value = \(value)")
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(results, [])
         
@@ -1118,7 +1118,7 @@ class OperationTests: _TestCase
         // REACT
         (obj2, "value") <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -1164,7 +1164,7 @@ class OperationTests: _TestCase
         // REACT
         (obj2, "value") <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -1175,10 +1175,6 @@ class OperationTests: _TestCase
             
             XCTAssertEqual(obj1.value, "hoge")
             XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because of debounce().")
-            
-            Async.background(after: timeInterval/2) {
-                XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because it is still debounced.")
-            }
             
             Async.background(after: timeInterval+0.1) {
                 XCTAssertEqual(obj2.value, "hoge", "obj2.value should be updated after debouncing time.")
@@ -1207,9 +1203,9 @@ class OperationTests: _TestCase
         // REACT
         stream ~> { result = $0 }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
-        self.perform(after: 0.1) {
+        self.perform(0.1) {
             XCTAssertEqual(result!, 106, "`result` should be 106 (100 + 1 + 2 + 3).")
             expect.fulfill()
         }
@@ -1246,7 +1242,7 @@ class OperationTests: _TestCase
         // REACT
         (obj3, "value") <~ bundledStream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         self.perform {
             XCTAssertEqual(obj3.value, "initial")
@@ -1289,7 +1285,7 @@ class OperationTests: _TestCase
         // REACT
         (obj3, "value") <~ combinedStream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         self.perform {
             XCTAssertEqual(obj3.value, "initial")
@@ -1324,7 +1320,7 @@ class OperationTests: _TestCase
         let stream1: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.1, userInfo: nil, repeats: false) { _ in "Next" }
         let stream2: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.3, userInfo: nil, repeats: false) { _ in 123 }
         
-        var concatStream = [stream1, stream2] |> concatInner |> map { (value: AnyObject?) -> String? in
+        let concatStream = [stream1, stream2] |> concatInner |> map { (value: AnyObject?) -> String? in
             let valueString: AnyObject = value ?? "nil"
             return "\(valueString)"
         }
@@ -1332,7 +1328,7 @@ class OperationTests: _TestCase
         // REACT
         (obj1, "value") <~ concatStream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         self.perform {
             XCTAssertEqual(obj1.value, "initial")
@@ -1389,12 +1385,12 @@ class OperationTests: _TestCase
         // REACT
         switchingStream ~> { value in
             results += [value]
-            println("[REACT] value = \(value)")
+            print("[REACT] value = \(value)")
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
-        self.perform(after: 4.0 * faster) {
+        self.perform(4.0 * faster) {
             XCTAssertEqual(results, [1, 2, 4, 5, 7, 8, 9], "Some of values sent by `switchingStream`'s `innerStream`s should be ignored.")
             expect.fulfill()
         }
@@ -1417,7 +1413,7 @@ class OperationTests: _TestCase
         let stream1 = KVO.stream(obj1, "value")
         let stream2 = KVO.stream(obj2, "number")
         
-        var bundledStream = [stream1, stream2] |> mergeInner |> map { (value: AnyObject?) -> String? in
+        let bundledStream = [stream1, stream2] |> mergeInner |> map { (value: AnyObject?) -> String? in
             let valueString: AnyObject = value ?? "nil"
             return "\(valueString)"
         }
@@ -1425,7 +1421,7 @@ class OperationTests: _TestCase
         // REACT
         (obj3, "value") <~ bundledStream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         self.perform {
             XCTAssertEqual(obj3.value, "initial")
@@ -1464,9 +1460,9 @@ class OperationTests: _TestCase
         }
         
         let repeatStreamProducer = streamProducer
-            |>> repeat(3)
+            |>> `repeat`(3)
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         let repeatStream = repeatStreamProducer()
         
@@ -1475,7 +1471,7 @@ class OperationTests: _TestCase
             buffer.append(value)
         }
         
-        self.perform(after: 0.5) {
+        self.perform(0.5) {
             expect.fulfill()
         }
         
@@ -1503,7 +1499,7 @@ class OperationTests: _TestCase
         let retryStreamProducer = errorStreamProducer
             |>> retry(2)
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         let retryStream = retryStreamProducer()
         
@@ -1512,7 +1508,7 @@ class OperationTests: _TestCase
             buffer.append(value)
         }
         
-        self.perform(after: 0.5) {
+        self.perform(0.5) {
             expect.fulfill()
         }
         

@@ -11,13 +11,6 @@
             location = "group:SwiftTask.xcodeproj">
          </FileRef>
       </Group>
-      <Group
-         location = "group:Async"
-         name = "Async">
-         <FileRef
-            location = "group:Async.xcodeproj">
-         </FileRef>
-      </Group>
    </Group>
    <FileRef
       location = "group:ReactKit.xcodeproj">

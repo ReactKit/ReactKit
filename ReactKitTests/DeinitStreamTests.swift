@@ -27,7 +27,7 @@ class DeinitStreamTests: _TestCase
         // REACT
         (obj2, "value") <~ obj1Stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -60,14 +60,14 @@ class DeinitStreamTests: _TestCase
         let obj2 = MyObject()
         
         // NOTE: `weak` is not used for this test
-        var deinitStream: Stream<AnyObject?>? = shortLivedObject!.deinitStream
+        let deinitStream: Stream<AnyObject?>? = shortLivedObject!.deinitStream
         
         let obj1Stream = KVO.stream(obj1, "value") |> takeUntil(deinitStream!)
         
         // REACT
         (obj2, "value") <~ obj1Stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")

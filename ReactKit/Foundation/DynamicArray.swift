@@ -51,12 +51,12 @@ public class DynamicArray: NSObject
         
         super.init()
         
-//        println("[init] \(self)")
+//        print("[init] \(self)")
     }
     
     deinit
     {
-//        println("[deinit] \(self)")
+//        print("[deinit] \(self)")
     }
 }
 
@@ -77,8 +77,8 @@ public class ForwardingDynamicArray: DynamicArray
     ///
     /// Initializer for forwarding changes to KVC-compliant model's array (accessible via `object.valueForKeyPath(keyPath)`).
     ///
-    /// :param: object Model object to call `mutableArrayValueForKeyPath()` as its receiver.
-    /// :param: keyPath Argument for `mutableArrayValueForKeyPath()`.
+    /// - parameter object: Model object to call `mutableArrayValueForKeyPath()` as its receiver.
+    /// - parameter keyPath: Argument for `mutableArrayValueForKeyPath()`.
     ///
     public convenience init(object: NSObject, keyPath: String)
     {
@@ -100,7 +100,7 @@ public class ForwardingDynamicArray: DynamicArray
     ///
     /// Initializer for forwarding changes directly to raw NSMutableArray.
     ///
-    /// :param: original Original NSMutableArray. (DO NOT SET NSMutableArray which is created via **mutableArrayValueForKey()**).
+    /// - parameter original: Original NSMutableArray. (DO NOT SET NSMutableArray which is created via **mutableArrayValueForKey()**).
     ///
     public convenience init(original originalMutableArray: NSMutableArray)
     {

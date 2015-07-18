@@ -23,7 +23,7 @@ class CustomOperatorTests: _TestCase
         // equivalent to (obj2, "value") <~ (obj1, "value"), but can be used for non-KVO temporal streams as well
         (obj2, "value") <~ +KVO.stream(obj1, "value")
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -56,10 +56,10 @@ class CustomOperatorTests: _TestCase
     /// e.g. `let value = stream ~>! ()`
     func testTerminalReactingOperator()
     {
-        var sum: Int! = Stream.sequence([1, 2, 3]) |> reduce(100) { $0 + $1 } ~>! ()
+        let sum: Int! = Stream.sequence([1, 2, 3]) |> reduce(100) { $0 + $1 } ~>! ()
         XCTAssertEqual(sum, 106)
         
-        var distinctValues: [Int] = Stream.sequence([1, 2, 2, 3]) |> distinct |> buffer() ~>! ()
+        let distinctValues: [Int] = Stream.sequence([1, 2, 2, 3]) |> distinct |> buffer() ~>! ()
         XCTAssertEqual(distinctValues, [1, 2, 3])
     }
 }

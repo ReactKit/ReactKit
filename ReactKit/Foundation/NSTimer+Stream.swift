@@ -10,7 +10,7 @@ import Foundation
 
 public extension NSTimer
 {
-    public class func stream<T>(#timeInterval: NSTimeInterval, userInfo: AnyObject? = nil, repeats: Bool = true, map: NSTimer? -> T) -> Stream<T>
+    public class func stream<T>(timeInterval timeInterval: NSTimeInterval, userInfo: AnyObject? = nil, repeats: Bool = true, map: NSTimer? -> T) -> Stream<T>
     {
         return Stream { progress, fulfill, reject, configure in
             

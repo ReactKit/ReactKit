@@ -8,7 +8,7 @@
 
 import ReactKit
 import SwiftTask
-import Async
+//import Async
 import XCTest
 
 
@@ -20,7 +20,6 @@ class AsyncTests: _TestCase
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let mainQueue = dispatch_get_main_queue()
         let queue0 = dispatch_queue_create("queue0", DISPATCH_QUEUE_SERIAL)
         let queue1 = dispatch_queue_create("queue1", DISPATCH_QUEUE_SERIAL)
         
@@ -30,7 +29,7 @@ class AsyncTests: _TestCase
         let upstream = Stream.sequence(1...n)
         let downstream = upstream |> startAsync(queue1)
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         // starting from queue0
         dispatch_async(queue0) {
@@ -56,7 +55,6 @@ class AsyncTests: _TestCase
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let mainQueue = dispatch_get_main_queue()
         let queue0 = dispatch_queue_create("queue0", DISPATCH_QUEUE_SERIAL)
         let queue1 = dispatch_queue_create("queue1", DISPATCH_QUEUE_SERIAL)
         
@@ -66,7 +64,7 @@ class AsyncTests: _TestCase
         let upstream = Stream.sequence(1...n)
         let downstream = upstream |> async(queue1)
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         // starting from queue0
         dispatch_async(queue0) {
@@ -92,7 +90,6 @@ class AsyncTests: _TestCase
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let mainQueue = dispatch_get_main_queue()
         let queue0 = dispatch_queue_create("queue0", DISPATCH_QUEUE_SERIAL)
         let queue1 = dispatch_queue_create("queue1", DISPATCH_QUEUE_SERIAL)
         let queue2 = dispatch_queue_create("queue2", DISPATCH_QUEUE_SERIAL)
@@ -119,7 +116,7 @@ class AsyncTests: _TestCase
                 NSLog("[peek2] value = \(value), \(NSThread.currentThread())")
             }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         // starting from queue0
         dispatch_async(queue0) {
@@ -139,7 +136,7 @@ class AsyncTests: _TestCase
             }
         }
         
-        self.wait(until: consumerDelay*Double(n)+1)
+        self.wait(consumerDelay*Double(n)+1)
         
         XCTAssertEqual(count, 3*n)
     }
@@ -148,7 +145,6 @@ class AsyncTests: _TestCase
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let mainQueue = dispatch_get_main_queue()
         let queue0 = dispatch_queue_create("queue0", DISPATCH_QUEUE_SERIAL)
         let queue1 = dispatch_queue_create("queue1", DISPATCH_QUEUE_SERIAL)
         
@@ -167,7 +163,7 @@ class AsyncTests: _TestCase
             }
             |> asyncBackpressureBlock(queue1, high: 5, low: 1)
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         // starting from queue0
         dispatch_async(queue0) {
@@ -187,7 +183,7 @@ class AsyncTests: _TestCase
             }
         }
         
-        self.wait(until: consumerDelay*Double(n)+1)
+        self.wait(consumerDelay*Double(n)+1)
         
         XCTAssertEqual(count, 2*n)
     }

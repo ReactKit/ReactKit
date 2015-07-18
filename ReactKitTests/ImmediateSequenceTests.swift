@@ -20,18 +20,18 @@ class ImmediateSequenceTests: _TestCase
         
         let sourceStream = Stream.sequence([Int](1...5))
             |> peek { value in
-                println("sourceStream new value = \(value)")
+                print("sourceStream new value = \(value)")
                 sourceBuffer += [value]
             }
         let takeStream = sourceStream |> take(3)
         
         // REACT
         takeStream ~> { value in
-            println("[REACT] takeStream new value = \(value)")
+            print("[REACT] takeStream new value = \(value)")
             takeBuffer += [value]
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         self.perform {
             

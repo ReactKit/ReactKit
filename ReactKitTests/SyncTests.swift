@@ -29,9 +29,9 @@ class SyncTests: _TestCase
                         return "\(x)"
                 }
             }
-//            ~>! println
+//            ~>! print
             ~>! { x in
-                println(x)
+                print(x)
                 results += [x]
             }
         

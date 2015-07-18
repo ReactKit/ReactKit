@@ -20,12 +20,12 @@ class _TestCase: XCTestCase
     override func setUp()
     {
         super.setUp()
-        println("\n\n\n")
+        print("\n\n\n")
     }
     
     override func tearDown()
     {
-        println("\n\n\n")
+        print("\n\n\n")
         super.tearDown()
     }
     
@@ -45,11 +45,11 @@ class _TestCase: XCTestCase
     {
         self.waitForExpectationsWithTimeout(self.performAfter + until) { error in
             if let error = error {
-                println()
-                println("*** Wait Error ***")
-                println("file = \(filename.lastPathComponent), \(functionName), line \(line)")
-                println("error = \(error)")
-                println()
+                print("")
+                print("*** Wait Error ***")
+                print("file = \(filename.lastPathComponent), \(functionName), line \(line)")
+                print("error = \(error)")
+                print("")
             }
         }
     }

@@ -21,9 +21,9 @@ public class Stream<T>: Task<T, Void, NSError>
     /// Creates a new stream (event-delivery-pipeline over time).
     /// Synonym of "signal", "observable", etc.
     ///
-    /// :param: initClosure Closure to define returning stream's behavior. Inside this closure, `configure.pause`/`resume`/`cancel` should capture inner logic (player) object. See also comment in `SwiftTask.Task.init()`.
+    /// - parameter initClosure: Closure to define returning stream's behavior. Inside this closure, `configure.pause`/`resume`/`cancel` should capture inner logic (player) object. See also comment in `SwiftTask.Task.init()`.
     ///
-    /// :returns: New Stream.
+    /// - returns: New Stream.
     /// 
     public init(initClosure: Task<T, Void, NSError>.InitClosure)
     {
@@ -63,7 +63,7 @@ public class Stream<T>: Task<T, Void, NSError>
     
     public func react<C: Canceller>(inout canceller: C?, reactClosure: T -> Void) -> Self
     {
-        let stream = super.progress(&canceller) { _, value in reactClosure(value) }
+        super.progress(&canceller) { _, value in reactClosure(value) }
         self.resume()
         return self
     }
@@ -84,18 +84,18 @@ public class Stream<T>: Task<T, Void, NSError>
 ///
 /// Helper method to bind downstream's `fulfill`/`reject`/`configure` handlers to `upstream`.
 ///
-/// :param: upstream upstream to be bound to downstream
-/// :param: downstreamFulfill `downstream`'s `fulfill`
-/// :param: downstreamReject `downstream`'s `reject`
-/// :param: downstreamConfigure `downstream`'s `configure`
-/// :param: reactCanceller `canceller` used in `upstream.react(&canceller)` (`@autoclosure(escaping)` for lazy evaluation)
+/// - parameter upstream: upstream to be bound to downstream
+/// - parameter downstreamFulfill: `downstream`'s `fulfill`
+/// - parameter downstreamReject: `downstream`'s `reject`
+/// - parameter downstreamConfigure: `downstream`'s `configure`
+/// - parameter reactCanceller: `canceller` used in `upstream.react(&canceller)` (`@autoclosure(escaping)` for lazy evaluation)
 ///
 private func _bindToUpstream<T, C: Canceller>(
     upstream: Stream<T>,
-    downstreamFulfill: (Void -> Void)?,
-    downstreamReject: (NSError -> Void)?,
-    downstreamConfigure: TaskConfiguration?,
-    @autoclosure(escaping) reactCanceller: Void -> C?
+    _ downstreamFulfill: (Void -> Void)?,
+    _ downstreamReject: (NSError -> Void)?,
+    _ downstreamConfigure: TaskConfiguration?,
+    @autoclosure(escaping) _ reactCanceller: Void -> C?
 )
 {
     //
@@ -149,10 +149,10 @@ private func _bindToUpstream<T, C: Canceller>(
 /// helper method to send upstream's fulfill/reject to downstream
 private func _finishDownstreamOnUpstreamFinished(
     upstreamName: String,
-    upstreamValue: Void?,
-    upstreamErrorInfo: Stream<Void>.ErrorInfo?,
-    downstreamFulfill: (Void -> Void)?,
-    downstreamReject: (NSError -> Void)?
+    _ upstreamValue: Void?,
+    _ upstreamErrorInfo: Stream<Void>.ErrorInfo?,
+    _ downstreamFulfill: (Void -> Void)?,
+    _ downstreamReject: (NSError -> Void)?
 )
 {
     if upstreamValue != nil {
@@ -245,7 +245,7 @@ public extension Stream
     public class func infiniteSequence(initialValue: T, nextClosure: T -> T) -> Stream<T>
     {
         let generator = _InfiniteGenerator<T>(initialValue: initialValue, nextClosure: nextClosure)
-        return Stream<T>.sequence(SequenceOf({generator})).name("Stream.infiniteSequence")
+        return Stream<T>.sequence(AnySequence({generator})).name("Stream.infiniteSequence")
     }
 }
 
@@ -340,7 +340,7 @@ public func map2<T, U>(transform2: (oldValue: T?, newValue: T) -> U)(upstream: S
 // NOTE: Avoid using curried function. See comments in `startWith()`.
 /// map using (accumulatedValue, newValue)
 /// a.k.a `Rx.scan()`
-public func mapAccumulate<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> (upstream: Stream<T>) -> Stream<U>
+public func mapAccumulate<T, U>(initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U) -> (upstream: Stream<T>) -> Stream<U>
 {
     return { (upstream: Stream<T>) -> Stream<U> in
         return Stream<U> { progress, fulfill, reject, configure in
@@ -360,13 +360,13 @@ public func mapAccumulate<T, U>(initialValue: U, accumulateClosure: (accumulated
 }
 
 /// map to stream + flatten
-public func flatMap<T, U>(_ style: FlattenStyle = .Merge, transform: T -> Stream<U>)(upstream: Stream<T>) -> Stream<U>
+public func flatMap<T, U>(style: FlattenStyle = .Merge, transform: T -> Stream<U>)(upstream: Stream<T>) -> Stream<U>
 {
     let stream = upstream |> map(transform) |> flatten(style)
     return stream.name("\(upstream.name) |> flatMap(.\(style))")
 }
 
-public func buffer<T>(_ capacity: Int = Int.max)(upstream: Stream<T>) -> Stream<[T]>
+public func buffer<T>(capacity: Int = Int.max)(upstream: Stream<T>) -> Stream<[T]>
 {
     precondition(capacity >= 0)
     
@@ -415,12 +415,12 @@ public func bufferBy<T, U>(triggerStream: Stream<U>)(upstream: Stream<T>) -> Str
         }
         
         triggerStream?.react(&triggerCanceller) { [weak upstream] _ in
-            if let upstream = upstream {
+            if upstream != nil {
                 progress(buffer)
                 buffer = []
             }
         }.then { [weak upstream] _ -> Void in
-            if let upstream = upstream {
+            if upstream != nil {
                 progress(buffer)
                 buffer = []
             }
@@ -734,7 +734,7 @@ public func zip<T>(streams: [Stream<T>])(upstream: Stream<T>) -> Stream<[T]>
     return stream.name("\(upstream.name) |> zip")
 }
 
-public func catch<T>(catchHandler: Stream<T>.ErrorInfo -> Stream<T>) -> (upstream: Stream<T>) -> Stream<T>
+public func `catch`<T>(catchHandler: Stream<T>.ErrorInfo -> Stream<T>) -> (upstream: Stream<T>) -> Stream<T>
 {
     return { (upstream: Stream<T>) -> Stream<T> in
         return Stream<T> { progress, fulfill, reject, configure in
@@ -872,7 +872,7 @@ public func debounce<T>(timeInterval: NSTimeInterval)(upstream: Stream<T>) -> St
 
 // MARK: collecting
 
-public func reduce<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
+public func reduce<T, U>(initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
 {
     return Stream<U> { progress, fulfill, reject, configure in
         
@@ -953,7 +953,7 @@ public func startAsync<T>(queue: dispatch_queue_t)(_ upstream: Stream<T>) -> Str
 /// 2. `upstream` and A will run on the thread `~>` was called
 /// 3. B and C will run on `queue`
 ///
-/// :param: queue `dispatch_queue_t` to perform consecutive stream operations. Using concurrent queue is not recommended.
+/// - parameter queue: `dispatch_queue_t` to perform consecutive stream operations. Using concurrent queue is not recommended.
 ///
 public func async<T>(queue: dispatch_queue_t)(upstream: Stream<T>) -> Stream<T>
 {
@@ -1142,7 +1142,7 @@ public func zipAll<T>(streams: [Stream<T>]) -> Stream<[T]>
         let streamCount = streams.count
 
         var storedValuesArray: [[T]] = []
-        for i in 0..<streamCount {
+        for _ in 0..<streamCount {
             storedValuesArray.append([])
         }
         
@@ -1187,7 +1187,7 @@ public func zipAll<T>(streams: [Stream<T>]) -> Stream<[T]>
 // MARK: - Nested Stream Operations (flattening)
 //--------------------------------------------------
 
-public enum FlattenStyle: String, Printable
+public enum FlattenStyle: String, CustomStringConvertible
 {
     case Merge = "Merge"
     case Concat = "Concat"
@@ -1414,7 +1414,7 @@ public func switchLatestInner<T>(upstream: Stream<Stream<T>>) -> Stream<T>
 ///     let cachedStream2 = cachedStreamProducer() // can produce many cached streams
 ///     ...
 ///
-/// :param: capacity max buffer count for prestarted stream
+/// - parameter capacity: max buffer count for prestarted stream
 ///
 public func prestart<T>(capacity: Int = Int.max) -> (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer
 {
@@ -1450,7 +1450,7 @@ public func prestart<T>(capacity: Int = Int.max) -> (upstreamProducer: Stream<T>
     }
 }
 
-public func repeat<T>(repeatCount: Int) -> (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer
+public func `repeat`<T>(repeatCount: Int) -> (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer
 {
     return { (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer in
         
@@ -1497,7 +1497,7 @@ public func retry<T>(retryCount: Int)(upstreamProducer: Stream<T>.Producer) -> S
         return upstreamProducer
     }
     else {
-        return upstreamProducer |>> catch { _ -> Stream<T> in
+        return upstreamProducer |>> `catch` { _ -> Stream<T> in
             return (upstreamProducer |>> retry(retryCount - 1))()
         }
     }
@@ -1530,7 +1530,7 @@ public extension Stream
 }
 
 /// alias for `mapAccumulate()`
-public func scan<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
+public func scan<T, U>(initialValue: U, _ accumulateClosure: (accumulatedValue: U, newValue: T) -> U)(upstream: Stream<T>) -> Stream<U>
 {
     return mapAccumulate(initialValue, accumulateClosure)(upstream: upstream)
 }
@@ -1538,7 +1538,7 @@ public func scan<T, U>(initialValue: U, accumulateClosure: (accumulatedValue: U,
 /// alias for `prestart()`
 public func replay<T>(capacity: Int = Int.max) -> (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer
 {
-    return prestart(capacity: capacity)
+    return prestart(capacity)
 }
 
 //--------------------------------------------------
@@ -1673,7 +1673,7 @@ public func ~>! <T>(stream: Stream<T>, reactClosure: T -> Void) -> Canceller?
 prefix operator ^ {}
 
 /// Objective-C like 'block operator' to let Swift compiler know closure-type at start of the line
-/// e.g. ^{ println($0) } <~ stream
+/// e.g. ^{ print($0) } <~ stream
 public prefix func ^ <T, U>(closure: T -> U) -> (T -> U)
 {
     return closure
@@ -1682,7 +1682,7 @@ public prefix func ^ <T, U>(closure: T -> U) -> (T -> U)
 prefix operator + {}
 
 /// short-living operator for stream not being retained
-/// e.g. ^{ println($0) } <~ +KVO.stream(obj1, "value")
+/// e.g. ^{ print($0) } <~ +KVO.stream(obj1, "value")
 public prefix func + <T>(stream: Stream<T>) -> Stream<T>
 {
     var holder: Stream<T>? = stream
@@ -1733,11 +1733,11 @@ internal func _fix<T, U>(f: (T -> U) -> T -> U) -> T -> U
 
 internal func _summary<T>(type: T) -> String
 {
-    return split(reflect(type).summary, isSeparator: { $0 == "." }).last ?? "?"
+    return split(reflect(type).summary.characters, isSeparator: { $0 == "." }).map { String($0) }.last ?? "?"
 }
 
 internal func _queueLabel(queue: dispatch_queue_t) -> String
 {
     return String.fromCString(dispatch_queue_get_label(queue))
-        .flatMap { label in split(label, isSeparator: { $0 == "." }).last } ?? "?"
+        .flatMap { label in split(label.characters, isSeparator: { $0 == "." }).map { String($0) }.last } ?? "?"
 }

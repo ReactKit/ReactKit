@@ -38,14 +38,14 @@ class BranchTests: _TestCase
         XCTAssertEqual(subStream.state, .Paused)
         
         // REACT (sub)
-        subStream ~> { println($0); subValue = $0 }
+        subStream ~> { print($0); subValue = $0 }
         
         XCTAssertEqual(sourceStream.state, .Running, "Should start running by `subStream ~> {...}`")
         XCTAssertEqual(mainStream.state, .Paused)
         XCTAssertEqual(subStream.state, .Running, "Should start running by `subStream ~> {...}`")
         
         // REACT (main)
-        mainStream ~> { println($0); mainValue = $0 }
+        mainStream ~> { print($0); mainValue = $0 }
         
         XCTAssertEqual(sourceStream.state, .Running)
         XCTAssertEqual(mainStream.state, .Running, "Should start running by `mainStream ~> {...}`")
@@ -57,7 +57,7 @@ class BranchTests: _TestCase
             source.value = "2"
             source.value = "3"
             
-            println("subStream.cancel()")
+            print("subStream.cancel()")
             subStream.cancel()
             
             XCTAssertEqual(mainValue, "main = 3")
@@ -98,14 +98,14 @@ class BranchTests: _TestCase
         XCTAssertEqual(subStream.state, .Paused)
         
         // REACT (sub)
-        subStream ~> { println($0); subValue = $0 }
+        subStream ~> { print($0); subValue = $0 }
         
         XCTAssertEqual(sourceStream.state, .Paused, "Should NOT start running yet.`")
         XCTAssertEqual(mainStream.state, .Paused)
         XCTAssertEqual(subStream.state, .Running, "Should start running by `subStream ~> {...}`")
         
         // REACT (main)
-        mainStream ~> { println($0); mainValue = $0 }
+        mainStream ~> { print($0); mainValue = $0 }
         
         XCTAssertEqual(sourceStream.state, .Running, "Should start running by `mainStream ~> {...}`")
         XCTAssertEqual(mainStream.state, .Running, "Should start running by `mainStream ~> {...}`")
@@ -117,7 +117,7 @@ class BranchTests: _TestCase
             source.value = "2"
             source.value = "3"
             
-            println("subStream.cancel()")
+            print("subStream.cancel()")
             subStream.cancel()
             
             XCTAssertEqual(mainValue, "main = 3")

@@ -7,7 +7,7 @@
 //
 
 import ReactKit
-import Async
+//import Async
 import XCTest
 
 class StreamProducerTests: _TestCase
@@ -49,22 +49,22 @@ class StreamProducerTests: _TestCase
         // REACT
         stream1 ~> { value in
             int1a = value
-            println("[REACT] int1a = \(int1a)")
+            print("[REACT] int1a = \(int1a)")
         }
         stream1 ~> { value in
             int1b = value
-            println("[REACT] int1b = \(int1b)")
+            print("[REACT] int1b = \(int1b)")
         }
         
         // REACT (start after 1st check)
         Async.main(after: 0.1) {
             stream2 ~> { value in
                 int2 = value
-                println("[REACT] int2 = \(int2)")
+                print("[REACT] int2 = \(int2)")
             }
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         // 1st check
         Async.main(after: 0.05) {
@@ -102,10 +102,10 @@ class StreamProducerTests: _TestCase
         
         let intervalStream = Stream.sequence(0...4)
             |> interval(1.0 * faster)
-            |> peek { println("interval: \($0)") }     // for logging
+            |> peek { print("interval: \($0)") }     // for logging
         
         // prestart: resumes upstream & caches its emitted values for future replay
-        var streamProducer = intervalStream |>> prestart()
+        let streamProducer = intervalStream |>> prestart()
         
         var stream1: Stream<Int>?
         var stream2: Stream<Int>?
@@ -116,7 +116,7 @@ class StreamProducerTests: _TestCase
             stream1 = streamProducer()
             // REACT
             stream1! ~> { value in
-                println("stream1 value = \(value)")
+                print("stream1 value = \(value)")
                 stream1Values += [value]
             }
             
@@ -131,7 +131,7 @@ class StreamProducerTests: _TestCase
             stream2 = streamProducer()
             // REACT
             stream2! ~> { value in
-                println("stream2 value = \(value)")
+                print("stream2 value = \(value)")
                 stream2Values += [value]
             }
             
@@ -144,7 +144,7 @@ class StreamProducerTests: _TestCase
             XCTAssertEqual(stream2Values, [0, 1, 2, 3, 4])
         }
         
-        self.perform(after: 5 * faster) {
+        self.perform(5 * faster) {
             stream1 = nil
             stream2 = nil
             expect.fulfill()

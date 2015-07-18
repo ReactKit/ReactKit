@@ -22,7 +22,7 @@ public enum ReactKitError: Int
 }
 
 /// helper
-internal func _RKError(error: ReactKitError, localizedDescriptionKey: String) -> NSError
+internal func _RKError(error: ReactKitError, _ localizedDescriptionKey: String) -> NSError
 {
     return NSError(
         domain: ReactKitError.Domain,

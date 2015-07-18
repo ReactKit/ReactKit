@@ -84,7 +84,7 @@ public extension Stream
     {
         return Stream<(P?, V?)> { progress, fulfill, reject, configure in
             
-            task.progress { [weak task] _, progressValue in
+            task.progress { _, progressValue in
                 
                 progress(progressValue, nil)
                 

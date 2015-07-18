@@ -18,7 +18,7 @@ public extension NSObject
             return objc_getAssociatedObject(self, &deinitStreamKey) as? Stream<AnyObject?>
         }
         set {
-            objc_setAssociatedObject(self, &deinitStreamKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))  // not OBJC_ASSOCIATION_RETAIN_NONATOMIC
+            objc_setAssociatedObject(self, &deinitStreamKey, newValue, .OBJC_ASSOCIATION_RETAIN)  // not OBJC_ASSOCIATION_RETAIN_NONATOMIC
         }
     }
     
@@ -33,7 +33,7 @@ public extension NSObject
             
 //            #if DEBUG
 //                stream?.then { value, errorInfo -> Void in
-//                    println("[internal] deinitStream finished")
+//                    print("[internal] deinitStream finished")
 //                }
 //            #endif
             

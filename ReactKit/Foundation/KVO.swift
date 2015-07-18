@@ -19,7 +19,7 @@ internal func _nullToNil(value: AnyObject?) -> AnyObject?
 public extension NSObject
 {
     /// creates new KVO Stream (new value only)
-    public func stream(#keyPath: String) -> Stream<AnyObject?>
+    public func stream(keyPath keyPath: String) -> Stream<AnyObject?>
     {
         let stream = self.detailedStream(keyPath: keyPath)
             |> map { value, _, _ -> AnyObject? in value }
@@ -30,9 +30,9 @@ public extension NSObject
     }
     
     /// creates new KVO Stream (initial + new value)
-    public func startingStream(#keyPath: String) -> Stream<AnyObject?>
+    public func startingStream(keyPath keyPath: String) -> Stream<AnyObject?>
     {
-        var initial: AnyObject? = self.valueForKeyPath(keyPath)
+        let initial: AnyObject? = self.valueForKeyPath(keyPath)
         
         let stream = self.stream(keyPath: keyPath)
             |> startWith(_nullToNil(initial))
@@ -52,7 +52,7 @@ public extension NSObject
     /// let itemsProxy = model.mutableArrayValueForKey("items")
     /// itemsProxy.insertObject(newItem, atIndex: 0) // itemsStream will send **both** `newItem` and `index`
     ///
-    public func detailedStream(#keyPath: String) -> Stream<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
+    public func detailedStream(keyPath keyPath: String) -> Stream<(AnyObject?, NSKeyValueChange, NSIndexSet?)>
     {
         return Stream { [weak self] progress, fulfill, reject, configure in
             
@@ -118,14 +118,14 @@ internal class _KVOProxy: NSObject
         self.start()
         
 //        #if DEBUG
-//            println("[init] \(self)")
+//            print("[init] \(self)")
 //        #endif
     }
     
     deinit
     {
 //        #if DEBUG
-//            println("[deinit] \(self)")
+//            print("[deinit] \(self)")
 //        #endif
         
         self.stop()
@@ -138,7 +138,7 @@ internal class _KVOProxy: NSObject
         _isObserving = true
         
 //        #if DEBUG
-//            println("[KVO] start")
+//            print("[KVO] start")
 //        #endif
         
         self._target.addObserver(self, forKeyPath: self._keyPath, options: .New, context: &ReactKitKVOContext)
@@ -151,38 +151,28 @@ internal class _KVOProxy: NSObject
         _isObserving = false
         
 //        #if DEBUG
-//            println("[KVO] stop")
+//            print("[KVO] stop")
 //        #endif
         
         self._target.removeObserver(self, forKeyPath: self._keyPath)
     }
     
-    internal override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<()>)
+    internal override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>)
     {
         if context != &ReactKitKVOContext {
             return super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
         }
         else {
-//            #if DEBUG
-//                println()
-//                println("[KVO] changed keyPath=\(self._keyPath), change=\(change)")
-//                println("change[NSKeyValueChangeKindKey] = \(change[NSKeyValueChangeKindKey])")
-//                println("change[NSKeyValueChangeNewKey] = \(change[NSKeyValueChangeNewKey])")
-//                println("change[NSKeyValueChangeOldKey] = \(change[NSKeyValueChangeOldKey])")
-//                println("change[NSKeyValueChangeIndexesKey] = \(change[NSKeyValueChangeIndexesKey])")
-//                println()
-//            #endif
-            
-            let newValue: AnyObject? = change[NSKeyValueChangeNewKey]
-            let keyValueChange: NSKeyValueChange = NSKeyValueChange(rawValue: (change[NSKeyValueChangeKindKey] as! NSNumber).unsignedLongValue)!
-            let indexSet: NSIndexSet? = change[NSKeyValueChangeIndexesKey] as? NSIndexSet
+            let newValue: AnyObject? = change?[NSKeyValueChangeNewKey]
+            let keyValueChange: NSKeyValueChange = NSKeyValueChange(rawValue: (change?[NSKeyValueChangeKindKey] as! NSNumber).unsignedLongValue)!
+            let indexSet: NSIndexSet? = change?[NSKeyValueChangeIndexesKey] as? NSIndexSet
             
             self._handler(value: newValue, change: keyValueChange, indexSet: indexSet)
         }
     }
 }
 
-extension NSKeyValueChange: Printable
+extension NSKeyValueChange: CustomStringConvertible
 {
     public var description: String
     {
@@ -229,7 +219,7 @@ public func <~ (tuple: (object: NSObject, keyPath: String), stream: Stream<Doubl
     return _reactLeft(tuple, stream)
 }
 
-private func _reactLeft <T>(tuple: (object: NSObject, keyPath: String), stream: Stream<T?>) -> Canceller?
+private func _reactLeft <T>(tuple: (object: NSObject, keyPath: String), _ stream: Stream<T?>) -> Canceller?
 {
     weak var object = tuple.object
     let keyPath = tuple.keyPath

@@ -11,7 +11,7 @@ import Foundation
 public extension NSNotificationCenter
 {
     /// creates new Stream
-    public func stream(#notificationName: String, object: AnyObject? = nil, queue: NSOperationQueue? = nil) -> Stream<NSNotification?>
+    public func stream(notificationName notificationName: String, object: AnyObject? = nil, queue: NSOperationQueue? = nil) -> Stream<NSNotification?>
     {
         return Stream { [weak self] progress, fulfill, reject, configure in
             

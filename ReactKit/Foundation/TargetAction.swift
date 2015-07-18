@@ -24,14 +24,14 @@ internal class _TargetActionProxy
         self.handler = handler
         
 //        #if DEBUG
-//            println("[init] \(self)")
+//            print("[init] \(self)")
 //        #endif
     }
     
     deinit
     {
 //        #if DEBUG
-//            println("[deinit] \(self)")
+//            print("[deinit] \(self)")
 //        #endif
     }
     

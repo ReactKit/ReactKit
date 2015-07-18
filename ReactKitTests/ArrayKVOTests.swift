@@ -38,13 +38,13 @@ class ArrayKVOTests: _TestCase
         // REACT: arrayChangedCount ~> obj3.number (for counting)
         (obj3, "number") <~ obj1ArrayChangedCountStream
         
-        // REACT: obj1.array ~> println
-        ^{ println("[REACT] new array = \($0)") } <~ obj1ArrayChangedStream
+        // REACT: obj1.array ~> print
+        ^{ print("[REACT] new array = \($0)") } <~ obj1ArrayChangedStream
         
         // NOTE: call `mutableArrayValueForKey()` after `<~` binding (KVO-addObserver) is ready
         let obj1ArrayProxy = obj1.mutableArrayValueForKey("array")
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.array.count, 0)
         XCTAssertEqual(obj2.array.count, 0)
@@ -102,7 +102,7 @@ class ArrayKVOTests: _TestCase
             // NOTE: change in `mutableArrayValueForKey()` will always send `value` as NSArray
             let array = value as? NSArray
             
-            println("[REACT] new value = \(array), change=\(change), indexSet=\(indexSet)")
+            print("[REACT] new value = \(array), change=\(change), indexSet=\(indexSet)")
             
             lastValue = array
             lastChange = change
@@ -113,14 +113,12 @@ class ArrayKVOTests: _TestCase
         // NOTE: call `mutableArrayValueForKey()` after `<~` binding (KVO-addObserver) is ready
         let obj1ArrayProxy = obj1.mutableArrayValueForKey("array")
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.array.count, 0)
         XCTAssertEqual(reactedCount, 0)
         
         self.perform {
-            
-            var indexSet: NSMutableIndexSet
             
             // addObject
             obj1ArrayProxy.addObject(1)
@@ -235,7 +233,7 @@ class ArrayKVOTests: _TestCase
             buffer.append(context)
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(dynamicArray.proxy.count, 0)
         
@@ -309,7 +307,7 @@ class ArrayKVOTests: _TestCase
             buffer.append(context)
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(dynamicArray.proxy.count, 0)
         
@@ -387,7 +385,7 @@ class ArrayKVOTests: _TestCase
             buffer.append(context)
         }
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(dynamicArray.proxy.count, 0)
         

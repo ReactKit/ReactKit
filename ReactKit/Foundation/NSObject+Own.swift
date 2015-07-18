@@ -25,7 +25,7 @@ internal extension NSObject
             return owninigStreams!
         }
         set {
-            objc_setAssociatedObject(self, &owninigStreamsKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN_NONATOMIC))
+            objc_setAssociatedObject(self, &owninigStreamsKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         }
     }
 }

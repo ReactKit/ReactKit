@@ -26,10 +26,10 @@ class KVOTests: _TestCase
         // REACT: obj1.value ~> obj2.value
         (obj2, "value") <~ stream
         
-        // REACT: obj1.value ~> println
-        ^{ println("[REACT] new value = \($0)") } <~ stream
+        // REACT: obj1.value ~> print
+        ^{ print("[REACT] new value = \($0)") } <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertEqual(obj1.value, "initial")
         XCTAssertEqual(obj2.value, "initial")
@@ -67,7 +67,7 @@ class KVOTests: _TestCase
         let stream = KVO.stream(obj1, "optionalValue")
         (obj2, "optionalValue") <~ stream   // REACT
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertNil(obj1.optionalValue)
         XCTAssertNil(obj2.optionalValue)
@@ -105,7 +105,7 @@ class KVOTests: _TestCase
         let startingStream = KVO.startingStream(obj1, "optionalValue")
         (obj2, "optionalValue") <~ startingStream   // REACT
 
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertNil(obj1.optionalValue)
         XCTAssertNil(obj2.optionalValue, "`KVO.startingStream()` sets initial `obj1.optionalValue` (nil) to `obj2.optionalValue` on `<~` binding.")

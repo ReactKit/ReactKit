@@ -18,15 +18,15 @@ class NotificationTests: _TestCase
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        var stream = Notification.stream("MyNotification", obj1)
+        let stream = Notification.stream("MyNotification", obj1)
         
         // REACT
         (obj2, "notification") <~ stream
         
         // REACT
-        ^{ println("[REACT] new value = \($0)") } <~ stream
+        ^{ print("[REACT] new value = \($0)") } <~ stream
         
-        println("*** Start ***")
+        print("*** Start ***")
         
         XCTAssertNil(obj2.notification, "obj2.notification=nil at start.")
         

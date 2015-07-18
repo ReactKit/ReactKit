@@ -29,7 +29,7 @@ class TypeCastTests: _TestCase
         
         // REACT
         concatStream ~> { value in
-            println("value = \(value)")
+            print("value = \(value)")
             reactCount++
         }
         

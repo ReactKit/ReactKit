@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1F0D6BAD1B59DE2100218103 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F0D6BAC1B59DE2100218103 /* Async.swift */; };
+		1F0D6BAE1B59DE2100218103 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F0D6BAC1B59DE2100218103 /* Async.swift */; };
 		1F14EC3819C1EE350090C3D8 /* ReactKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FED88F819C1EB120065658B /* ReactKit.framework */; };
 		1F2BEB601AAAB3A500256A58 /* ArrayKVOTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2BEB5F1AAAB3A500256A58 /* ArrayKVOTests.swift */; };
 		1F2BEB611AAAB3A500256A58 /* ArrayKVOTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2BEB5F1AAAB3A500256A58 /* ArrayKVOTests.swift */; };
@@ -39,8 +41,6 @@
 		1FED896219C1EBD60065658B /* Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED895C19C1EBD60065658B /* Stream.swift */; };
 		1FED8AAA19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
 		1FED8AAB19C1ECD30065658B /* _TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FED8AA919C1ECD30065658B /* _TestCase.swift */; };
-		1FF25DFB1AE2C06A002632C4 /* Async.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF25DFA1AE2C06A002632C4 /* Async.framework */; };
-		1FF25DFC1AE2C06F002632C4 /* Async.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF25DFA1AE2C06A002632C4 /* Async.framework */; };
 		1FF5E7161ACFD0E20062A9DD /* OperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FF5E7151ACFD0E20062A9DD /* OperationTests.swift */; };
 		1FF5E7171ACFD0E20062A9DD /* OperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FF5E7151ACFD0E20062A9DD /* OperationTests.swift */; };
 		480E83EB1ABB9B7400AF8346 /* DynamicArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480E83EA1ABB9B7400AF8346 /* DynamicArray.swift */; };
@@ -105,6 +105,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1F0D6BAC1B59DE2100218103 /* Async.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Async.swift; path = Carthage/Checkouts/Async/Async.swift; sourceTree = SOURCE_ROOT; };
 		1F14EC4319C1FC040090C3D8 /* NotificationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationTests.swift; sourceTree = "<group>"; };
 		1F2BEB5F1AAAB3A500256A58 /* ArrayKVOTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayKVOTests.swift; sourceTree = "<group>"; };
 		1F44E4391ACAD0DF00B8428A /* StreamProducerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StreamProducerTests.swift; sourceTree = "<group>"; };
@@ -160,7 +161,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1FF25DFB1AE2C06A002632C4 /* Async.framework in Frameworks */,
 				1F14EC3819C1EE350090C3D8 /* ReactKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -178,13 +178,20 @@
 			buildActionMask = 2147483647;
 			files = (
 				48F6CFB31B2FB99D00317198 /* ReactKit.framework in Frameworks */,
-				1FF25DFC1AE2C06F002632C4 /* Async.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1F0D6BAF1B59DE2300218103 /* Async */ = {
+			isa = PBXGroup;
+			children = (
+				1F0D6BAC1B59DE2100218103 /* Async.swift */,
+			);
+			name = Async;
+			sourceTree = "<group>";
+		};
 		1F7233291ABDB33F00A0C8CF /* Helper */ = {
 			isa = PBXGroup;
 			children = (
@@ -254,6 +261,7 @@
 		1FED890719C1EB120065658B /* ReactKitTests */ = {
 			isa = PBXGroup;
 			children = (
+				1F0D6BAF1B59DE2300218103 /* Async */,
 				1F822EF219D319FF00A3CA23 /* _MyObject.swift */,
 				1FED8AA919C1ECD30065658B /* _TestCase.swift */,
 				1FF5E7151ACFD0E20062A9DD /* OperationTests.swift */,
@@ -395,6 +403,8 @@
 		1FED88EF19C1EB120065658B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftMigration = 0700;
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0600;
 				ORGANIZATIONNAME = "Yasuhiro Inami";
 				TargetAttributes = {
@@ -500,6 +510,7 @@
 				1F626D8E19D8799600D3ABCE /* KVOTests.swift in Sources */,
 				1F44E43A1ACAD0DF00B8428A /* StreamProducerTests.swift in Sources */,
 				48F5CE3C1ACCCAD800608038 /* TypeCastTests.swift in Sources */,
+				1F0D6BAD1B59DE2100218103 /* Async.swift in Sources */,
 				1FF5E7161ACFD0E20062A9DD /* OperationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -545,6 +556,7 @@
 				1F626D9219D8799900D3ABCE /* KVOTests.swift in Sources */,
 				1F44E43B1ACAD0DF00B8428A /* StreamProducerTests.swift in Sources */,
 				48F5CE3D1ACCCAD800608038 /* TypeCastTests.swift in Sources */,
+				1F0D6BAE1B59DE2100218103 /* Async.swift in Sources */,
 				1FF5E7171ACFD0E20062A9DD /* OperationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
