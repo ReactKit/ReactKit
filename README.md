@@ -148,7 +148,7 @@ Streams can be composed by using `|>` **stream-pipelining operator** and [Stream
 
 For example, a very common [incremental search technique](http://en.wikipedia.org/wiki/Incremental_search) using `searchTextStream` will look like this:
 
-```
+```swift
 let searchResultsStream: Stream<[Result]> = searchTextStream
     |> debounce(0.3)
     |> distinctUntilChanged
@@ -160,7 +160,7 @@ let searchResultsStream: Stream<[Result]> = searchTextStream
 
 There are some scenarios (e.g. `repeat()`) when you want to use a cloneable `Stream<T>.Producer` (`Void -> Stream<T>`) rather than plain `Stream<T>`. In this case, you can use `|>>` **streamProducer-pipelining operator** instead.
 
-```
+```swift
 // first, wrap stream with closure
 let timerProducer: Void -> Stream<Int> = {
     return createTimerStream(interval: 1)
@@ -174,7 +174,7 @@ let repeatTimerProducer = timerProducer |>> repeat(3)
 
 But in the above case, wrapping with closure will always become cumbersome, so you can also use `|>>` operator for `Stream` & [Stream Operations](#stream-operations) as well (thanks to `@autoclosure`).
 
-```
+```swift
 let repeatTimerProducer = createTimerStream(interval: 1)
     |>> map { ... }
     |>> filter { ... }
