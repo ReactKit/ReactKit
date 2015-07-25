@@ -1,4 +1,4 @@
-<img src="https://avatars3.githubusercontent.com/u/8986128" width="36" height="36"> ReactKit [![Circle CI](https://circleci.com/gh/ReactKit/ReactKit/tree/swift%2F1.2.svg?style=svg)](https://circleci.com/gh/ReactKit/ReactKit/tree/swift%2F1.2)
+<img src="https://avatars3.githubusercontent.com/u/8986128" width="36" height="36"> ReactKit
 ========
 
 Swift Reactive Programming.
