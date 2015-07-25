@@ -98,7 +98,7 @@ class StreamProducerTests: _TestCase
         
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let faster: NSTimeInterval = 0.1
+        let faster: NSTimeInterval = 0.2
         
         let intervalStream = Stream.sequence(0...4)
             |> interval(1.0 * faster)
