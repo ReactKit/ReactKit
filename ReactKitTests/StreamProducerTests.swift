@@ -76,7 +76,7 @@ class StreamProducerTests: _TestCase
         }
         
         // 2nd check
-        Async.main(after: 0.15) {
+        Async.main(after: 0.3) {
             XCTAssertNotNil(int2, "`int2` should be set after delay.")
             
             XCTAssertNotEqual(int1a!, int2!, "`int2` is set via `stream2` and `int1a` is set via `stream1`, so these values should not be shared (equal).")

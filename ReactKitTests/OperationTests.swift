@@ -1068,7 +1068,7 @@ class OperationTests: _TestCase
         
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let faster: NSTimeInterval = 0.1
+        let faster: NSTimeInterval = 0.2    // NOTE: 0.1sec-interval causes concurrency issue in iOS
         
         let stream = Stream.sequence(0...2) |> interval(1.0 * faster)
         
@@ -1341,7 +1341,7 @@ class OperationTests: _TestCase
                 XCTAssertEqual(obj1.value, "Next")
             }
             
-            Async.main(after: 0.4) {
+            Async.main(after: 0.5) {
                 XCTAssertEqual(obj1.value, "123")
                 expect.fulfill()
             }
@@ -1356,7 +1356,7 @@ class OperationTests: _TestCase
         
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let faster: NSTimeInterval = 0.1
+        let faster: NSTimeInterval = 0.4    // NOTE: 0.1sec-interval causes concurrency issue in iOS
         
         ///
         /// - innerStream0: starts at `t = 0`
