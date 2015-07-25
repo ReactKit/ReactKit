@@ -21,13 +21,13 @@ test:
       tee $CIRCLE_ARTIFACTS/xcode_raw-OSX.log |
       xcpretty --color --report junit --output $CIRCLE_TEST_REPORTS/xcode/results-OSX.xml
       
-    - set -o pipefail &&
-      xcodebuild
-        CODE_SIGNING_REQUIRED=NO
-        CODE_SIGN_IDENTITY=
-        PROVISIONING_PROFILE=
-        -workspace "ReactKit.xcworkspace"
-        -scheme "ReactKit-iOS"
-        clean build test |
-      tee $CIRCLE_ARTIFACTS/xcode_raw-iOS.log |
-      xcpretty --color --report junit --output $CIRCLE_TEST_REPORTS/xcode/results-iOS.xml
+    # - set -o pipefail &&
+    #   xcodebuild
+    #     CODE_SIGNING_REQUIRED=NO
+    #     CODE_SIGN_IDENTITY=
+    #     PROVISIONING_PROFILE=
+    #     -workspace "ReactKit.xcworkspace"
+    #     -scheme "ReactKit-iOS"
+    #     clean build test |
+    #   tee $CIRCLE_ARTIFACTS/xcode_raw-iOS.log |
+    #   xcpretty --color --report junit --output $CIRCLE_TEST_REPORTS/xcode/results-iOS.xml
