@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name     = 'ReactKit'
-  s.version  = '0.11.3'
+  s.version  = '0.11.4'
   s.license  = { :type => 'MIT' }
   s.homepage = 'https://github.com/ReactKit/ReactKit'
   s.authors  = { 'Yasuhiro Inami' => 'inamiy@gmail.com' }
@@ -15,5 +15,5 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '8.0'
   s.ios.exclude_files = "ReactKit/AppKit"
 
-  s.dependency 'SwiftTask', '~> 3.3.0'
+  s.dependency 'SwiftTask', '~> 3.3.1'
 end
