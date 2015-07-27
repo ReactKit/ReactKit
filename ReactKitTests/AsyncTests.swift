@@ -148,7 +148,7 @@ class AsyncTests: _TestCase
         let queue0 = dispatch_queue_create("queue0", DISPATCH_QUEUE_SERIAL)
         let queue1 = dispatch_queue_create("queue1", DISPATCH_QUEUE_SERIAL)
         
-        let n = 100
+        let n = 50
         let consumerDelay = 0.01 // 0.1 // slow consumer test
         var count: Int = 0
         let lock = NSRecursiveLock()
@@ -183,7 +183,7 @@ class AsyncTests: _TestCase
             }
         }
         
-        self.wait(consumerDelay*Double(n)+1)
+        self.wait(until: consumerDelay*Double(n)+10)
         
         XCTAssertEqual(count, 2*n)
     }

@@ -1010,7 +1010,7 @@ class OperationTests: _TestCase
             buffer.append(value)
         }
         
-        self.perform(0.5) {
+        self.perform(after: 0.7) {
             expect.fulfill()
         }
         
@@ -1068,7 +1068,7 @@ class OperationTests: _TestCase
         
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let faster: NSTimeInterval = 0.1
+        let faster: NSTimeInterval = 0.3    // NOTE: 0.1sec-interval causes concurrency issue in iOS
         
         let stream = Stream.sequence(0...2) |> interval(1.0 * faster)
         
@@ -1154,12 +1154,10 @@ class OperationTests: _TestCase
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let timeInterval: NSTimeInterval = 0.2
-        
         let obj1 = MyObject()
         let obj2 = MyObject()
         
-        let stream = KVO.stream(obj1, "value") |> debounce(timeInterval)
+        let stream = KVO.stream(obj1, "value") |> debounce(0.3)
         
         // REACT
         (obj2, "value") <~ stream
@@ -1176,7 +1174,11 @@ class OperationTests: _TestCase
             XCTAssertEqual(obj1.value, "hoge")
             XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because of debounce().")
             
-            Async.background(after: timeInterval+0.1) {
+            Async.background(after: 0.1) {
+                XCTAssertEqual(obj2.value, "initial", "obj2.value should not be updated because it is still debounced.")
+            }
+            
+            Async.background(after: 0.5) {
                 XCTAssertEqual(obj2.value, "hoge", "obj2.value should be updated after debouncing time.")
                 expect.fulfill()
             }
@@ -1194,7 +1196,7 @@ class OperationTests: _TestCase
         
         var stream = Stream.sequence([1, 2, 3])
         if self.isAsync {
-            stream = stream |> delay(0.01)
+            stream = stream |> delay(0.1)
         }
         stream = stream |> reduce(100) { $0 + $1 }
         
@@ -1205,7 +1207,7 @@ class OperationTests: _TestCase
         
         print("*** Start ***")
         
-        self.perform(0.1) {
+        self.perform(after: 0.5) {
             XCTAssertEqual(result!, 106, "`result` should be 106 (100 + 1 + 2 + 3).")
             expect.fulfill()
         }
@@ -1318,7 +1320,7 @@ class OperationTests: _TestCase
         let obj1 = MyObject()
         
         let stream1: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.1, userInfo: nil, repeats: false) { _ in "Next" }
-        let stream2: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.3, userInfo: nil, repeats: false) { _ in 123 }
+        let stream2: Stream<AnyObject?> = NSTimer.stream(timeInterval: 0.5, userInfo: nil, repeats: false) { _ in 123 }
         
         let concatStream = [stream1, stream2] |> concatInner |> map { (value: AnyObject?) -> String? in
             let valueString: AnyObject = value ?? "nil"
@@ -1333,11 +1335,11 @@ class OperationTests: _TestCase
         self.perform {
             XCTAssertEqual(obj1.value, "initial")
             
-            Async.main(after: 0.2) {
+            Async.main(after: 0.3) {
                 XCTAssertEqual(obj1.value, "Next")
             }
             
-            Async.main(after: 0.4) {
+            Async.main(after: 0.8) {
                 XCTAssertEqual(obj1.value, "123")
                 expect.fulfill()
             }
@@ -1352,7 +1354,7 @@ class OperationTests: _TestCase
         
         let expect = self.expectationWithDescription(__FUNCTION__)
         
-        let faster: NSTimeInterval = 0.1
+        let faster: NSTimeInterval = 0.4    // NOTE: 0.1sec-interval causes concurrency issue in iOS
         
         ///
         /// - innerStream0: starts at `t = 0`
