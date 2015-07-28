@@ -144,7 +144,7 @@ class StreamProducerTests: _TestCase
             XCTAssertEqual(stream2Values, [0, 1, 2, 3, 4])
         }
         
-        self.perform(5 * faster) {
+        self.perform(after: 5 * faster) {
             stream1 = nil
             stream2 = nil
             expect.fulfill()

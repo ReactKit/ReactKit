@@ -1048,7 +1048,7 @@ class OperationTests: _TestCase
             buffer.append(value)
         }
         
-        self.perform(0.5) {
+        self.perform(after: 0.5) {
             expect.fulfill()
         }
         
@@ -1392,7 +1392,7 @@ class OperationTests: _TestCase
         
         print("*** Start ***")
         
-        self.perform(4.0 * faster) {
+        self.perform(after: 4.0 * faster) {
             XCTAssertEqual(results, [1, 2, 4, 5, 7, 8, 9], "Some of values sent by `switchingStream`'s `innerStream`s should be ignored.")
             expect.fulfill()
         }
@@ -1473,7 +1473,7 @@ class OperationTests: _TestCase
             buffer.append(value)
         }
         
-        self.perform(0.5) {
+        self.perform(after: 0.5) {
             expect.fulfill()
         }
         
@@ -1510,7 +1510,7 @@ class OperationTests: _TestCase
             buffer.append(value)
         }
         
-        self.perform(0.5) {
+        self.perform(after: 0.5) {
             expect.fulfill()
         }
         

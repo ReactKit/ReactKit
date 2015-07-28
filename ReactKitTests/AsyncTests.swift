@@ -136,7 +136,7 @@ class AsyncTests: _TestCase
             }
         }
         
-        self.wait(consumerDelay*Double(n)+1)
+        self.wait(until: consumerDelay*Double(n)+1)
         
         XCTAssertEqual(count, 3*n)
     }

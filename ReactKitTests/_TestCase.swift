@@ -29,7 +29,7 @@ class _TestCase: XCTestCase
         super.tearDown()
     }
     
-    func perform(after: NSTimeInterval = 0.01, closure: Void -> Void)
+    func perform(after after: NSTimeInterval = 0.01, closure: Void -> Void)
     {
         self.performAfter = after
         
@@ -41,7 +41,7 @@ class _TestCase: XCTestCase
         }
     }
     
-    func wait(until: NSTimeInterval = 1.0, filename: String = __FILE__, functionName: String = __FUNCTION__, line: Int = __LINE__)
+    func wait(until until: NSTimeInterval = 1.0, filename: String = __FILE__, functionName: String = __FUNCTION__, line: Int = __LINE__)
     {
         self.waitForExpectationsWithTimeout(self.performAfter + until) { error in
             if let error = error {
