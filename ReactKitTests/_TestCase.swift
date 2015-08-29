@@ -47,7 +47,7 @@ class _TestCase: XCTestCase
             if let error = error {
                 print("")
                 print("*** Wait Error ***")
-                print("file = \(filename.lastPathComponent), \(functionName), line \(line)")
+                print("file = \(NSURL(fileURLWithPath: filename).lastPathComponent), \(functionName), line \(line)")
                 print("error = \(error)")
                 print("")
             }

@@ -8,7 +8,7 @@
 
 import ReactKit
 import SwiftTask
-//import Async
+import Async
 import XCTest
 
 class OperationTests: _TestCase
@@ -241,7 +241,7 @@ class OperationTests: _TestCase
         // REACT
         stream ~> { (buffer: [AnyObject?]) in
             let buffer_: [String] = buffer.map { $0 as! String }
-            result = "-".join(buffer_)
+            result = buffer_.joinWithSeparator("-")
         }
         
         print("*** Start ***")
@@ -292,7 +292,7 @@ class OperationTests: _TestCase
         // REACT
         stream ~> { (buffer: [AnyObject?]) in
             let buffer_: [String] = buffer.map { $0 as! String }
-            result = "-".join(buffer_)
+            result = buffer_.joinWithSeparator("-")
         }
         
         print("*** Start ***")
@@ -943,7 +943,7 @@ class OperationTests: _TestCase
         
         let bundledStream = stream1 |> zip(stream2) |> map { (values: [Any]) -> String in
             let valueStrings = values.map { "\($0)" }
-            return "-".join(valueStrings)
+            return valueStrings.joinWithSeparator("-")
         }
         
         print("*** Start ***")

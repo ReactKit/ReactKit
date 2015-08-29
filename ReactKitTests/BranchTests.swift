@@ -33,23 +33,22 @@ class BranchTests: _TestCase
 //            |> branch // comment-out: no branch test
             |> map { "sub = \($0!)" }
         
-        XCTAssertEqual(sourceStream.state, .Paused)
-        XCTAssertEqual(mainStream.state, .Paused)
-        XCTAssertEqual(subStream.state, .Paused)
+        XCTAssertTrue(mainStream.state == .Paused)
+        XCTAssertTrue(subStream.state == .Paused)
         
         // REACT (sub)
         subStream ~> { print($0); subValue = $0 }
         
-        XCTAssertEqual(sourceStream.state, .Running, "Should start running by `subStream ~> {...}`")
-        XCTAssertEqual(mainStream.state, .Paused)
-        XCTAssertEqual(subStream.state, .Running, "Should start running by `subStream ~> {...}`")
+        XCTAssertTrue(sourceStream.state == .Running, "Should start running by `subStream ~> {...}`")
+        XCTAssertTrue(mainStream.state == .Paused)
+        XCTAssertTrue(subStream.state == .Running, "Should start running by `subStream ~> {...}`")
         
         // REACT (main)
         mainStream ~> { print($0); mainValue = $0 }
         
-        XCTAssertEqual(sourceStream.state, .Running)
-        XCTAssertEqual(mainStream.state, .Running, "Should start running by `mainStream ~> {...}`")
-        XCTAssertEqual(subStream.state, .Running)
+        XCTAssertTrue(sourceStream.state == .Running)
+        XCTAssertTrue(mainStream.state == .Running, "Should start running by `mainStream ~> {...}`")
+        XCTAssertTrue(subStream.state == .Running)
         
         self.perform() {
             
@@ -62,7 +61,7 @@ class BranchTests: _TestCase
             
             XCTAssertEqual(mainValue, "main = 3")
             XCTAssertEqual(subValue, "sub = 3")
-            XCTAssertEqual(sourceStream.state, .Cancelled, "`sourceStream` will be cancelled via propagation of `subStream.cancel()`.")
+            XCTAssertTrue(sourceStream.state == .Cancelled, "`sourceStream` will be cancelled via propagation of `subStream.cancel()`.")
             
             source.value = "4"
             source.value = "5"
@@ -93,23 +92,23 @@ class BranchTests: _TestCase
             |> branch
             |> map { "sub = \($0!)" }
         
-        XCTAssertEqual(sourceStream.state, .Paused)
-        XCTAssertEqual(mainStream.state, .Paused)
-        XCTAssertEqual(subStream.state, .Paused)
+        XCTAssertTrue(sourceStream.state == .Paused)
+        XCTAssertTrue(mainStream.state == .Paused)
+        XCTAssertTrue(subStream.state == .Paused)
         
         // REACT (sub)
         subStream ~> { print($0); subValue = $0 }
         
-        XCTAssertEqual(sourceStream.state, .Paused, "Should NOT start running yet.`")
-        XCTAssertEqual(mainStream.state, .Paused)
-        XCTAssertEqual(subStream.state, .Running, "Should start running by `subStream ~> {...}`")
+        XCTAssertTrue(sourceStream.state == .Paused, "Should NOT start running yet.`")
+        XCTAssertTrue(mainStream.state == .Paused)
+        XCTAssertTrue(subStream.state == .Running, "Should start running by `subStream ~> {...}`")
         
         // REACT (main)
         mainStream ~> { print($0); mainValue = $0 }
         
-        XCTAssertEqual(sourceStream.state, .Running, "Should start running by `mainStream ~> {...}`")
-        XCTAssertEqual(mainStream.state, .Running, "Should start running by `mainStream ~> {...}`")
-        XCTAssertEqual(subStream.state, .Running)
+        XCTAssertTrue(sourceStream.state == .Running, "Should start running by `mainStream ~> {...}`")
+        XCTAssertTrue(mainStream.state == .Running, "Should start running by `mainStream ~> {...}`")
+        XCTAssertTrue(subStream.state == .Running)
         
         self.perform() {
             
@@ -122,7 +121,7 @@ class BranchTests: _TestCase
             
             XCTAssertEqual(mainValue, "main = 3")
             XCTAssertEqual(subValue, "sub = 3")
-            XCTAssertEqual(sourceStream.state, .Running, "`sourceStream` should NOT be cancelled via propagation of `subStream.cancel()`.")
+            XCTAssertTrue(sourceStream.state == .Running, "`sourceStream` should NOT be cancelled via propagation of `subStream.cancel()`.")
             
             source.value = "4"
             source.value = "5"

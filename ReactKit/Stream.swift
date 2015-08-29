@@ -1782,11 +1782,11 @@ internal func _fix<T, U>(f: (T -> U) -> T -> U) -> T -> U
 
 internal func _summary<T>(type: T) -> String
 {
-    return split(reflect(type).summary.characters, isSeparator: { $0 == "." }).map { String($0) }.last ?? "?"
+    return Mirror(reflecting: type).description.characters.split(".").map { String($0) }.last ?? "?"
 }
 
 internal func _queueLabel(queue: dispatch_queue_t) -> String
 {
     return String.fromCString(dispatch_queue_get_label(queue))
-        .flatMap { label in split(label.characters, isSeparator: { $0 == "." }).map { String($0) }.last } ?? "?"
+        .flatMap { label in label.characters.split(".").map { String($0) }.last } ?? "?"
 }
