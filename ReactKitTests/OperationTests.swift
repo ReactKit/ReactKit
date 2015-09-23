@@ -1004,7 +1004,7 @@ class OperationTests: _TestCase
             |> concat(Stream.error(NSError(domain: "test", code: -1, userInfo: nil)))
         
         let recoveryStream = errorStream
-            |> `catch` { errorInfo -> Stream<Int> in
+            |> recover { errorInfo -> Stream<Int> in
                 return streamProducer()
             }
         
@@ -1042,7 +1042,7 @@ class OperationTests: _TestCase
 //            |> concat(Stream.error(NSError(domain: "test", code: -1, userInfo: nil))) // comment-out: not attaching error at end for testing
         
         let recoveryStream = errorStream
-            |> `catch` { errorInfo -> Stream<Int> in
+            |> recover { errorInfo -> Stream<Int> in
                 return streamProducer()
         }
         
@@ -1467,7 +1467,7 @@ class OperationTests: _TestCase
         }
         
         let repeatStreamProducer = streamProducer
-            |>> `repeat`(3)
+            |>> times(3)
         
         print("*** Start ***")
         

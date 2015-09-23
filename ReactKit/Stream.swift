@@ -779,7 +779,8 @@ public func zip<T>(streams: [Stream<T>]) -> (upstream: Stream<T>) -> Stream<[T]>
     }
 }
 
-public func `catch`<T>(catchHandler: Stream<T>.ErrorInfo -> Stream<T>) -> (upstream: Stream<T>) -> Stream<T>
+/// a.k.a Rx.catch
+public func recover<T>(catchHandler: Stream<T>.ErrorInfo -> Stream<T>) -> (upstream: Stream<T>) -> Stream<T>
 {
     return { (upstream: Stream<T>) in
         return Stream<T> { progress, fulfill, reject, configure in
@@ -1511,7 +1512,8 @@ public func prestart<T>(capacity: Int = Int.max) -> (upstreamProducer: Stream<T>
     }
 }
 
-public func `repeat`<T>(repeatCount: Int) -> (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer
+/// a.k.a Rx.repeat
+public func times<T>(repeatCount: Int) -> (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer
 {
     return { (upstreamProducer: Stream<T>.Producer) -> Stream<T>.Producer in
         
@@ -1559,7 +1561,7 @@ public func retry<T>(retryCount: Int) -> (upstreamProducer: Stream<T>.Producer) 
             return upstreamProducer
         }
         else {
-            return upstreamProducer |>> `catch` { _ -> Stream<T> in
+            return upstreamProducer |>> recover { _ -> Stream<T> in
                 return (upstreamProducer |>> retry(retryCount - 1))()
             }
         }
