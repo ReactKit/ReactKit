@@ -1,17 +1,7 @@
-<img src="https://avatars3.githubusercontent.com/u/8986128" width="36" height="36"> ReactKit [![Circle CI](https://circleci.com/gh/ReactKit/ReactKit/tree/swift%2F1.2.svg?style=svg)](https://circleci.com/gh/ReactKit/ReactKit/tree/swift%2F1.2)
+<img src="https://avatars3.githubusercontent.com/u/8986128" width="36" height="36"> ReactKit [![Circle CI](https://circleci.com/gh/ReactKit/ReactKit/tree/swift%2F2.0.svg?style=svg)](https://circleci.com/gh/ReactKit/ReactKit/tree/swift%2F2.0)
 ========
 
 Swift Reactive Programming.
-
-#### Ver 0.10.0 Changelog (2015/04/23)
-
-- [x] Rename `Signal<T>` to `Stream<T>`
-- [x] Rename Stream-operations e.g. `merge`, `mergeAll`, `mergeInner` & always use `**All` (stream-array) and `**Inner` (nested-stream) naming conventions
-- [x] Add stream pipe operator `|>` and stream-producer pipe operator `|>>` in replace of dot-method-chaining syntax.
-- [x] Add many useful Stream operations (e.g. `distinct`). 
-
-This is a **breaking change**.
-See [#26](https://github.com/ReactKit/ReactKit/pull/26) and [Ver 0.10.0 Release Notes](https://github.com/ReactKit/ReactKit/releases/tag/0.10.0) for more information.
 
 
 ## How to install
@@ -212,7 +202,7 @@ let repeatTimerProducer = createTimerStream(interval: 1)
     - `startWith(initialValue)`
     - `combineLatest(stream)`
     - `zip(stream)`
-    - `catch(stream)`
+    - `recover(stream)`
   - Timing
     - `delay(timeInterval)`
     - `interval(timeInterval)`
@@ -237,7 +227,7 @@ let repeatTimerProducer = createTimerStream(interval: 1)
 
 - For Stream Producer (`Void -> Stream<T>`)
   - `prestart(bufferCapacity)` (alias: `replay`)
-  - `repeat(count)`
+  - `times(count)`
   - `retry(count)`
 
 ### Helpers
