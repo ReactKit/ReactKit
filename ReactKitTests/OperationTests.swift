@@ -988,8 +988,8 @@ class OperationTests: _TestCase
         XCTAssertEqual(reactCount, 3)
     }
     
-    // see also: `testRetry()`
-    func testCatch()
+    /// a.k.a Rx.catch
+    func testRecover()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -1027,7 +1027,7 @@ class OperationTests: _TestCase
         
     }
     
-    func testCatch_noCatch()
+    func testRecover_noRecover()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -1455,7 +1455,8 @@ class OperationTests: _TestCase
     // MARK: - Stream Producer Operations
     //--------------------------------------------------
     
-    func testRepeat()
+    /// a.k.a Rx.repeat
+    func testTimes()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
         
@@ -1488,7 +1489,6 @@ class OperationTests: _TestCase
         
     }
     
-    // see also: `testCatch()`
     func testRetry()
     {
         let expect = self.expectationWithDescription(__FUNCTION__)
