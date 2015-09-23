@@ -1,1 +1,1 @@
-github "ReactKit/SwiftTask" "swift/2.0" #~> 3.3.0
+github "ReactKit/SwiftTask" ~> 4.0.0
