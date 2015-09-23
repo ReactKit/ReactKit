@@ -8,7 +8,7 @@
 
 import SwiftTask
 
-public class Stream<T>: Task<T, Void, NSError>
+public class Stream<T>: Task<T, Void, ErrorType>
 {
     public typealias Producer = Void -> Stream<T>
     
@@ -25,7 +25,7 @@ public class Stream<T>: Task<T, Void, NSError>
     ///
     /// - returns: New Stream.
     /// 
-    public init(initClosure: Task<T, Void, NSError>.InitClosure)
+    public init(initClosure: Task<T, Void, ErrorType>.InitClosure)
     {
         //
         // NOTE: 
@@ -93,7 +93,7 @@ public class Stream<T>: Task<T, Void, NSError>
 private func _bindToUpstream<T, C: Canceller>(
     upstream: Stream<T>,
     _ downstreamFulfill: (Void -> Void)?,
-    _ downstreamReject: (NSError -> Void)?,
+    _ downstreamReject: (ErrorType -> Void)?,
     _ downstreamConfigure: TaskConfiguration?,
     @autoclosure(escaping) _ reactCanceller: Void -> C?
 )
@@ -152,7 +152,7 @@ private func _finishDownstreamOnUpstreamFinished(
     _ upstreamValue: Void?,
     _ upstreamErrorInfo: Stream<Void>.ErrorInfo?,
     _ downstreamFulfill: (Void -> Void)?,
-    _ downstreamReject: (NSError -> Void)?
+    _ downstreamReject: (ErrorType -> Void)?
 )
 {
     if upstreamValue != nil {
@@ -205,7 +205,7 @@ public extension Stream
     }
     
     /// creates error (rejected) stream
-    public class func rejected(error: NSError) -> Stream<T>
+    public class func rejected(error: ErrorType) -> Stream<T>
     {
         return Stream { progress, fulfill, reject, configure in
             reject(error)
@@ -1037,7 +1037,7 @@ public func async<T>(queue: dispatch_queue_t) -> (upstream: Stream<T>) -> Stream
 }
 
 ///
-/// async + backpressure using blocking semaphore
+/// - Experiment: async + backpressure using blocking semaphore
 ///
 public func asyncBackpressureBlock<T>(
     queue: dispatch_queue_t,
@@ -1586,7 +1586,7 @@ public extension Stream
     }
     
     /// alias for `Stream.rejected()`
-    public class func error(error: NSError) -> Stream<T>
+    public class func error(error: ErrorType) -> Stream<T>
     {
         return self.rejected(error)
     }

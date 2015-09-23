@@ -565,8 +565,13 @@ class OperationTests: _TestCase
         // failure
         takeStream.failure { errorInfo -> Void in
             
-            XCTAssertEqual(errorInfo.error!.domain, ReactKitError.Domain, "`sourceStream` is cancelled before any progress, so `takeStream` should fail.")
-            XCTAssertEqual(errorInfo.error!.code, ReactKitError.CancelledByUpstream.rawValue)
+            guard let error = errorInfo.error as? NSError else {
+                XCTFail("Should never reach here")
+                return
+            }
+            
+            XCTAssertEqual(error.domain, ReactKitError.Domain, "`sourceStream` is cancelled before any progress, so `takeStream` should fail.")
+            XCTAssertEqual(error.code, ReactKitError.CancelledByUpstream.rawValue)
             
             XCTAssertFalse(errorInfo.isCancelled, "Though `sourceStream` is cancelled, `takeStream` is rejected rather than cancelled.")
             
